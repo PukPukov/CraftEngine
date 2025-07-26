@@ -126,6 +126,9 @@ public class Mesh {
 
     public void cleanup() {
         glDeleteVertexArrays(vaoId);
+        glDeleteBuffers(vboId);
+        glDeleteBuffers(uvboId);
+        glDeleteBuffers(eboId);
     }
 
     public record MeshData(float[] positions, float[] uvs){}
