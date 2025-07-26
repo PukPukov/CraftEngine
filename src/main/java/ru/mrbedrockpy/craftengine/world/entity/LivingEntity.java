@@ -23,6 +23,7 @@ public abstract class LivingEntity {
     protected Vector3f size = new Vector3f(1, 1, 1);
     protected int pitch;
     protected int yaw;
+    @Getter
     protected World world;
 
     protected boolean onGround = false;

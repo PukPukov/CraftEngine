@@ -10,19 +10,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.lwjgl.opengl.GL46C.*;
 
 @Getter
 @AllArgsConstructor
 public class Texture {
-
+    private static final Map<String, Texture> cache = new HashMap<>();
     private final int id;
 
     private final int width;
     private final int height;
 
     public static Texture load(String filename) {
+        if (cache.containsKey(filename)) {
+            return cache.get(filename);
+        }
         STBImage.stbi_set_flip_vertically_on_load(true);
         try (MemoryStack stack = MemoryStack.stackPush()) {
             IntBuffer widthBuf = stack.mallocInt(1);

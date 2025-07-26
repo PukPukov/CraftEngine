@@ -28,7 +28,7 @@ public class Window {
         Window.vsync = settings.isVsync();
         Window.fullscreen = settings.isFullscreen();
 
-        glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
+        //glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
 
         if (!glfwInit()) throw new IllegalStateException("Unable to initialize GLFW");
 
@@ -64,7 +64,7 @@ public class Window {
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
-        glFrontFace(GL_CW);
+        glFrontFace(GL_CCW);
     }
 
     public static void terminate() {

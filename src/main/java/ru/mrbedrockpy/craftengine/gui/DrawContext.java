@@ -91,6 +91,9 @@ public class DrawContext {
         glEnable(GL_DEPTH_TEST);
     }
 
+    public void drawText(String text, float x, float y) {
+        drawText(text, x, y, 1.0f);
+    }
     public void drawText(String text, float x, float y, float scale) {
         glDisable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
