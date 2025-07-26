@@ -70,13 +70,12 @@ public class Chunk {
                 for (int z = 0; z < WIDTH; z++) {
                     Block block = getBlock(x, y, z);
                     if (block == null || !block.isSolid()) continue;
-                    builder.addCube(x, y, z, block);
-//                    for (Block.Direction dir : Arrays.stream(Block.Direction.values()).filter(dir -> dir != Block.Direction.NONE).toList()) {
-//                        Block neighbor = getBlock(dir.offset(x, y, z));
-//                        if (neighbor == null || !neighbor.isSolid()) {
-//                            builder.addFace(x, y, z, dir, block);
-//                        }
-//                    }
+                    for (Block.Direction dir : Arrays.stream(Block.Direction.values()).filter(dir -> dir != Block.Direction.NONE).toList()) {
+                        Block neighbor = getBlock(dir.offset(x, y, z));
+                        if (neighbor == null || !neighbor.isSolid()) {
+                            builder.addFace(x, y, z, dir, block);
+                        }
+                    }
                 }
             }
         }
