@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
+import org.lwjgl.opengl.GL11;
 import ru.mrbedrockpy.craftengine.graphics.Cuboid;
 import ru.mrbedrockpy.craftengine.graphics.Mesh;
 import ru.mrbedrockpy.craftengine.graphics.MeshBuilder;
@@ -11,6 +12,7 @@ import ru.mrbedrockpy.craftengine.world.block.Block;
 import ru.mrbedrockpy.craftengine.world.entity.LivingEntity;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Chunk {
@@ -68,20 +70,20 @@ public class Chunk {
                 for (int z = 0; z < WIDTH; z++) {
                     Block block = getBlock(x, y, z);
                     if (block == null || !block.isSolid()) continue;
-
-                    for (Block.Direction dir : Block.Direction.values()) {
-                        Block neighbor = getBlock(dir.offset(x, y, z));
-                        if (neighbor == null || !neighbor.isSolid()) {
-                            builder.addFace(x, y, z, dir, block);
-                        }
-                    }
+                    builder.addCube(x, y, z, block);
+//                    for (Block.Direction dir : Arrays.stream(Block.Direction.values()).filter(dir -> dir != Block.Direction.NONE).toList()) {
+//                        Block neighbor = getBlock(dir.offset(x, y, z));
+//                        if (neighbor == null || !neighbor.isSolid()) {
+//                            builder.addFace(x, y, z, dir, block);
+//                        }
+//                    }
                 }
             }
         }
 
         Mesh.MeshData data = builder.buildData();
-
-        return Mesh.mergeMeshes(List.of(data));
+        Mesh finalMesh =  Mesh.mergeMeshes(List.of(data));
+        return finalMesh;
     }
 
     public void setEntities(List<LivingEntity> entities) {

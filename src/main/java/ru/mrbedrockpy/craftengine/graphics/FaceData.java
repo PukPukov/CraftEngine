@@ -5,23 +5,23 @@ import ru.mrbedrockpy.craftengine.world.block.Block;
 public class FaceData {
 
     private static final float[][] FACE_VERTICES = {
-            // UP
+            // UP (Y = 1)
             {
                     0, 1, 0,
+                    1, 1, 1,
                     1, 1, 0,
-                    1, 1, 1,
                     0, 1, 0,
-                    1, 1, 1,
-                    0, 1, 1
+                    0, 1, 1,
+                    1, 1, 1
             },
-            // DOWN
+            // DOWN (Y = 0)
             {
+                    0, 0, 0,
+                    1, 0, 0,
+                    1, 0, 1,
                     0, 0, 0,
                     1, 0, 1,
-                    1, 0, 0,
-                    0, 0, 0,
-                    0, 0, 1,
-                    1, 0, 1
+                    0, 0, 1
             },
             // NORTH
             {
@@ -61,13 +61,61 @@ public class FaceData {
             }
     };
 
-    private static final float[] FACE_UVS = {
-            0, 0,
-            1, 1,
-            1, 0,
-            0, 0,
-            0, 1,
-            1, 1
+    private static final float[][] FACE_UVS = {
+            // UP
+            {
+                    0, 0,
+                    1, 1,
+                    1, 0,
+                    0, 0,
+                    0, 1,
+                    1, 1
+            },
+            // DOWN
+            {
+                    0, 0,
+                    1, 0,
+                    1, 1,
+                    0, 0,
+                    1, 1,
+                    0, 1
+            },
+            // NORTH
+            {
+                    0, 0,
+                    1, 0,
+                    1, 1,
+                    0, 0,
+                    1, 1,
+                    0, 1
+            },
+            // SOUTH
+            {
+                    0, 0,
+                    1, 1,
+                    1, 0,
+                    0, 0,
+                    0, 1,
+                    1, 1
+            },
+            // WEST
+            {
+                    0, 0,
+                    1, 1,
+                    1, 0,
+                    0, 0,
+                    0, 1,
+                    1, 1
+            },
+            // EAST
+            {
+                    0, 0,
+                    1, 0,
+                    1, 1,
+                    0, 0,
+                    1, 1,
+                    0, 1
+            }
     };
 
     public static float[] getVertices(Block.Direction dir, int x, int y, int z) {
@@ -84,6 +132,6 @@ public class FaceData {
     }
 
     public static float[] getUVs(Block block, Block.Direction dir) {
-        return FACE_UVS;
+        return FACE_UVS[dir.ordinal()];
     }
 }

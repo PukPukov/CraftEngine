@@ -62,11 +62,9 @@ public class WorldRenderer {
 
     public void render(World world, ClientPlayerEntity player) {
         Chunk chunk = world.getChunkByChunkPos(0,0);
-        if(mesh == null) {
-            mesh = chunk.getChunkMesh();
-        }
+        mesh = chunk.getChunkMesh();
         shader.use();
-        shader.setUniformMatrix4f("model", getModelMatrix(chunk));
+        shader.setUniformMatrix4f("model", new Matrix4f());
         shader.setUniformMatrix4f("view", camera.getViewMatrix());
         shader.setUniformMatrix4f("projection", camera.getProjectionMatrix());
         texture.use();
@@ -78,12 +76,7 @@ public class WorldRenderer {
         mesh.render();
         texture.unbind();
         shader.unbind();
-    }
-
-    public Matrix4f getModelMatrix(Chunk chunk) {
-        return new Matrix4f()
-                .identity()
-                .translate(chunk.getPosition().x * Chunk.WIDTH, 0, chunk.getPosition().y * Chunk.WIDTH);
+        mesh.cleanup();
     }
 
     public void updateSelectedBlock(World world, ClientPlayerEntity player) {

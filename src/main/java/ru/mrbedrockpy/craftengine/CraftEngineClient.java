@@ -3,6 +3,7 @@ package ru.mrbedrockpy.craftengine;
 import lombok.Getter;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.opengl.GL11;
 import ru.mrbedrockpy.craftengine.event.EventManager;
 import ru.mrbedrockpy.craftengine.event.MouseClickEvent;
 import ru.mrbedrockpy.craftengine.graphics.Texture;
@@ -44,9 +45,9 @@ public class CraftEngineClient {
     }
 
     public void initialize() {
-        Window.initialize(new WindowSettings(1280, 720, "CraftEngine Client", true, false));
+        Window.initialize(new WindowSettings(1280, 720, "CraftEngine Client", false, false));
         Input.initialize();
-        player = new ClientPlayerEntity(new Vector3f(5, 100, 5), clientWorld);
+        player = new ClientPlayerEntity(new Vector3f(5, 1, 5), clientWorld);
         clientWorld = new ClientWorld(8, player, tickSystem);
         player.setWorld(clientWorld);
         eventManager.addListener(MouseClickEvent.class, player::onMouseClick);

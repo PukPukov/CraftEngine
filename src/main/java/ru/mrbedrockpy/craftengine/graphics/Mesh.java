@@ -18,15 +18,13 @@ public class Mesh {
     private final int vboId;
     private final int uvboId;
     private final int eboId;
-    private final int indexCount;
+    private final int vertexCount;
 //    public Mesh(float[] vertices, float[] texCoords) {
 //        this(vertices, texCoords, null);
 //    }
 
-    public Mesh(float[] vertices, float[] texCoords, int[] indices) {
-        indexCount = indices.length;
-//        debugPrint(indices.length, vertices, texCoords, indices);
-
+    public Mesh(float[] vertices, float[] texCoords) {
+        vertexCount = vertices.length / 3;
         vaoId = glGenVertexArrays();
         glBindVertexArray(vaoId);
 
@@ -44,7 +42,6 @@ public class Mesh {
 
         eboId = glGenBuffers();
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboId);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
@@ -66,23 +63,42 @@ public class Mesh {
         glBindVertexArray(vaoId);
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
-        glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
+//        glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
+        glDrawArrays(GL_TRIANGLES, 0, vertexCount);
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
         glBindVertexArray(0);
     }
 
+//    public MeshData getMeshData() {
+//        glBindVertexArray(vaoId);
+//        FloatBuffer positionBuffer = MemoryUtil.memAllocFloat(indexCount * 3);
+//        FloatBuffer uvBuffer = MemoryUtil.memAllocFloat(indexCount * 2);
+//
+//        glGetBufferSubData(GL_ARRAY_BUFFER, 0, positionBuffer);
+//        glGetBufferSubData(GL_ARRAY_BUFFER, indexCount * 3 * Float.BYTES, uvBuffer);
+//
+//        float[] positions = new float[positionBuffer.remaining()];
+//        float[] uvs = new float[uvBuffer.remaining()];
+//
+//        positionBuffer.get(positions);
+//        uvBuffer.get(uvs);
+//
+//        MemoryUtil.memFree(positionBuffer);
+//        MemoryUtil.memFree(uvBuffer);
+//
+//        return new MeshData(positions, uvs);
+//    }
+
     public static Mesh mergeMeshes(List<MeshData> meshDataList) {
         List<Float> combinedPositions = new ArrayList<>();
         List<Float> combinedUVs = new ArrayList<>();
-        List<Integer> combinedIndices = new ArrayList<>();
 
         int vertexOffset = 0;
 
         for (MeshData data : meshDataList) {
             float[] positions = data.positions;
             float[] uvs = data.uvs;
-            int[] indices = data.indices;
 
             for (int i = 0; i < positions.length; i += 3) {
                 combinedPositions.add(positions[i]);
@@ -95,29 +111,22 @@ public class Mesh {
                 combinedUVs.add(uvs[i + 1]);
             }
 
-            for (int index : indices) {
-                combinedIndices.add(index + vertexOffset);
-            }
-
             vertexOffset += positions.length / 3;
         }
 
 
         float[] finalPositions = new float[combinedPositions.size()];
         float[] finalUVs = new float[combinedUVs.size()];
-        int[] finalIndices = new int[combinedIndices.size()];
 
         for (int i = 0; i < finalPositions.length; i++) finalPositions[i] = combinedPositions.get(i);
         for (int i = 0; i < finalUVs.length; i++) finalUVs[i] = combinedUVs.get(i);
-        for (int i = 0; i < finalIndices.length; i++) finalIndices[i] = combinedIndices.get(i);
-        System.out.println("Final mesh data: " + finalPositions.length + " positions, " + finalUVs.length + " UVs, " + finalIndices.length + " indices");
 
-        return new Mesh(finalPositions, finalUVs, finalIndices);
+        return new Mesh(finalPositions, finalUVs);
     }
 
     public void cleanup() {
         glDeleteVertexArrays(vaoId);
     }
 
-    public record MeshData(float[] positions, float[] uvs, int[] indices){}
+    public record MeshData(float[] positions, float[] uvs){}
 }

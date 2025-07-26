@@ -5,6 +5,7 @@ import org.joml.Vector2i;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
+import ru.mrbedrockpy.craftengine.CraftEngineClient;
 import ru.mrbedrockpy.craftengine.phys.AABB;
 import ru.mrbedrockpy.craftengine.world.block.Block;
 import ru.mrbedrockpy.craftengine.world.entity.LivingEntity;
@@ -39,6 +40,7 @@ public abstract class World {
     }
 
     public void tick() {
+        CraftEngineClient.INSTANCE.getPlayer().tick();
         for (int chunkX = 0; chunkX < chunks.length; chunkX++) {
             for (int chunkZ = 0; chunkZ < chunks.length; chunkZ++) {
                 Chunk chunk = getChunkByChunkPos(chunkX, chunkZ);

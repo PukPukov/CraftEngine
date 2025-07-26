@@ -4,6 +4,7 @@ import org.joml.Vector3f;
 import ru.mrbedrockpy.craftengine.world.block.Block;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MeshBuilder {
@@ -40,15 +41,19 @@ public class MeshBuilder {
         indexOffset += vertCount;
     }
 
+    public void addCube(int x, int y, int z, Block block) {
+        for (Block.Direction dir : Arrays.stream(Block.Direction.values()).filter(d -> d != Block.Direction.NONE).toList()) {
+            addFace(x, y, z, dir, block);
+        }
+    }
+
     public Mesh.MeshData buildData() {
         float[] vertArray = new float[vertices.size()];
         float[] uvArray = new float[texCoords.size()];
-        int[] indexArray = new int[indices.size()];
 
         for (int i = 0; i < vertArray.length; i++) vertArray[i] = vertices.get(i);
         for (int i = 0; i < uvArray.length; i++) uvArray[i] = texCoords.get(i);
-        for (int i = 0; i < indexArray.length; i++) indexArray[i] = indices.get(i);
 
-        return new Mesh.MeshData(vertArray, uvArray, indexArray);
+        return new Mesh.MeshData(vertArray, uvArray);
     }
 }
