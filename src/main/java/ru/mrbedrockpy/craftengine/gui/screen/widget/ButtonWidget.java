@@ -21,7 +21,6 @@ public class ButtonWidget extends AbstractWidget{
     public void onMouseClick(int mouseX, int mouseY, int button) {
         CraftEngineClient.INSTANCE.setPlayer(new ClientPlayerEntity(new Vector3f(5, 2, 5), CraftEngineClient.INSTANCE.getClientWorld()));
         CraftEngineClient.INSTANCE.setClientWorld(new ClientWorld(8, CraftEngineClient.INSTANCE.getPlayer(), CraftEngineClient.INSTANCE.getTickSystem()));
-        CraftEngineClient.INSTANCE.eventManager.addListener(MouseClickEvent.class, CraftEngineClient.INSTANCE.getPlayer()::onMouseClick);
         CraftEngineClient.INSTANCE.setScreen(null);
 
     }
@@ -29,6 +28,6 @@ public class ButtonWidget extends AbstractWidget{
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         context.drawRect(x, y, width, height, Color.GREEN);
-        context.drawText(text, x + 20, y + height / 2);
+        context.drawCentredText(text, x + width / 2, y + height / 2);
     }
 }

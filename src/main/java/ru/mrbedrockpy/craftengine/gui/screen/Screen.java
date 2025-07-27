@@ -16,7 +16,6 @@ public abstract class Screen {
     public abstract void init();
     public void onClose() {
         Input.closeGUI();
-        CraftEngineClient.INSTANCE.eventManager.removeListener(MouseClickEvent.class, this::onMouseClick);
     }
 
     public int addWidget(AbstractWidget widget) {

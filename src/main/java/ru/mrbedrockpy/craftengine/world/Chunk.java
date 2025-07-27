@@ -11,6 +11,7 @@ import ru.mrbedrockpy.craftengine.graphics.TextureAtlas;
 import ru.mrbedrockpy.craftengine.registry.Registries;
 import ru.mrbedrockpy.craftengine.window.Camera;
 import ru.mrbedrockpy.craftengine.world.block.Block;
+import ru.mrbedrockpy.craftengine.world.block.Blocks;
 import ru.mrbedrockpy.craftengine.world.entity.LivingEntity;
 
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ public class Chunk {
     @Getter
     private final Vector2i position;
     private final short[][][] blocks;
+    private Mesh mesh;
     private final List<LivingEntity> entities = new ArrayList<>();
 
     public Chunk(Vector2i position) {
@@ -65,33 +67,26 @@ public class Chunk {
     }
 
     public Mesh getChunkMesh(Camera camera, TextureAtlas atlas) {
-        MeshBuilder builder = new MeshBuilder(atlas);
-        Matrix4f projView = new Matrix4f(camera.getProjectionMatrix())
-                .mul(camera.getViewMatrix());
-        FrustumCuller culler = new FrustumCuller();
-        culler.update(projView);
-        for (int x = 0; x < WIDTH; x++) {
-            for (int y = 0; y < HEIGHT; y++) {
-                for (int z = 0; z < WIDTH; z++) {
-                    Block block = getBlock(x, y, z);
-                    if (block == null || !block.isSolid()) continue;
-                    float worldX = getPosition().x * WIDTH + x;
-                    float worldY = y;
-                    float worldZ = getPosition().y * WIDTH + z;
-                    if (!culler.isBoxVisible(worldX, worldY, worldZ, worldX + 1, worldY + 1, worldZ + 1)) {
-                        continue;
-                    }
-                    for (Block.Direction dir : Arrays.stream(Block.Direction.values()).filter(dir -> dir != Block.Direction.NONE).toList()) {
-                        Block neighbor = getBlock(dir.offset(x, y, z));
-                        if (neighbor == null || !neighbor.isSolid()) {
-                            builder.addFace(x, y, z, dir, block);
-                        }
+        if(mesh == null) {
+            MeshBuilder builder = new MeshBuilder(atlas);
+            for (int x = 0; x < WIDTH; x++) {
+                for (int y = 0; y < HEIGHT; y++) {
+                    for (int z = 0; z < WIDTH; z++) {
+                        Block block = getBlock(x, y, z);
+                        if (block == Blocks.AIR || !block.isSolid()) continue;
+                        float worldX = getPosition().x * WIDTH + x;
+                        float worldY = y;
+                        float worldZ = getPosition().y * WIDTH + z;
+                        builder.addCube((int) worldX, (int) worldY, (int) worldZ, block);
                     }
                 }
             }
+            Mesh.MeshData data = builder.buildData();
+            mesh = Mesh.mergeMeshes(List.of(data));
+            return mesh;
+        } else {
+            return mesh;
         }
-        Mesh.MeshData data = builder.buildData();
-        return Mesh.mergeMeshes(List.of(data));
     }
 
     public void setEntities(List<LivingEntity> entities) {
@@ -99,16 +94,11 @@ public class Chunk {
         this.entities.addAll(entities);
     }
 
-
-    public static float[] toFloatArray(List<Float> list) {
-        float[] array = new float[list.size()];
-        for (int i = 0; i < list.size(); i++) {
-            array[i] = list.get(i);
-        }
-        return array;
-    }
-
     public List<LivingEntity> getEntities() {
         return new ArrayList<>(entities);
+    }
+
+    public Vector2i getWorldPosition() {
+        return new Vector2i(position.x * WIDTH, position.y * WIDTH);
     }
 }

@@ -1,16 +1,16 @@
 package ru.mrbedrockpy.craftengine.gui.font;
 
 import lombok.Getter;
+import org.joml.Vector2f;
+import org.joml.Vector2i;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.stb.STBTTFontinfo;
-import org.lwjgl.stb.STBTTPackContext;
-import org.lwjgl.stb.STBTTPackedchar;
-import org.lwjgl.stb.STBTruetype;
+import org.lwjgl.stb.*;
 import org.lwjgl.system.MemoryStack;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -67,6 +67,34 @@ public class FontRenderer {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    public Vector2i getTextSize(String text) {
+        int width = 0;
+        int maxHeight = 0;
+
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer x0 = stack.mallocInt(1);
+            IntBuffer y0 = stack.mallocInt(1);
+            IntBuffer x1 = stack.mallocInt(1);
+            IntBuffer y1 = stack.mallocInt(1);
+            IntBuffer advance = stack.mallocInt(1);
+            IntBuffer lsb = stack.mallocInt(1);
+
+            for (int i = 0; i < text.length(); i++) {
+                char c = text.charAt(i);
+                if (c < 32 || c >= 128) continue;
+
+                stbtt_GetCodepointHMetrics(fontInfo, c, advance, lsb);
+                width += (int) (advance.get(0) * scale);
+
+                stbtt_GetCodepointBitmapBox(fontInfo, c, scale, scale, x0, y0, x1, y1);
+                int height = y1.get(0) - y0.get(0);
+                maxHeight = Math.max(maxHeight, height);
+            }
+        }
+
+        return new Vector2i(width, maxHeight);
     }
 
     public void dispose() {

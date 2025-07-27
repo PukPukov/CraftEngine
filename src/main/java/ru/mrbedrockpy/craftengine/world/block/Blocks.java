@@ -8,7 +8,7 @@ public class Blocks {
     public static final Block DIRT = registerBlock("dirt", new Block(true));
 
     private static <T extends Block>T registerBlock(String name, T block) {
-        return Registries.BLOCKS.register(name ,block);
+        return Registries.BLOCKS.register(name, block);
     }
     public static void register(){}
 }

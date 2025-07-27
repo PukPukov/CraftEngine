@@ -1,12 +1,13 @@
 package ru.mrbedrockpy.craftengine.gui;
 
+import lombok.Getter;
 import org.joml.Matrix4f;
+import org.joml.Vector2i;
 import org.lwjgl.stb.STBTTPackedchar;
-import org.lwjgl.stb.STBTruetype;
+import ru.mrbedrockpy.craftengine.graphics.MatrixStack;
 import ru.mrbedrockpy.craftengine.graphics.Shader;
 import ru.mrbedrockpy.craftengine.graphics.Texture;
 import ru.mrbedrockpy.craftengine.gui.font.FontRenderer;
-import ru.mrbedrockpy.craftengine.gui.font.Glyph;
 
 import java.awt.*;
 import java.io.IOException;
@@ -17,11 +18,13 @@ public class DrawContext {
     private final Shader uiShader, textShader;
     private final int screenWidth;
     private final int screenHeight;
+    @Getter
+    private final boolean scaled = true;
+    private final int vaoId;
+    private final int vboId;
 
-    private int vaoId;
-    private int vboId;
-
-    private final Matrix4f projection;
+    @Getter
+    private final MatrixStack matrices = new MatrixStack();
     private final FontRenderer fontRenderer;
 
     public DrawContext(int screenWidth, int screenHeight) {
@@ -31,7 +34,12 @@ public class DrawContext {
         uiShader = Shader.load("ui_vertex.glsl", "ui_fragment.glsl");
         textShader = Shader.load("ui_vertex.glsl", "text_fragment.glsl");
 
-        projection = new Matrix4f().ortho(0.0f, screenWidth, screenHeight, 0.0f, -1.0f, 1.0f);
+        matrices.set(new Matrix4f().ortho(0.0f, screenWidth, screenHeight, 0.0f, -1.0f, 1.0f));
+        matrices.push();
+        if(scaled){
+            matrices.scale(Math.ceilDiv(screenHeight, 6), Math.ceilDiv(screenHeight, 6), 0.0f);
+        }
+        matrices.pop();
 
         vaoId = glGenVertexArrays();
         vboId = glGenBuffers();
@@ -74,7 +82,7 @@ public class DrawContext {
         glDisable(GL_CULL_FACE);
 
         uiShader.use();
-        uiShader.setUniformMatrix4f("projection", projection);
+        uiShader.setUniformMatrix4f("projection", matrices.getMatrix());
         uiShader.setUniform1b("useColor", false);
 
         glActiveTexture(GL_TEXTURE0);
@@ -92,10 +100,19 @@ public class DrawContext {
         glEnable(GL_CULL_FACE);
     }
 
-    public void drawText(String text, float x, float y) {
+    public void drawCentredText(String text, int x, int y) {
+        drawCentredText(text, x, y, 1.0f);
+    }
+
+    public void drawCentredText(String text, int x, int y, float scale){
+        Vector2i textSize = fontRenderer.getTextSize(text);
+        drawText(text, x - textSize.x / 2, y - textSize.y / 2, scale);
+    }
+
+    public void drawText(String text, int x, int y) {
         drawText(text, x, y, 1.0f);
     }
-    public void drawText(String text, float x, float y, float scale) {
+    public void drawText(String text, int x, int y, float scale) {
         glDisable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
         glDisable(GL_CULL_FACE);
@@ -105,7 +122,7 @@ public class DrawContext {
         glBindTexture(GL_TEXTURE_2D, fontRenderer.getTextureId());
 
         textShader.use();
-        textShader.setUniformMatrix4f("projection", projection);
+        textShader.setUniformMatrix4f("projection", matrices.getMatrix());
 
         glBindVertexArray(vaoId);
 
@@ -164,7 +181,7 @@ public class DrawContext {
         glDisable(GL_CULL_FACE);
 
         uiShader.use();
-        uiShader.setUniformMatrix4f("projection", projection);
+        uiShader.setUniformMatrix4f("projection", matrices.getMatrix());
         uiShader.setUniform4f("color", color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
         uiShader.setUniform1b("useColor", true);
 

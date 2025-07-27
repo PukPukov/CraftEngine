@@ -75,19 +75,4 @@ public class ClientPlayerEntity extends LivingEntity {
     @Override
     public void render(Camera camera) {
     }
-
-    public void onMouseClick(MouseClickEvent event) {
-        if (event.getButton() == GLFW_MOUSE_BUTTON_LEFT) {
-            BlockRaycastResult blockRaycastResult = world.raycast(camera.getPosition().add(0, eyeOffset, 0), camera.getFront(), 4.5f);
-            if(blockRaycastResult != null){
-                world.setBlock(blockRaycastResult.x, blockRaycastResult.y, blockRaycastResult.z, Blocks.AIR);
-            }
-        } else if (event.getButton() == GLFW_MOUSE_BUTTON_RIGHT) {
-            BlockRaycastResult blockRaycastResult = world.raycast(camera.getPosition().add(0, eyeOffset, 0), camera.getFront(), 4.5f);
-            if(blockRaycastResult != null && world.canPlaceBlockAt(blockRaycastResult.direction.offset(blockRaycastResult.x, blockRaycastResult.y, blockRaycastResult.z))) {
-                Vector3i blockPos = blockRaycastResult.direction.offset(blockRaycastResult.x, blockRaycastResult.y, blockRaycastResult.z);
-                world.setBlock(blockPos.x, blockPos.y, blockPos.z, Blocks.STONE);
-            }
-        }
-    }
 }

@@ -169,7 +169,7 @@ public abstract class World {
 
     public Block getBlock(int x, int y, int z) {
         Chunk chunk = getChunkByBlockPos(x, z);
-        if (chunk == null) return null;
+        if (chunk == null) return Blocks.AIR;
         return chunk.getBlock(
                 x % Chunk.WIDTH,
                 y % Chunk.HEIGHT,
@@ -213,9 +213,9 @@ public abstract class World {
         minY = Math.max(0, minY);
         minZ = Math.max(0, minZ);
 
-        maxX = Math.min(Chunk.WIDTH, maxX);
+        maxX = Math.min(Chunk.WIDTH * getWorldSize(), maxX);
         maxY = Math.min(Chunk.HEIGHT, maxY);
-        maxZ = Math.min(Chunk.WIDTH, maxZ);
+        maxZ = Math.min(Chunk.WIDTH * getWorldSize(), maxZ);
 
         for (int x = minX; x < maxX; x++) {
             for (int y = minY; y < maxY; y++) {

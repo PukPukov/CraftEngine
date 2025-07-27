@@ -55,4 +55,10 @@ public class MeshBuilder {
 
         return new Mesh.MeshData(vertArray, uvArray);
     }
+
+    public void addCube(int x, int y, int z, Block block) {
+        for (Block.Direction dir : Arrays.stream(Block.Direction.values()).filter(dir -> dir != Block.Direction.NONE).toList()) {
+            addFace(x, y, z, dir, block);
+        }
+    }
 }

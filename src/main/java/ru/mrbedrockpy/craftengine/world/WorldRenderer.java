@@ -3,10 +3,7 @@ package ru.mrbedrockpy.craftengine.world;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
-import ru.mrbedrockpy.craftengine.graphics.Mesh;
-import ru.mrbedrockpy.craftengine.graphics.Shader;
-import ru.mrbedrockpy.craftengine.graphics.Texture;
-import ru.mrbedrockpy.craftengine.graphics.TextureAtlas;
+import ru.mrbedrockpy.craftengine.graphics.*;
 import ru.mrbedrockpy.craftengine.window.Camera;
 import ru.mrbedrockpy.craftengine.world.entity.ClientPlayerEntity;
 import ru.mrbedrockpy.craftengine.world.raycast.BlockRaycastResult;
@@ -21,7 +18,6 @@ public class WorldRenderer {
     private final Camera camera;
     private Vector3i selectedBlock;
     private Shader shader;
-    private Mesh mesh;
     private final TextureAtlas atlas;
     private final BufferedImage builtAtlas;
     private final Texture texture;
@@ -43,24 +39,34 @@ public class WorldRenderer {
         atlas.addTile("dirt", ImageIO.read(new File("dirt.png")));
         atlas.addTile("stone", ImageIO.read(new File("stone.png")));
     }
+    private final FrustumCuller culler = new FrustumCuller();
 
     public void render(World world, ClientPlayerEntity player) {
-        Chunk chunk = world.getChunkByChunkPos(0,0);
-        mesh = chunk.getChunkMesh(camera, atlas);
+        Matrix4f projView = new Matrix4f(camera.getProjectionMatrix())
+                .mul(camera.getViewMatrix());
+        culler.update(projView);
         shader.use();
         shader.setUniformMatrix4f("model", new Matrix4f());
         shader.setUniformMatrix4f("view", camera.getViewMatrix());
         shader.setUniformMatrix4f("projection", camera.getProjectionMatrix());
         texture.use();
-//        for(Chunk[] chunks : world.getChunks()){
-//            for (Chunk chunk : chunks){
-//                if(chunk == null || chunk.getChunkMesh() == null) continue;
-//            }
-//        }
-        mesh.render();
+        for(Chunk[] chunks : world.getChunks()){
+            for (Chunk chunk : chunks){
+                if (!culler.isBoxVisible(
+                        chunk.getWorldPosition().x, 0, chunk.getWorldPosition().y,
+                        chunk.getWorldPosition().x + Chunk.WIDTH,
+                            Chunk.HEIGHT,
+                        chunk.getWorldPosition().y + Chunk.WIDTH
+                )) {
+                    continue;
+                }
+                Mesh mesh = chunk.getChunkMesh(camera, atlas);
+                mesh.render();
+//                mesh.cleanup();
+            }
+        }
         shader.unbind();
         texture.unbind();
-        mesh.cleanup();
     }
 
     public void updateSelectedBlock(World world, ClientPlayerEntity player) {
