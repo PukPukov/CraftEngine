@@ -72,6 +72,7 @@ public class DrawContext {
         glDisable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glDisable(GL_CULL_FACE);
 
         uiShader.use();
         uiShader.setUniformMatrix4f("projection", projection);
@@ -89,6 +90,7 @@ public class DrawContext {
 
         glDisable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
     }
 
     public void drawText(String text, float x, float y) {
@@ -97,6 +99,7 @@ public class DrawContext {
     public void drawText(String text, float x, float y, float scale) {
         glDisable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
+        glDisable(GL_CULL_FACE);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         glActiveTexture(GL_TEXTURE0);
@@ -152,12 +155,14 @@ public class DrawContext {
 
         glDisable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
     }
 
     public void drawRect(int x, int y, float width, float height, Color color) {
         glDisable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glEnable(GL_CULL_FACE);
 
         uiShader.use();
         uiShader.setUniformMatrix4f("projection", projection);
@@ -186,6 +191,7 @@ public class DrawContext {
 
         glDisable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
     }
 
     public void cleanup() {

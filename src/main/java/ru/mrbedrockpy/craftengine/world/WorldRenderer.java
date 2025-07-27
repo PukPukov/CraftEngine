@@ -1,68 +1,52 @@
 package ru.mrbedrockpy.craftengine.world;
 
 import org.joml.Matrix4f;
-import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
-import ru.mrbedrockpy.craftengine.CraftEngineClient;
-import ru.mrbedrockpy.craftengine.graphics.Cuboid;
 import ru.mrbedrockpy.craftengine.graphics.Mesh;
 import ru.mrbedrockpy.craftengine.graphics.Shader;
 import ru.mrbedrockpy.craftengine.graphics.Texture;
+import ru.mrbedrockpy.craftengine.graphics.TextureAtlas;
 import ru.mrbedrockpy.craftengine.window.Camera;
-import ru.mrbedrockpy.craftengine.world.block.Block;
 import ru.mrbedrockpy.craftengine.world.entity.ClientPlayerEntity;
 import ru.mrbedrockpy.craftengine.world.raycast.BlockRaycastResult;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
 
 public class WorldRenderer {
-
-    private final Cuboid[][][] cuboids;
     private final Camera camera;
-    private final int width, height, depth;
     private Vector3i selectedBlock;
     private Shader shader;
-    private Texture texture;
     private Mesh mesh;
+    private final TextureAtlas atlas;
+    private final BufferedImage builtAtlas;
+    private final Texture texture;
 
-    public WorldRenderer(Camera camera, int width, int height, int depth) {
+    public WorldRenderer(Camera camera) {
         this.camera = camera;
-        this.width = width;
-        this.height = height;
-        this.depth = depth;
-
-        texture = Texture.load("block.png");
         shader = Shader.load("vertex.glsl", "fragment.glsl");
-        cuboids = new Cuboid[width][height][depth];
-    }
-
-    public void addCuboid(int x, int y, int z, Cuboid cuboid) {
-        if (inBounds(x, y, z)) {
-            if (cuboids[x][y][z] != null) {
-                cuboids[x][y][z].cleanup();
-            }
-            cuboids[x][y][z] = cuboid;
+        this.atlas = new TextureAtlas(16, 16);
+        try {
+            loadTextures();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        builtAtlas = atlas.buildAtlas();
+        texture = Texture.fromBufferedImage(builtAtlas);
     }
 
-    public void removeCuboid(int x, int y, int z) {
-        if (inBounds(x, y, z) && cuboids[x][y][z] != null) {
-            cuboids[x][y][z].cleanup();
-            cuboids[x][y][z] = null;
-        }
-    }
-
-    private boolean inBounds(int x, int y, int z) {
-        return x >= 0 && x < width
-            && y >= 0 && y < height
-            && z >= 0 && z < depth;
+    private void loadTextures() throws IOException {
+        atlas.addTile("dirt", ImageIO.read(new File("dirt.png")));
+        atlas.addTile("stone", ImageIO.read(new File("stone.png")));
     }
 
     public void render(World world, ClientPlayerEntity player) {
         Chunk chunk = world.getChunkByChunkPos(0,0);
-        mesh = chunk.getChunkMesh();
+        mesh = chunk.getChunkMesh(camera, atlas);
         shader.use();
         shader.setUniformMatrix4f("model", new Matrix4f());
         shader.setUniformMatrix4f("view", camera.getViewMatrix());
@@ -74,8 +58,8 @@ public class WorldRenderer {
 //            }
 //        }
         mesh.render();
-        texture.unbind();
         shader.unbind();
+        texture.unbind();
         mesh.cleanup();
     }
 
@@ -93,14 +77,5 @@ public class WorldRenderer {
 
 
     public void cleanup() {
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                for (int z = 0; z < depth; z++) {
-                    if (cuboids[x][y][z] != null) {
-                        cuboids[x][y][z].cleanup();
-                    }
-                }
-            }
-        }
     }
 }

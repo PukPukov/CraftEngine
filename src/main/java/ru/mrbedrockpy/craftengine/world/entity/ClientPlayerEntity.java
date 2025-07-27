@@ -3,10 +3,12 @@ package ru.mrbedrockpy.craftengine.world.entity;
 import lombok.Getter;
 import org.joml.*;
 import ru.mrbedrockpy.craftengine.event.MouseClickEvent;
+import ru.mrbedrockpy.craftengine.registry.Registries;
 import ru.mrbedrockpy.craftengine.window.Camera;
 import ru.mrbedrockpy.craftengine.window.Input;
 import ru.mrbedrockpy.craftengine.world.ClientWorld;
 import ru.mrbedrockpy.craftengine.world.block.Block;
+import ru.mrbedrockpy.craftengine.world.block.Blocks;
 import ru.mrbedrockpy.craftengine.world.raycast.BlockRaycastResult;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -20,7 +22,7 @@ public class ClientPlayerEntity extends LivingEntity {
     private final float eyeOffset = 1.8f;
 
     public ClientPlayerEntity(Vector3f position, ClientWorld world) {
-        super(position, new Vector3f(1, 2, 1), world);
+        super(position, new Vector3f(0.6f, 1.8f, 0.6f), world);
         this.camera.setPosition(position.add(0, 1.8f, 0));
     }
 
@@ -74,14 +76,14 @@ public class ClientPlayerEntity extends LivingEntity {
         if (event.getButton() == GLFW_MOUSE_BUTTON_LEFT) {
             BlockRaycastResult blockRaycastResult = world.raycast(camera.getPosition().add(0, eyeOffset, 0), camera.getFront(), 4.5f);
             if(blockRaycastResult != null){
-                world.setBlock(blockRaycastResult.x, blockRaycastResult.y, blockRaycastResult.z, null);
+                world.setBlock(blockRaycastResult.x, blockRaycastResult.y, blockRaycastResult.z, Blocks.AIR);
             }
         } else if (event.getButton() == GLFW_MOUSE_BUTTON_RIGHT) {
             BlockRaycastResult blockRaycastResult = world.raycast(camera.getPosition().add(0, eyeOffset, 0), camera.getFront(), 4.5f);
             if(blockRaycastResult != null){
                 Vector3i offset = getOffsetFromDirection(blockRaycastResult.direction);
                 Vector3i blockPos = new Vector3i(blockRaycastResult.x, blockRaycastResult.y, blockRaycastResult.z).add(offset);
-                world.setBlock(blockPos.x, blockPos.y, blockPos.z, new Block(true));
+                world.setBlock(blockPos.x, blockPos.y, blockPos.z, Blocks.STONE);
             }
         }
     }

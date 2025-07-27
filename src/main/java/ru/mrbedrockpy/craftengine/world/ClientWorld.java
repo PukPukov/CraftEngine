@@ -12,7 +12,7 @@ public class ClientWorld extends World {
         super(size, new SimpleChunkGenerator());
         this.player = player;
         ticker.addListener(this::tick);
-        this.worldRenderer = new WorldRenderer(player.getCamera(), getWorldSize(), Chunk.HEIGHT, getWorldSize());
+        this.worldRenderer = new WorldRenderer(player.getCamera());
     }
 
     public void render() {

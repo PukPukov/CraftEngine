@@ -1,13 +1,15 @@
 package ru.mrbedrockpy.craftengine.world;
 
 import lombok.Getter;
+import org.joml.Matrix4f;
 import org.joml.Vector2i;
-import org.joml.Vector3f;
 import org.joml.Vector3i;
-import org.lwjgl.opengl.GL11;
-import ru.mrbedrockpy.craftengine.graphics.Cuboid;
+import ru.mrbedrockpy.craftengine.graphics.FrustumCuller;
 import ru.mrbedrockpy.craftengine.graphics.Mesh;
 import ru.mrbedrockpy.craftengine.graphics.MeshBuilder;
+import ru.mrbedrockpy.craftengine.graphics.TextureAtlas;
+import ru.mrbedrockpy.craftengine.registry.Registries;
+import ru.mrbedrockpy.craftengine.window.Camera;
 import ru.mrbedrockpy.craftengine.world.block.Block;
 import ru.mrbedrockpy.craftengine.world.entity.LivingEntity;
 
@@ -22,22 +24,22 @@ public class Chunk {
 
     @Getter
     private final Vector2i position;
-    private final Block[][][] blocks;
+    private final short[][][] blocks;
     private final List<LivingEntity> entities = new ArrayList<>();
 
     public Chunk(Vector2i position) {
         this.position = position;
-        this.blocks = new Block[WIDTH][HEIGHT][WIDTH];
+        this.blocks = new short[WIDTH][HEIGHT][WIDTH];
     }
 
-    public Chunk(Vector2i position, Block[][][] blocks) {
+    public Chunk(Vector2i position, short[][][] blocks) {
         this.position = position;
         this.blocks = blocks;
     }
 
     public Block getBlock(int x, int y, int z) {
         try {
-            return blocks[x][y][z];
+            return Registries.BLOCKS.getById(blocks[x][y][z]);
         } catch (IndexOutOfBoundsException e) {
             return null;
         }
@@ -49,7 +51,7 @@ public class Chunk {
 
     public boolean setBlock(int x, int y, int z, Block block) {
         try {
-           blocks[x][y][z] = block;
+           blocks[x][y][z] = (short) Registries.BLOCKS.getId(block);
            return true;
         } catch (IndexOutOfBoundsException e) {
             return false;
@@ -62,14 +64,23 @@ public class Chunk {
         }
     }
 
-    public Mesh getChunkMesh() {
-        MeshBuilder builder = new MeshBuilder();
-
+    public Mesh getChunkMesh(Camera camera, TextureAtlas atlas) {
+        MeshBuilder builder = new MeshBuilder(atlas);
+        Matrix4f projView = new Matrix4f(camera.getProjectionMatrix())
+                .mul(camera.getViewMatrix());
+        FrustumCuller culler = new FrustumCuller();
+        culler.update(projView);
         for (int x = 0; x < WIDTH; x++) {
             for (int y = 0; y < HEIGHT; y++) {
                 for (int z = 0; z < WIDTH; z++) {
                     Block block = getBlock(x, y, z);
                     if (block == null || !block.isSolid()) continue;
+                    float worldX = getPosition().x * WIDTH + x;
+                    float worldY = y;
+                    float worldZ = getPosition().y * WIDTH + z;
+                    if (!culler.isBoxVisible(worldX, worldY, worldZ, worldX + 1, worldY + 1, worldZ + 1)) {
+                        continue;
+                    }
                     for (Block.Direction dir : Arrays.stream(Block.Direction.values()).filter(dir -> dir != Block.Direction.NONE).toList()) {
                         Block neighbor = getBlock(dir.offset(x, y, z));
                         if (neighbor == null || !neighbor.isSolid()) {
@@ -79,10 +90,8 @@ public class Chunk {
                 }
             }
         }
-
         Mesh.MeshData data = builder.buildData();
-        Mesh finalMesh =  Mesh.mergeMeshes(List.of(data));
-        return finalMesh;
+        return Mesh.mergeMeshes(List.of(data));
     }
 
     public Vector2i getPosition() {

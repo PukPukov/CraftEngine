@@ -12,10 +12,15 @@ public class MeshBuilder {
     private final List<Float> texCoords = new ArrayList<>();
     private final List<Integer> indices = new ArrayList<>();
     private int indexOffset = 0;
+    private final TextureAtlas atlas;
+
+    public MeshBuilder(TextureAtlas atlas) {
+        this.atlas = atlas;
+    }
 
     public void addFace(int x, int y, int z, Block.Direction dir, Block block) {
         float[] faceVerts = FaceData.getVertices(dir, x, y, z);
-        float[] faceUVs   = FaceData.getUVs(block, dir);
+        float[] faceUVs   = FaceData.getUVs(block, dir, atlas);
 
         int vertCount = faceVerts.length / 3;
         if (faceUVs.length / 2 != vertCount) {
@@ -39,12 +44,6 @@ public class MeshBuilder {
         indices.add(indexOffset + 5);
 
         indexOffset += vertCount;
-    }
-
-    public void addCube(int x, int y, int z, Block block) {
-        for (Block.Direction dir : Arrays.stream(Block.Direction.values()).filter(d -> d != Block.Direction.NONE).toList()) {
-            addFace(x, y, z, dir, block);
-        }
     }
 
     public Mesh.MeshData buildData() {

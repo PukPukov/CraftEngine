@@ -14,8 +14,10 @@ import ru.mrbedrockpy.craftengine.window.*;
 import ru.mrbedrockpy.craftengine.world.ClientWorld;
 import ru.mrbedrockpy.craftengine.world.TickSystem;
 import ru.mrbedrockpy.craftengine.world.block.Block;
+import ru.mrbedrockpy.craftengine.world.block.Blocks;
 import ru.mrbedrockpy.craftengine.world.entity.ClientPlayerEntity;
 
+// TODO: пофиксить физику
 public class CraftEngineClient {
     public static CraftEngineClient INSTANCE = new CraftEngineClient();
     private DrawContext context;
@@ -47,7 +49,7 @@ public class CraftEngineClient {
     public void initialize() {
         Window.initialize(new WindowSettings(1280, 720, "CraftEngine Client", false, false));
         Input.initialize();
-        player = new ClientPlayerEntity(new Vector3f(5, 1, 5), clientWorld);
+        player = new ClientPlayerEntity(new Vector3f(5, 2, 5), clientWorld);
         clientWorld = new ClientWorld(8, player, tickSystem);
         player.setWorld(clientWorld);
         eventManager.addListener(MouseClickEvent.class, player::onMouseClick);
@@ -55,8 +57,7 @@ public class CraftEngineClient {
         hudRenderer = new HudRenderer(Window.getWidth(), Window.getHeight());
         hudRenderer.texture = Texture.load("cursor.png");
         hudRenderer.hudTexture = Texture.load("hotbar.png");
-        Registries.BLOCKS.register("dirt", new Block(true));
-        Registries.BLOCKS.register("stone", new Block(true));
+        Blocks.register();
         Registries.freeze();
     }
 

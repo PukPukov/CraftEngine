@@ -1,6 +1,9 @@
 package ru.mrbedrockpy.craftengine.graphics;
 
+import ru.mrbedrockpy.craftengine.registry.Registries;
 import ru.mrbedrockpy.craftengine.world.block.Block;
+
+import java.util.Arrays;
 
 public class FaceData {
 
@@ -61,7 +64,7 @@ public class FaceData {
             }
     };
 
-    private static final float[][] FACE_UVS = {
+    public static final float[][] FACE_UVS = {
             // UP
             {
                     0, 0,
@@ -132,7 +135,7 @@ public class FaceData {
         return out;
     }
 
-    public static float[] getUVs(Block block, Block.Direction dir) {
-        return FACE_UVS[dir.ordinal()];
+    public static float[] getUVs(Block block, Block.Direction dir, TextureAtlas atlas) {
+        return atlas.getNormalizedUV(Registries.BLOCKS.getName(block), dir);
     }
 }

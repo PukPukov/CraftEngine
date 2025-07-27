@@ -18,8 +18,6 @@ public class FPSCounter {
             fps = frames;
             frames = 0;
             lastTime = currentTime;
-
-            System.out.println("FPS: " + fps);
         }
     }
 
