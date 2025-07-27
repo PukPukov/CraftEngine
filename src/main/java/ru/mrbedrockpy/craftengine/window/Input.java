@@ -10,6 +10,22 @@ import static org.lwjgl.opengl.GL11C.glViewport;
 
 public class Input {
 
+    private static boolean guiOpen = false;
+
+    public static void openGUI() {
+        guiOpen = true;
+        Input.setCursorLocked(false);
+    }
+
+    public static void closeGUI() {
+        guiOpen = false;
+        Input.setCursorLocked(true);
+    }
+
+    public static boolean isGUIOpen() {
+        return guiOpen;
+    }
+
     public static final int KEYS = 1032;
     public static final int MOUSE_BUTTONS_OFFSET = 1024;
 

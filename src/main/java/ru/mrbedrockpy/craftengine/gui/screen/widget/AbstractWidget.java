@@ -23,4 +23,14 @@ public abstract class AbstractWidget {
     public abstract void onMouseClick(int mouseX, int mouseY, int button);
 
     public abstract void render(DrawContext context, int mouseX, int mouseY, float delta);
+
+    public void setPosition(int x, int y){
+        this.x = x;
+        this.y = y;
+    }
+
+    public void setCentredPosition(int x, int y){
+        this.x = x - width / 2;
+        this.y = y - height / 2;
+    }
 }

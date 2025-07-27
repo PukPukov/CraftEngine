@@ -29,10 +29,12 @@ public class ClientPlayerEntity extends LivingEntity {
     @Override
     public void update(float deltaTime, float partialTick, ClientWorld world) {
         super.update(deltaTime, partialTick, world);
-        camera.rotate(new Vector2f(
-                (float) -Input.getDeltaY() * sensitivity * deltaTime,
-                (float) Input.getDeltaX() * sensitivity * deltaTime
-        ));
+        if(!Input.isGUIOpen()) {
+            camera.rotate(new Vector2f(
+                    (float) -Input.getDeltaY() * sensitivity * deltaTime,
+                    (float) Input.getDeltaX() * sensitivity * deltaTime
+            ));
+        }
         Vector3f cameraMove = interpolatePosition(prevPosition, position, partialTick);
         camera.setPosition(cameraMove);
     }
@@ -53,11 +55,13 @@ public class ClientPlayerEntity extends LivingEntity {
         Vector3f right = new Vector3f();
         front.cross(new Vector3f(0, 1, 0), right).normalize();
 
-        if (Input.pressed(GLFW_KEY_A)) direction.add(new Vector3f(front).mul(speed));
-        if (Input.pressed(GLFW_KEY_D)) direction.sub(new Vector3f(front).mul(speed));
-        if (Input.pressed(GLFW_KEY_W)) direction.add(new Vector3f(right).mul(speed));
-        if (Input.pressed(GLFW_KEY_S)) direction.sub(new Vector3f(right).mul(speed));
-        if (Input.pressed(GLFW_KEY_SPACE)) jump();
+        if(!Input.isGUIOpen()) {
+            if (Input.pressed(GLFW_KEY_A)) direction.add(new Vector3f(front).mul(speed));
+            if (Input.pressed(GLFW_KEY_D)) direction.sub(new Vector3f(front).mul(speed));
+            if (Input.pressed(GLFW_KEY_W)) direction.add(new Vector3f(right).mul(speed));
+            if (Input.pressed(GLFW_KEY_S)) direction.sub(new Vector3f(right).mul(speed));
+            if (Input.pressed(GLFW_KEY_SPACE)) jump();
+        }
         moveRelative(direction.x, direction.z, this.onGround ? 0.1F : 0.02F);
         velocity.y -= 0.08f;
         this.move(new Vector3d(velocity.x, velocity.y, velocity.z));
@@ -80,23 +84,10 @@ public class ClientPlayerEntity extends LivingEntity {
             }
         } else if (event.getButton() == GLFW_MOUSE_BUTTON_RIGHT) {
             BlockRaycastResult blockRaycastResult = world.raycast(camera.getPosition().add(0, eyeOffset, 0), camera.getFront(), 4.5f);
-            if(blockRaycastResult != null){
-                Vector3i offset = getOffsetFromDirection(blockRaycastResult.direction);
-                Vector3i blockPos = new Vector3i(blockRaycastResult.x, blockRaycastResult.y, blockRaycastResult.z).add(offset);
+            if(blockRaycastResult != null && world.canPlaceBlockAt(blockRaycastResult.direction.offset(blockRaycastResult.x, blockRaycastResult.y, blockRaycastResult.z))) {
+                Vector3i blockPos = blockRaycastResult.direction.offset(blockRaycastResult.x, blockRaycastResult.y, blockRaycastResult.z);
                 world.setBlock(blockPos.x, blockPos.y, blockPos.z, Blocks.STONE);
             }
         }
-    }
-    // TODO: вынести в отдельный класс, например, BlockUtils
-    public Vector3i getOffsetFromDirection(Block.Direction dir) {
-        return switch (dir) {
-            case UP    -> new Vector3i(0, 1, 0);
-            case DOWN  -> new Vector3i(0, -1, 0);
-            case NORTH -> new Vector3i(0, 0, -1);
-            case SOUTH -> new Vector3i(0, 0, 1);
-            case EAST  -> new Vector3i(1, 0, 0);
-            case WEST  -> new Vector3i(-1, 0, 0);
-            default    -> new Vector3i(0, 0, 0);
-        };
     }
 }

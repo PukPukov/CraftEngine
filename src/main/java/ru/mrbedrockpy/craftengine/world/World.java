@@ -8,6 +8,7 @@ import org.joml.Vector3i;
 import ru.mrbedrockpy.craftengine.CraftEngineClient;
 import ru.mrbedrockpy.craftengine.phys.AABB;
 import ru.mrbedrockpy.craftengine.world.block.Block;
+import ru.mrbedrockpy.craftengine.world.block.Blocks;
 import ru.mrbedrockpy.craftengine.world.entity.LivingEntity;
 import ru.mrbedrockpy.craftengine.world.generator.ChunkGenerator;
 import ru.mrbedrockpy.craftengine.world.raycast.BlockRaycastResult;
@@ -42,13 +43,14 @@ public abstract class World {
     }
 
     public void tick() {
-        CraftEngineClient.INSTANCE.getPlayer().tick();
         for (int chunkX = 0; chunkX < chunks.length; chunkX++) {
             for (int chunkZ = 0; chunkZ < chunks.length; chunkZ++) {
                 Chunk chunk = getChunkByChunkPos(chunkX, chunkZ);
                 List<LivingEntity> entitiesInChunk = new ArrayList<>();
                 for (LivingEntity entity: entities) {
-                    getChunkByBlockPos(Math.round(entity.getPosition().x), Math.round(entity.getPosition().z));
+                    if(chunk == getChunkByBlockPos(Math.round(entity.getPosition().x), Math.round(entity.getPosition().z))){
+                        entitiesInChunk.add(entity);
+                    }
                 }
                 chunk.setEntities(entitiesInChunk);
                 chunk.tick();
@@ -56,7 +58,6 @@ public abstract class World {
         }
     }
 
-    // TODO: пофиксить то что направление определяется вектором направления а не стороной на которую смотрит игрок
     public BlockRaycastResult raycast(Vector3f originF, Vector3f directionF, float maxDistanceF) {
 
         Vector3d origin = new Vector3d(originF.x, originF.y, originF.z);
@@ -125,7 +126,7 @@ public abstract class World {
                     blockPos.z += stepZ;
                     distance = sideDistZ;
                     sideDistZ += deltaDistZ;
-                    lastFace = stepZ > 0 ? Block.Direction.SOUTH : Block.Direction.NORTH;
+                    lastFace = stepZ > 0 ? Block.Direction.NORTH : Block.Direction.SOUTH;
                 }
             }
             if (distance > maxDistance) {
@@ -221,7 +222,7 @@ public abstract class World {
                 for (int z = minZ; z < maxZ; z++) {
 
                     Block block = getBlock(x, y, z);
-                    if (block != null) {
+                    if (block != Blocks.AIR) {
 
                         AABB aabb = block.getAABB(x, y, z);
                         if (aabb != null) {
@@ -232,6 +233,30 @@ public abstract class World {
             }
         }
         return boundingBoxList;
+    }
+
+    public List<AABB> getAllEntityAABBs() {
+        List<AABB> result = new ArrayList<>();
+        for (LivingEntity entity : this.entities) {
+            result.add(entity.boundingBox);
+        }
+        return result;
+    }
+
+    public boolean canPlaceBlockAt(Vector3i position) {
+        return canPlaceBlockAt(position.x, position.y, position.z);
+    }
+
+    public boolean canPlaceBlockAt(int x, int y, int z) {
+        AABB blockAABB = new AABB(x, y, z, x + 1, y + 1, z + 1);
+
+        for (AABB entityAABB : getAllEntityAABBs()) {
+            if (blockAABB.intersects(entityAABB)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public int getWorldSize() {

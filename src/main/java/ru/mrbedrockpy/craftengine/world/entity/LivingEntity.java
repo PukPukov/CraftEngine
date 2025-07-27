@@ -23,6 +23,7 @@ public abstract class LivingEntity {
     protected Vector3f size = new Vector3f(1, 1, 1);
     protected int pitch;
     protected int yaw;
+    @Setter
     @Getter
     protected World world;
 
@@ -35,11 +36,6 @@ public abstract class LivingEntity {
         this.size.set(size);
         this.world = world;
         setPosition(position);
-    }
-
-    public void setWorld(World world){
-        this.world = world;
-        this.world.addEntity(this);
     }
 
     public void update(float deltaTime, float partialTick, ClientWorld world){

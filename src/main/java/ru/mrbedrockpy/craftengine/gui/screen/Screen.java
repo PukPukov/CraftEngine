@@ -1,7 +1,10 @@
 package ru.mrbedrockpy.craftengine.gui.screen;
 
+import ru.mrbedrockpy.craftengine.CraftEngineClient;
+import ru.mrbedrockpy.craftengine.event.MouseClickEvent;
 import ru.mrbedrockpy.craftengine.gui.DrawContext;
 import ru.mrbedrockpy.craftengine.gui.screen.widget.AbstractWidget;
+import ru.mrbedrockpy.craftengine.window.Input;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -11,7 +14,10 @@ public abstract class Screen {
     private final List<AbstractWidget> widgets = new ArrayList<>();
 
     public abstract void init();
-    public void onClose() {}
+    public void onClose() {
+        Input.closeGUI();
+        CraftEngineClient.INSTANCE.eventManager.removeListener(MouseClickEvent.class, this::onMouseClick);
+    }
 
     public int addWidget(AbstractWidget widget) {
         widgets.add(widget);
@@ -21,6 +27,16 @@ public abstract class Screen {
 
     public void removeWidget(int index) {
         widgets.remove(index);
+    }
+
+    public void onMouseClick(MouseClickEvent event) {
+        if(Input.isGUIOpen()) {
+            for (AbstractWidget widget : widgets) {
+                if (widget.isVisible() && widget.isMouseOver((int) event.getX(), (int) event.getY())) {
+                    widget.onMouseClick((int) event.getX(), (int) event.getY(), event.getButton());
+                }
+            }
+        }
     }
 
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {

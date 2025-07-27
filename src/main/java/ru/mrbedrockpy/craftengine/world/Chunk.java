@@ -94,10 +94,6 @@ public class Chunk {
         return Mesh.mergeMeshes(List.of(data));
     }
 
-    public Vector2i getPosition() {
-        return new Vector2i(position);
-    }
-
     public void setEntities(List<LivingEntity> entities) {
         this.entities.clear();
         this.entities.addAll(entities);

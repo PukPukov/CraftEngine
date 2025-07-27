@@ -13,7 +13,6 @@ import java.io.IOException;
 
 import static org.lwjgl.opengl.GL46C.*;
 
-// TODO: Add text rendering capabilities
 public class DrawContext {
     private final Shader uiShader, textShader;
     private final int screenWidth;
@@ -162,7 +161,7 @@ public class DrawContext {
         glDisable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glEnable(GL_CULL_FACE);
+        glDisable(GL_CULL_FACE);
 
         uiShader.use();
         uiShader.setUniformMatrix4f("projection", projection);

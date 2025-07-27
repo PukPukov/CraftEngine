@@ -1,19 +1,20 @@
 package ru.mrbedrockpy.craftengine;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL11;
 import ru.mrbedrockpy.craftengine.event.EventManager;
 import ru.mrbedrockpy.craftengine.event.MouseClickEvent;
 import ru.mrbedrockpy.craftengine.graphics.Texture;
 import ru.mrbedrockpy.craftengine.gui.DrawContext;
 import ru.mrbedrockpy.craftengine.gui.HudRenderer;
+import ru.mrbedrockpy.craftengine.gui.screen.MainMenuScreen;
+import ru.mrbedrockpy.craftengine.gui.screen.Screen;
 import ru.mrbedrockpy.craftengine.registry.Registries;
 import ru.mrbedrockpy.craftengine.window.*;
 import ru.mrbedrockpy.craftengine.world.ClientWorld;
 import ru.mrbedrockpy.craftengine.world.TickSystem;
-import ru.mrbedrockpy.craftengine.world.block.Block;
 import ru.mrbedrockpy.craftengine.world.block.Blocks;
 import ru.mrbedrockpy.craftengine.world.entity.ClientPlayerEntity;
 
@@ -24,8 +25,12 @@ public class CraftEngineClient {
     public HudRenderer hudRenderer;
     public final EventManager eventManager = new EventManager();
     @Getter private final FPSCounter fpsCounter = new FPSCounter();
+    @Getter @Setter
     private ClientWorld clientWorld;
-    @Getter private ClientPlayerEntity player;
+    @Getter @Setter
+    private ClientPlayerEntity player;
+    private Screen currentScreen = null;
+    @Getter
     private final TickSystem tickSystem = new TickSystem(20);
 
     private CraftEngineClient() {}
@@ -47,39 +52,58 @@ public class CraftEngineClient {
     }
 
     public void initialize() {
-        Window.initialize(new WindowSettings(1280, 720, "CraftEngine Client", false, false));
+        Window.initialize(new WindowSettings(1280, 720, "CraftEngine Client", true, false));
         Input.initialize();
-        player = new ClientPlayerEntity(new Vector3f(5, 2, 5), clientWorld);
-        clientWorld = new ClientWorld(8, player, tickSystem);
-        player.setWorld(clientWorld);
-        eventManager.addListener(MouseClickEvent.class, player::onMouseClick);
         context = new DrawContext(Window.getWidth(), Window.getHeight());
         hudRenderer = new HudRenderer(Window.getWidth(), Window.getHeight());
         hudRenderer.texture = Texture.load("cursor.png");
         hudRenderer.hudTexture = Texture.load("hotbar.png");
         Blocks.register();
         Registries.freeze();
+        setScreen(new MainMenuScreen());
     }
 
     private void update(float deltaTime) {
         fpsCounter.update();
         tickSystem.update(deltaTime);
-        if(Input.jpressed(GLFW.GLFW_KEY_ESCAPE)) {
-            Window.setShouldClose(true);
+        if(Input.isGUIOpen()) {
+            if (Input.jpressed(GLFW.GLFW_KEY_ESCAPE)) {
+                Window.setShouldClose(true);
+            }
+            if (Input.jclicked(GLFW.GLFW_MOUSE_BUTTON_LEFT)) {
+                MouseClickEvent clickEvent = new MouseClickEvent(GLFW.GLFW_MOUSE_BUTTON_LEFT, Input.getX(), Input.getY());
+                eventManager.callEvent(clickEvent);
+            }
+            if (Input.jclicked(GLFW.GLFW_MOUSE_BUTTON_RIGHT)) {
+                MouseClickEvent clickEvent = new MouseClickEvent(GLFW.GLFW_MOUSE_BUTTON_RIGHT, Input.getX(), Input.getY());
+                eventManager.callEvent(clickEvent);
+            }
         }
-        if(Input.jclicked(GLFW.GLFW_MOUSE_BUTTON_LEFT)) {
-            MouseClickEvent clickEvent = new MouseClickEvent(GLFW.GLFW_MOUSE_BUTTON_LEFT, Input.getX(), Input.getY());
-            eventManager.callEvent(clickEvent);
+
+        if(player != null) {
+            player.update(deltaTime,tickSystem.getPartialTick() , clientWorld);
         }
-        if(Input.jclicked(GLFW.GLFW_MOUSE_BUTTON_RIGHT)) {
-            MouseClickEvent clickEvent = new MouseClickEvent(GLFW.GLFW_MOUSE_BUTTON_RIGHT, Input.getX(), Input.getY());
-            eventManager.callEvent(clickEvent);
-        }
-        player.update(deltaTime,tickSystem.getPartialTick() , clientWorld);
     }
 
     private void render() {
-        clientWorld.render();
-        hudRenderer.render(context);
+        if(clientWorld != null) {
+            clientWorld.render();
+            hudRenderer.render(context);
+        }
+        if(currentScreen != null) {
+            currentScreen.render(context, (int) Input.getX(), (int) Input.getY(), 0);
+        }
+    }
+
+    public void setScreen(Screen screen) {
+        if (currentScreen != null) {
+            currentScreen.onClose();
+        }
+        this.currentScreen = screen;
+        if (screen != null) {
+            eventManager.addListener(MouseClickEvent.class, currentScreen::onMouseClick);
+            Input.openGUI();
+            screen.init();
+        }
     }
 }
