@@ -27,23 +27,23 @@ public class ClientPlayerEntity extends LivingEntity {
     }
 
     @Override
-    public void update(float deltaTime, float partialTick, ClientWorld world) {
+    public void update(double deltaTime, double partialTick, ClientWorld world) {
         super.update(deltaTime, partialTick, world);
         if(!Input.isGUIOpen()) {
             camera.rotate(new Vector2f(
-                    (float) -Input.getDeltaY() * sensitivity * deltaTime,
-                    (float) Input.getDeltaX() * sensitivity * deltaTime
+                    (float) ((float) -Input.getDeltaY() * sensitivity * deltaTime),
+                    (float) ((float) Input.getDeltaX() * sensitivity * deltaTime)
             ));
         }
         Vector3f cameraMove = interpolatePosition(prevPosition, position, partialTick);
         camera.setPosition(cameraMove);
     }
 
-    public Vector3f interpolatePosition(Vector3f prevPosition, Vector3f currentPosition, float deltaTime) {
+    public Vector3f interpolatePosition(Vector3f prevPosition, Vector3f currentPosition, double deltaTime) {
         return new Vector3f(
-                prevPosition.x + (currentPosition.x - prevPosition.x) * deltaTime,
-                prevPosition.y + (currentPosition.y - prevPosition.y) * deltaTime,
-                prevPosition.z + (currentPosition.z - prevPosition.z) * deltaTime
+                (float) (prevPosition.x + (currentPosition.x - prevPosition.x) * deltaTime),
+                (float) (prevPosition.y + (currentPosition.y - prevPosition.y) * deltaTime),
+                (float) (prevPosition.z + (currentPosition.z - prevPosition.z) * deltaTime)
         );
     }
 

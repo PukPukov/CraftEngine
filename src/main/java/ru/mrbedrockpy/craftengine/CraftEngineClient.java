@@ -45,7 +45,7 @@ public class CraftEngineClient {
         while(!Window.isShouldClose()) {
             Input.pullEvents();
             long currentTime = System.nanoTime();
-            float deltaTime = (currentTime - lastTime) / 1_000_000_000.0f;
+            double deltaTime = (currentTime - lastTime) / 1_000_000_000.0;
             lastTime = currentTime;
             this.update(deltaTime);
             Window.clear();
@@ -56,7 +56,7 @@ public class CraftEngineClient {
     }
 
     public void initialize() {
-        Window.initialize(new WindowSettings(1280, 720, "CraftEngine Client", false, false));
+        Window.initialize(new WindowSettings(1280, 720, "CraftEngine Client", true, false));
         Input.initialize();
         context = new DrawContext(Window.getWidth(), Window.getHeight());
         hudRenderer = new HudRenderer(Window.getWidth(), Window.getHeight());
@@ -66,7 +66,7 @@ public class CraftEngineClient {
         setScreen(new MainMenuScreen());
     }
 
-    private void update(float deltaTime) {
+    private void update(double deltaTime) {
         fpsCounter.update();
         tickSystem.update(deltaTime);
         if (Input.jpressed(GLFW.GLFW_KEY_ESCAPE)) {

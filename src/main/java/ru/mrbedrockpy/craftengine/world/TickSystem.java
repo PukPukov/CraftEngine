@@ -11,7 +11,7 @@ public class TickSystem {
     private final int tps;
     @Getter
     private final float tickTime;
-    private float accumulator = 0f;
+    private double accumulator = 0f;
 
     private final List<TickListener> listeners = new ArrayList<>();
 
@@ -28,7 +28,7 @@ public class TickSystem {
         listeners.add(listener);
     }
 
-    public void update(float deltaTime) {
+    public void update(double deltaTime) {
         accumulator += deltaTime;
 
         while (accumulator >= tickTime) {
@@ -39,7 +39,7 @@ public class TickSystem {
         }
     }
 
-    public float getPartialTick() {
+    public double getPartialTick() {
         return accumulator / tickTime;
     }
 }

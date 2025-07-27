@@ -27,6 +27,8 @@ public class Chunk {
     private final Vector2i position;
     private final short[][][] blocks;
     private Mesh mesh;
+    @Getter
+    private boolean dirty = true;
     private final List<LivingEntity> entities = new ArrayList<>();
 
     public Chunk(Vector2i position) {
@@ -37,6 +39,7 @@ public class Chunk {
     public Chunk(Vector2i position, short[][][] blocks) {
         this.position = position;
         this.blocks = blocks;
+        this.dirty = true;
     }
 
     public Block getBlock(int x, int y, int z) {
@@ -53,8 +56,12 @@ public class Chunk {
 
     public boolean setBlock(int x, int y, int z, Block block) {
         try {
-           blocks[x][y][z] = (short) Registries.BLOCKS.getId(block);
-           return true;
+            short newId = (short) Registries.BLOCKS.getId(block);
+            if (blocks[x][y][z] != newId) {
+                blocks[x][y][z] = newId;
+                markDirty();
+            }
+            return true;
         } catch (IndexOutOfBoundsException e) {
             return false;
         }
@@ -67,26 +74,33 @@ public class Chunk {
     }
 
     public Mesh getChunkMesh(Camera camera, TextureAtlas atlas) {
-        if(mesh == null) {
+        if (mesh == null || dirty) {
+            if (mesh != null) {
+                mesh.cleanup();
+            }
+
             MeshBuilder builder = new MeshBuilder(atlas);
             for (int x = 0; x < WIDTH; x++) {
                 for (int y = 0; y < HEIGHT; y++) {
                     for (int z = 0; z < WIDTH; z++) {
                         Block block = getBlock(x, y, z);
                         if (block == Blocks.AIR || !block.isSolid()) continue;
-                        float worldX = getPosition().x * WIDTH + x;
+                        float worldX = position.x * WIDTH + x;
                         float worldY = y;
-                        float worldZ = getPosition().y * WIDTH + z;
+                        float worldZ = position.y * WIDTH + z;
                         builder.addCube((int) worldX, (int) worldY, (int) worldZ, block);
                     }
                 }
             }
             Mesh.MeshData data = builder.buildData();
             mesh = Mesh.mergeMeshes(List.of(data));
-            return mesh;
-        } else {
-            return mesh;
+            dirty = false;
         }
+        return mesh;
+    }
+
+    public void markDirty() {
+        dirty = true;
     }
 
     public void setEntities(List<LivingEntity> entities) {

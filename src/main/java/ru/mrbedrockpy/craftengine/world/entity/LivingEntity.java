@@ -38,7 +38,7 @@ public abstract class LivingEntity {
         setPosition(position);
     }
 
-    public void update(float deltaTime, float partialTick, ClientWorld world){
+    public void update(double deltaTime, double partialTick, ClientWorld world){
     }
     public abstract void render(Camera camera);
 

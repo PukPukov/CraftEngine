@@ -88,7 +88,7 @@ shadowJar {
 
 jar {
     manifest {
-        attributes 'Main-Class': 'ru.mrbedrockpy.Main'
+        attributes 'Main-Class': 'ru.mrbedrockpy.craftengine.Main'
     }
 }
 
