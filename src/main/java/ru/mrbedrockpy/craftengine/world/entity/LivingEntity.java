@@ -2,11 +2,14 @@ package ru.mrbedrockpy.craftengine.world.entity;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
+import org.joml.Vector2i;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 import ru.mrbedrockpy.craftengine.phys.AABB;
 import ru.mrbedrockpy.craftengine.window.Camera;
+import ru.mrbedrockpy.craftengine.world.Chunk;
 import ru.mrbedrockpy.craftengine.world.ClientWorld;
 import ru.mrbedrockpy.craftengine.world.World;
 
@@ -32,7 +35,7 @@ public abstract class LivingEntity {
     private final float jumpStrength = 0.7f;
     public AABB boundingBox;
 
-    public LivingEntity(Vector3f position, Vector3f size, World world) {
+    public LivingEntity(Vector3f position, Vector3f size, @Nullable World world) {
         this.size.set(size);
         this.world = world;
         setPosition(position);
@@ -47,8 +50,20 @@ public abstract class LivingEntity {
     }
 
     public void move(Vector3d direction) {
-        Vector3d prevDir = new Vector3d(direction);
+        move(direction, true);
+    }
 
+    public void move(Vector3d direction, boolean checkCollisions) {
+        Vector3d prevDir = new Vector3d(direction);
+        if(!checkCollisions) {
+            this.boundingBox.move(direction.x, direction.y, direction.z);
+            position.set(new Vector3f(
+                    (float) ((this.boundingBox.minX + this.boundingBox.maxX) / 2.0D),
+                    (float) this.boundingBox.minY,
+                    (float) ((this.boundingBox.minZ + this.boundingBox.maxZ) / 2.0D)
+            ));
+            return;
+        }
         List<AABB> aABBs = this.world.getCubes(this.boundingBox.expand(direction));
 
         for (AABB abb : aABBs) {
@@ -122,5 +137,12 @@ public abstract class LivingEntity {
 
     public int getZ() {
         return (int) position.z;
+    }
+
+    public Vector2i getChunkPosition() {
+        return new Vector2i(
+                (int) Math.floor(position.x / Chunk.WIDTH),
+                (int) Math.floor(position.z / Chunk.WIDTH)
+        );
     }
 }

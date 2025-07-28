@@ -97,7 +97,7 @@ public class DrawContext {
 
         glDisable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
+//        glEnable(GL_CULL_FACE);
     }
 
     public void drawCentredText(String text, int x, int y) {
@@ -171,7 +171,7 @@ public class DrawContext {
 
         glDisable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
+//        glEnable(GL_CULL_FACE);
     }
 
     public void drawRect(int x, int y, float width, float height, Color color) {
@@ -207,7 +207,7 @@ public class DrawContext {
 
         glDisable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
+//        glEnable(GL_CULL_FACE);
     }
 
     public void cleanup() {

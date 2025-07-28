@@ -3,9 +3,7 @@ package ru.mrbedrockpy.craftengine.graphics;
 import org.joml.Vector3f;
 import ru.mrbedrockpy.craftengine.world.block.Block;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class MeshBuilder {
     private final List<Float> vertices = new ArrayList<>();
@@ -18,47 +16,59 @@ public class MeshBuilder {
         this.atlas = atlas;
     }
 
-    public void addFace(int x, int y, int z, Block.Direction dir, Block block) {
-        float[] faceVerts = FaceData.getVertices(dir, x, y, z);
-        float[] faceUVs   = FaceData.getUVs(block, dir, atlas);
+    public void addFaces(int x, int y, int z, List<Block.Direction> dirs, Block block) {
+        float[] buffer = new float[24];
 
-        int vertCount = faceVerts.length / 3;
-        if (faceUVs.length / 2 != vertCount) {
-            throw new IllegalStateException("UV count does not match vertex count");
+        for (Block.Direction dir : dirs) {
+            float[] verts = FaceData.getVertices(dir, x, y, z);
+            float[] uvs   = FaceData.getUVs(block, dir, atlas);
+
+            for (int i = 0; i < 4; i++) {
+                int vi = i * 3;
+                int ui = i * 2;
+                int bi = i * 6;
+
+                buffer[bi    ] = verts[vi];
+                buffer[bi + 1] = verts[vi + 1];
+                buffer[bi + 2] = verts[vi + 2];
+                buffer[bi + 3] = uvs[ui];
+                buffer[bi + 4] = uvs[ui + 1];
+                buffer[bi + 5] = 0f;
+            }
+
+            for (int i = 0; i < 4; i++) {
+                int bi = i * 6;
+                vertices.add(buffer[bi]);
+                vertices.add(buffer[bi + 1]);
+                vertices.add(buffer[bi + 2]);
+
+                texCoords.add(buffer[bi + 3]);
+                texCoords.add(buffer[bi + 4]);
+            }
+
+            indices.add(indexOffset);
+            indices.add(indexOffset + 1);
+            indices.add(indexOffset + 2);
+
+            indices.add(indexOffset);
+            indices.add(indexOffset + 2);
+            indices.add(indexOffset + 3);
+
+            indexOffset += 4;
         }
-        for (int i = 0; i < vertCount; i++) {
-            vertices.add(faceVerts[i * 3]);
-            vertices.add(faceVerts[i * 3 + 1]);
-            vertices.add(faceVerts[i * 3 + 2]);
-
-            texCoords.add(faceUVs[i * 2]);
-            texCoords.add(faceUVs[i * 2 + 1]);
-        }
-
-        indices.add(indexOffset);
-        indices.add(indexOffset + 1);
-        indices.add(indexOffset + 2);
-
-        indices.add(indexOffset + 3);
-        indices.add(indexOffset + 4);
-        indices.add(indexOffset + 5);
-
-        indexOffset += vertCount;
     }
+
 
     public Mesh.MeshData buildData() {
         float[] vertArray = new float[vertices.size()];
         float[] uvArray = new float[texCoords.size()];
+        int[] indicesArray = new int[this.indices.size()];
 
         for (int i = 0; i < vertArray.length; i++) vertArray[i] = vertices.get(i);
         for (int i = 0; i < uvArray.length; i++) uvArray[i] = texCoords.get(i);
+        for (int i = 0; i < indicesArray.length; i++) indicesArray[i] = indices.get(i);
 
-        return new Mesh.MeshData(vertArray, uvArray);
+        return new Mesh.MeshData(vertArray, uvArray, indicesArray);
     }
 
-    public void addCube(int x, int y, int z, Block block) {
-        for (Block.Direction dir : Arrays.stream(Block.Direction.values()).filter(dir -> dir != Block.Direction.NONE).toList()) {
-            addFace(x, y, z, dir, block);
-        }
-    }
 }

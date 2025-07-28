@@ -41,11 +41,12 @@ public class CraftEngineClient {
 
     public void run() {
         this.initialize();
-        long lastTime = System.nanoTime();
+        long lastTime = System.currentTimeMillis();
         while(!Window.isShouldClose()) {
             Input.pullEvents();
-            long currentTime = System.nanoTime();
-            double deltaTime = (currentTime - lastTime) / 1_000_000_000.0;
+            long currentTime = System.currentTimeMillis();
+            double deltaTime = (currentTime - lastTime) / 1_000.0;
+            deltaTime = Math.min(deltaTime, 0.1);
             lastTime = currentTime;
             this.update(deltaTime);
             Window.clear();
@@ -56,7 +57,7 @@ public class CraftEngineClient {
     }
 
     public void initialize() {
-        Window.initialize(new WindowSettings(1280, 720, "CraftEngine Client", true, false));
+        Window.initialize(new WindowSettings(1280, 720, "CraftEngine Client", false, false));
         Input.initialize();
         context = new DrawContext(Window.getWidth(), Window.getHeight());
         hudRenderer = new HudRenderer(Window.getWidth(), Window.getHeight());
@@ -113,14 +114,14 @@ public class CraftEngineClient {
             return;
         }
         if (event.getButton() == GLFW_MOUSE_BUTTON_LEFT) {
-            BlockRaycastResult blockRaycastResult = clientWorld.raycast(player.getCamera().getPosition().add(0, player.getEyeOffset(), 0), player.getCamera().getFront(), 4.5f);
-            if(blockRaycastResult != null){
-                clientWorld.setBlock(blockRaycastResult.x, blockRaycastResult.y, blockRaycastResult.z, Blocks.AIR);
+            BlockRaycastResult result = clientWorld.raycast(player.getCamera().getPosition().add(0, player.getEyeOffset(), 0), player.getCamera().getFront(), 4.5f);
+            if(result != null){
+                clientWorld.setBlock(result.x, result.y, result.z, Blocks.AIR);
             }
         } else if (event.getButton() == GLFW_MOUSE_BUTTON_RIGHT) {
-            BlockRaycastResult blockRaycastResult = clientWorld.raycast(player.getCamera().getPosition().add(0, player.getEyeOffset(), 0), player.getCamera().getFront(), 4.5f);
-            if(blockRaycastResult != null && clientWorld.canPlaceBlockAt(blockRaycastResult.direction.offset(blockRaycastResult.x, blockRaycastResult.y, blockRaycastResult.z))) {
-                Vector3i blockPos = blockRaycastResult.direction.offset(blockRaycastResult.x, blockRaycastResult.y, blockRaycastResult.z);
+            BlockRaycastResult result = clientWorld.raycast(player.getCamera().getPosition().add(0, player.getEyeOffset(), 0), player.getCamera().getFront(), 4.5f);
+            if(result != null && clientWorld.canPlaceBlockAt(result.getPosition().add(result.direction.offset()))) {
+                Vector3i blockPos = new Vector3i().add(result.getPosition().add(result.direction.offset()));
                 clientWorld.setBlock(blockPos.x, blockPos.y, blockPos.z, Blocks.STONE);
             }
         }

@@ -58,9 +58,9 @@ public class TextureAtlas {
         float baseY = 1.0f - (uv.y + 1) * unit;
 
         float[] faceUV = FaceData.FACE_UVS[direction.ordinal()];
-        float[] result = new float[12];
+        float[] result = new float[8];
 
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 4; i++) {
             float u = faceUV[i * 2];
             float v = faceUV[i * 2 + 1];
             result[i * 2]     = baseX + u * unit;

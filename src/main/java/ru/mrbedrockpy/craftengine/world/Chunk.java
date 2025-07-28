@@ -20,7 +20,7 @@ import java.util.List;
 
 public class Chunk {
 
-    public static final int WIDTH = 32;
+    public static final int WIDTH = 16;
     public static final int HEIGHT = 16;
 
     @Getter
@@ -46,7 +46,7 @@ public class Chunk {
         try {
             return Registries.BLOCKS.getById(blocks[x][y][z]);
         } catch (IndexOutOfBoundsException e) {
-            return null;
+            return Blocks.AIR;
         }
     }
 
@@ -85,10 +85,13 @@ public class Chunk {
                     for (int z = 0; z < WIDTH; z++) {
                         Block block = getBlock(x, y, z);
                         if (block == Blocks.AIR || !block.isSolid()) continue;
-                        float worldX = position.x * WIDTH + x;
-                        float worldY = y;
-                        float worldZ = position.y * WIDTH + z;
-                        builder.addCube((int) worldX, (int) worldY, (int) worldZ, block);
+                        int worldX = position.x * WIDTH + x;
+                        int worldY = y;
+                        int worldZ = position.y * WIDTH + z;
+                        List<Block.Direction> dirs = Arrays.stream(Block.Direction.values())
+                                .filter(dir -> dir != Block.Direction.NONE && !getBlock(new Vector3i(worldX, worldY, worldZ).add(dir.offset())).isSolid())
+                                .toList();
+                        builder.addFaces(worldX, worldY, worldZ, dirs, block);
                     }
                 }
             }
@@ -114,5 +117,12 @@ public class Chunk {
 
     public Vector2i getWorldPosition() {
         return new Vector2i(position.x * WIDTH, position.y * WIDTH);
+    }
+
+    public void cleanup() {
+        if (mesh != null) {
+            mesh.cleanup();
+            mesh = null;
+        }
     }
 }

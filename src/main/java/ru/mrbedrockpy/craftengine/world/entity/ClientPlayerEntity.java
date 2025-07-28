@@ -1,7 +1,9 @@
 package ru.mrbedrockpy.craftengine.world.entity;
 
 import lombok.Getter;
+import org.jetbrains.annotations.Nullable;
 import org.joml.*;
+import org.lwjgl.glfw.GLFW;
 import ru.mrbedrockpy.craftengine.event.MouseClickEvent;
 import ru.mrbedrockpy.craftengine.registry.Registries;
 import ru.mrbedrockpy.craftengine.window.Camera;
@@ -17,11 +19,12 @@ public class ClientPlayerEntity extends LivingEntity {
     @Getter
     private final Camera camera = new Camera();
     private final float speed = 1f;
-    private final float sensitivity = 20.0f;
+    private final float sensitivity = 0.03f;
     @Getter
     private final float eyeOffset = 1.8f;
+    private boolean isDebugEnabled = false;
 
-    public ClientPlayerEntity(Vector3f position, ClientWorld world) {
+    public ClientPlayerEntity(Vector3f position, @Nullable ClientWorld world) {
         super(position, new Vector3f(0.6f, 1.8f, 0.6f), world);
         this.camera.setPosition(position.add(0, 1.8f, 0));
     }
@@ -29,14 +32,14 @@ public class ClientPlayerEntity extends LivingEntity {
     @Override
     public void update(double deltaTime, double partialTick, ClientWorld world) {
         super.update(deltaTime, partialTick, world);
-        if(!Input.isGUIOpen()) {
-            camera.rotate(new Vector2f(
-                    (float) ((float) -Input.getDeltaY() * sensitivity * deltaTime),
-                    (float) ((float) Input.getDeltaX() * sensitivity * deltaTime)
-            ));
-        }
-        Vector3f cameraMove = interpolatePosition(prevPosition, position, partialTick);
-        camera.setPosition(cameraMove);
+            if (!Input.isGUIOpen()) {
+                camera.rotate(new Vector2f(
+                        (float) ((float) -Input.getDeltaY() * sensitivity),
+                        (float) ((float) Input.getDeltaX() * sensitivity)
+                ));
+            }
+            Vector3f cameraMove = interpolatePosition(prevPosition, position, partialTick);
+            camera.setPosition(cameraMove);
     }
 
     public Vector3f interpolatePosition(Vector3f prevPosition, Vector3f currentPosition, double deltaTime) {
@@ -63,7 +66,9 @@ public class ClientPlayerEntity extends LivingEntity {
             if (Input.pressed(GLFW_KEY_SPACE)) jump();
         }
         moveRelative(direction.x, direction.z, this.onGround ? 0.1F : 0.02F);
-        velocity.y -= 0.08f;
+        if(!isDebugEnabled) {
+            velocity.y -= 0.08f;
+        }
         this.move(new Vector3d(velocity.x, velocity.y, velocity.z));
         velocity.mul(0.98f, 0.91f, 0.98f);
         if(onGround){

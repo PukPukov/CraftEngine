@@ -12,7 +12,9 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class WorldRenderer {
     private final Camera camera;
@@ -50,19 +52,21 @@ public class WorldRenderer {
         shader.setUniformMatrix4f("view", camera.getViewMatrix());
         shader.setUniformMatrix4f("projection", camera.getProjectionMatrix());
         texture.use();
-        for(Chunk[] chunks : world.getChunks()){
-            for (Chunk chunk : chunks){
+        for (Chunk[] chunks : world.getChunks()) {
+            for (Chunk chunk : chunks) {
                 if (!culler.isBoxVisible(
                         chunk.getWorldPosition().x, 0, chunk.getWorldPosition().y,
                         chunk.getWorldPosition().x + Chunk.WIDTH,
-                            Chunk.HEIGHT,
+                        Chunk.HEIGHT,
                         chunk.getWorldPosition().y + Chunk.WIDTH
-                )) {
+                ) || player.getChunkPosition().gridDistance(chunk.getPosition()) > 12) {
+                    chunk.cleanup();
                     continue;
                 }
+
                 Mesh mesh = chunk.getChunkMesh(camera, atlas);
                 mesh.render();
-//                mesh.cleanup();
+
             }
         }
         shader.unbind();

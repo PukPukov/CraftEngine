@@ -5,6 +5,7 @@ import ru.mrbedrockpy.craftengine.CraftEngineClient;
 import ru.mrbedrockpy.craftengine.event.MouseClickEvent;
 import ru.mrbedrockpy.craftengine.gui.DrawContext;
 import ru.mrbedrockpy.craftengine.world.ClientWorld;
+import ru.mrbedrockpy.craftengine.world.World;
 import ru.mrbedrockpy.craftengine.world.entity.ClientPlayerEntity;
 
 import java.awt.*;
@@ -19,10 +20,10 @@ public class ButtonWidget extends AbstractWidget{
 
     @Override
     public void onMouseClick(int mouseX, int mouseY, int button) {
-        CraftEngineClient.INSTANCE.setPlayer(new ClientPlayerEntity(new Vector3f(5, 2, 5), CraftEngineClient.INSTANCE.getClientWorld()));
-        CraftEngineClient.INSTANCE.setClientWorld(new ClientWorld(8, CraftEngineClient.INSTANCE.getPlayer(), CraftEngineClient.INSTANCE.getTickSystem()));
+        CraftEngineClient.INSTANCE.setPlayer(new ClientPlayerEntity(new Vector3f(800, 2, 800), null));
+        ClientWorld world = new ClientWorld(100, CraftEngineClient.INSTANCE.getPlayer(), CraftEngineClient.INSTANCE.getTickSystem());
+        CraftEngineClient.INSTANCE.setClientWorld(world);
         CraftEngineClient.INSTANCE.setScreen(null);
-
     }
 
     @Override

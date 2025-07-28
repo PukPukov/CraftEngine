@@ -26,7 +26,7 @@ public class Block {
 
 
     public enum Direction {
-        // order matters
+        // UDNSWE
         UP(0, 1, 0),
         DOWN(0, -1, 0),
         NORTH(0, 0, -1),
@@ -43,8 +43,8 @@ public class Block {
             this.dz = dz;
         }
 
-        public Vector3i offset(int x, int y, int z) {
-            return new Vector3i(x + dx, y + dy, z + dz);
+        public Vector3i offset() {
+            return new Vector3i(dx, dy, dz);
         }
     }
 
