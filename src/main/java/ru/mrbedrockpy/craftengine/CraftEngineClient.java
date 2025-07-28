@@ -36,9 +36,9 @@ public class CraftEngineClient {
     private Screen currentScreen = null;
     @Getter
     private final TickSystem tickSystem = new TickSystem(20);
-
+    
     private CraftEngineClient() {}
-
+    
     public void run() {
         this.initialize();
         long lastTime = System.nanoTime();
@@ -54,7 +54,7 @@ public class CraftEngineClient {
         }
         Window.terminate();
     }
-
+    
     public void initialize() {
         Window.initialize(new WindowSettings(1280, 720, "CraftEngine Client", true, false));
         Input.initialize();
@@ -65,7 +65,7 @@ public class CraftEngineClient {
         Registries.freeze();
         setScreen(new MainMenuScreen());
     }
-
+    
     private void update(double deltaTime) {
         fpsCounter.update();
         tickSystem.update(deltaTime);
@@ -80,12 +80,12 @@ public class CraftEngineClient {
             MouseClickEvent clickEvent = new MouseClickEvent(GLFW.GLFW_MOUSE_BUTTON_RIGHT, Input.getX(), Input.getY());
             eventManager.callEvent(clickEvent);
         }
-
+        
         if(player != null) {
             player.update(deltaTime, tickSystem.getPartialTick(), clientWorld);
         }
     }
-
+    
     private void render() {
         if(clientWorld != null) {
             clientWorld.render();
@@ -95,7 +95,7 @@ public class CraftEngineClient {
             currentScreen.render(context, (int) Input.getX(), (int) Input.getY(), 0);
         }
     }
-
+    
     public void setScreen(Screen screen) {
         if (currentScreen != null) {
             currentScreen.onClose();
@@ -106,19 +106,23 @@ public class CraftEngineClient {
             screen.init();
         }
     }
-
+    
     public void onMouseClick(MouseClickEvent event) {
         if(currentScreen != null) {
             currentScreen.onMouseClick(event);
             return;
         }
+        
+        Vector3f rayOrigin = player.getCamera().getPosition();
+        Vector3f rayDirection = player.getCamera().getFront();
+        
         if (event.getButton() == GLFW_MOUSE_BUTTON_LEFT) {
-            BlockRaycastResult blockRaycastResult = clientWorld.raycast(player.getCamera().getPosition().add(0, player.getEyeOffset(), 0), player.getCamera().getFront(), 4.5f);
+            BlockRaycastResult blockRaycastResult = clientWorld.raycast(rayOrigin, rayDirection, 4.5f);
             if(blockRaycastResult != null){
                 clientWorld.setBlock(blockRaycastResult.x, blockRaycastResult.y, blockRaycastResult.z, Blocks.AIR);
             }
         } else if (event.getButton() == GLFW_MOUSE_BUTTON_RIGHT) {
-            BlockRaycastResult blockRaycastResult = clientWorld.raycast(player.getCamera().getPosition().add(0, player.getEyeOffset(), 0), player.getCamera().getFront(), 4.5f);
+            BlockRaycastResult blockRaycastResult = clientWorld.raycast(rayOrigin, rayDirection, 4.5f);
             if(blockRaycastResult != null && clientWorld.canPlaceBlockAt(blockRaycastResult.direction.offset(blockRaycastResult.x, blockRaycastResult.y, blockRaycastResult.z))) {
                 Vector3i blockPos = blockRaycastResult.direction.offset(blockRaycastResult.x, blockRaycastResult.y, blockRaycastResult.z);
                 clientWorld.setBlock(blockPos.x, blockPos.y, blockPos.z, Blocks.STONE);
