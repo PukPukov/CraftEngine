@@ -9,10 +9,10 @@ public interface IBlock {
 
 
     enum Direction {
-        UP(0, 1, 0),
-        DOWN(0, -1, 0),
-        NORTH(0, 0, -1),
-        SOUTH(0, 0, 1),
+        UP(0, 0, 1),
+        DOWN(0, 0, -1),
+        NORTH(0, -1, 0),
+        SOUTH(0, 1, 0),
         WEST(-1, 0, 0),
         EAST(1, 0, 0),
         NONE(0, 0, 0);
