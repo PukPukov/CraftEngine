@@ -12,7 +12,6 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 
 public class WorldRenderer {
     private final Camera camera;
@@ -52,6 +51,7 @@ public class WorldRenderer {
         texture.use();
         for(Chunk[] chunks : world.getChunks()){
             for (Chunk chunk : chunks){
+                if (chunk == null) continue;
                 if (!culler.isBoxVisible(
                     chunk.getWorldPosition().x, chunk.getWorldPosition().y, 0,
                     chunk.getWorldPosition().x + Chunk.WIDTH,
@@ -60,7 +60,7 @@ public class WorldRenderer {
                 )) {
                     continue;
                 }
-                Mesh mesh = chunk.getChunkMesh(camera, atlas);
+                Mesh mesh = chunk.getChunkMesh(world, atlas);
                 mesh.render();
 //                mesh.cleanup();
             }

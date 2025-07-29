@@ -73,7 +73,7 @@ public class Chunk {
         }
     }
     
-    public Mesh getChunkMesh(Camera camera, TextureAtlas atlas) {
+    public Mesh getChunkMesh(World world, TextureAtlas atlas) {
         if (mesh == null || dirty) {
             if (mesh != null) {
                 mesh.cleanup();
@@ -84,11 +84,27 @@ public class Chunk {
                 for (int y = 0; y < WIDTH; y++) {
                     for (int z = 0; z < HEIGHT; z++) {
                         Block block = getBlock(x, y, z);
-                        if (block == Blocks.AIR || !block.isSolid()) continue;
-                        float worldX = position.x * WIDTH + x;
-                        float worldY = position.y * WIDTH + y;
-                        float worldZ = z;
-                        builder.addCube((int) worldX, (int) worldY, (int) worldZ, block);
+                        if (block == null || block == Blocks.AIR || !block.isSolid()) {
+                            continue;
+                        }
+                        
+                        int worldX = position.x * WIDTH + x;
+                        int worldY = position.y * WIDTH + y;
+                        
+                        for (Block.Direction dir : Block.Direction.values()) {
+                            if (dir == Block.Direction.NONE) continue;
+                            
+                            int neighborX = worldX + dir.dx;
+                            int neighborY = worldY + dir.dy;
+                            int neighborZ = z + dir.dz;
+                            
+                            Block neighborBlock = world.getBlock(neighborX, neighborY, neighborZ);
+                            
+                            // If neighbor is null (outside world) or not solid (like air), draw the face
+                            if (neighborBlock == null || !neighborBlock.isSolid()) {
+                                builder.addFace(worldX, worldY, z, dir, block);
+                            }
+                        }
                     }
                 }
             }

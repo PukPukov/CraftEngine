@@ -154,49 +154,67 @@ public abstract class World {
     }
     
     public Chunk getChunkByBlockPos(int x, int y) {
-        return getChunkByChunkPos(x / Chunk.WIDTH, y / Chunk.WIDTH);
+        return getChunkByChunkPos(Math.floorDiv(x, Chunk.WIDTH), Math.floorDiv(y, Chunk.WIDTH));
     }
     
     public Block getBlock(Vector3i position) {
-        Chunk chunk = getChunkByBlockPos(position.x, position.y);
-        if (chunk == null) return null;
-        return chunk.getBlock(
-            position.x % Chunk.WIDTH,
-            position.y % Chunk.WIDTH,
-            position.z % Chunk.HEIGHT
-        );
+        return getBlock(position.x, position.y, position.z);
     }
     
     public Block getBlock(int x, int y, int z) {
+        if (z < 0 || z >= Chunk.HEIGHT) {
+            return Blocks.AIR; // Outside of the world's vertical bounds
+        }
         Chunk chunk = getChunkByBlockPos(x, y);
-        if (chunk == null) return Blocks.AIR;
+        if (chunk == null) return Blocks.AIR; // Outside of the world's horizontal bounds
         return chunk.getBlock(
-            x % Chunk.WIDTH,
-            y % Chunk.WIDTH,
-            z % Chunk.HEIGHT
+            Math.floorMod(x, Chunk.WIDTH),
+            Math.floorMod(y, Chunk.WIDTH),
+            z
         );
     }
     
     public boolean setBlock(Vector3i position, Block block) {
-        Chunk chunk = getChunkByBlockPos(position.x, position.y);
-        if (chunk == null) return false;
-        return chunk.setBlock(
-            position.x % Chunk.WIDTH,
-            position.y % Chunk.WIDTH,
-            position.z % Chunk.HEIGHT,
-            block
-        );
+        return setBlock(position.x, position.y, position.z, block);
     }
     
     public boolean setBlock(int x, int y, int z, Block block) {
+        if (z < 0 || z >= Chunk.HEIGHT) {
+            return false;
+        }
         Chunk chunk = getChunkByBlockPos(x, y);
         if (chunk == null) return false;
-        return chunk.setBlock(
-            x % Chunk.WIDTH,
-            y % Chunk.WIDTH,
-            z % Chunk.HEIGHT,
+        
+        boolean success = chunk.setBlock(
+            Math.floorMod(x, Chunk.WIDTH),
+            Math.floorMod(y, Chunk.WIDTH),
+            z,
             block
         );
+        
+        if (success) {
+            // Mark neighboring chunks as dirty if the block is on a boundary
+            int localX = Math.floorMod(x, Chunk.WIDTH);
+            int localY = Math.floorMod(y, Chunk.WIDTH);
+            
+            if (localX == 0) {
+                Chunk neighbor = getChunkByBlockPos(x - 1, y);
+                if (neighbor != null) neighbor.markDirty();
+            } else if (localX == Chunk.WIDTH - 1) {
+                Chunk neighbor = getChunkByBlockPos(x + 1, y);
+                if (neighbor != null) neighbor.markDirty();
+            }
+            
+            if (localY == 0) {
+                Chunk neighbor = getChunkByBlockPos(x, y - 1);
+                if (neighbor != null) neighbor.markDirty();
+            } else if (localY == Chunk.WIDTH - 1) {
+                Chunk neighbor = getChunkByBlockPos(x, y + 1);
+                if (neighbor != null) neighbor.markDirty();
+            }
+        }
+        
+        return success;
     }
     
     public ArrayList<AABB> getCubes(AABB boundingBox) {
