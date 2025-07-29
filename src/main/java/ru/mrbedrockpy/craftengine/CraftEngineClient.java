@@ -56,7 +56,7 @@ public class CraftEngineClient {
     }
     
     public void initialize() {
-        Window.initialize(new WindowSettings(1280, 720, "CraftEngine Client", true, false));
+        Window.initialize(new WindowSettings(1280, 720, "CraftEngine Client", false, false));
         Input.initialize();
         context = new DrawContext(Window.getWidth(), Window.getHeight());
         hudRenderer = new HudRenderer(Window.getWidth(), Window.getHeight());

@@ -102,7 +102,7 @@ public class Chunk {
                             
                             // If neighbor is null (outside world) or not solid (like air), draw the face
                             if (neighborBlock == null || !neighborBlock.isSolid()) {
-                                builder.addFace(worldX, worldY, z, dir, block);
+                                builder.addFace(worldX, worldY, z, dir, block, world);
                             }
                         }
                     }
