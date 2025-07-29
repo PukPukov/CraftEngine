@@ -7,6 +7,7 @@ public interface IBlock {
     boolean isSolid();
     AABB getAABB(int x, int y, int z);
 
+
     enum Direction {
         UP(0, 1, 0),
         DOWN(0, -1, 0),

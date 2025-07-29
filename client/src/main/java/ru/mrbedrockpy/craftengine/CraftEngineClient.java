@@ -7,8 +7,8 @@ import org.joml.Vector3i;
 import org.lwjgl.glfw.GLFW;
 import ru.mrbedrockpy.craftengine.event.EventManager;
 import ru.mrbedrockpy.craftengine.event.MouseClickEvent;
-import ru.mrbedrockpy.craftengine.graphics.Texture;
-import ru.mrbedrockpy.craftengine.gui.DrawContext;
+import ru.mrbedrockpy.renderer.RenderInit;
+import ru.mrbedrockpy.renderer.gui.DrawContext;
 import ru.mrbedrockpy.craftengine.gui.HudRenderer;
 import ru.mrbedrockpy.craftengine.gui.screen.MainMenuScreen;
 import ru.mrbedrockpy.craftengine.gui.screen.Screen;
@@ -18,7 +18,10 @@ import ru.mrbedrockpy.craftengine.world.ClientWorld;
 import ru.mrbedrockpy.craftengine.world.TickSystem;
 import ru.mrbedrockpy.craftengine.world.block.Blocks;
 import ru.mrbedrockpy.craftengine.world.entity.ClientPlayerEntity;
-import ru.mrbedrockpy.craftengine.world.raycast.BlockRaycastResult;
+import ru.mrbedrockpy.renderer.window.Input;
+import ru.mrbedrockpy.renderer.window.Window;
+import ru.mrbedrockpy.renderer.window.WindowSettings;
+import ru.mrbedrockpy.renderer.world.raycast.BlockRaycastResult;
 
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_RIGHT;
@@ -63,6 +66,7 @@ public class CraftEngineClient {
         eventManager.addListener(MouseClickEvent.class, this::onMouseClick);
         Blocks.register();
         Registries.freeze();
+        RenderInit.BLOCKS = Registries.BLOCKS;
         setScreen(new MainMenuScreen());
     }
     
@@ -123,8 +127,8 @@ public class CraftEngineClient {
             }
         } else if (event.getButton() == GLFW_MOUSE_BUTTON_RIGHT) {
             BlockRaycastResult blockRaycastResult = clientWorld.raycast(rayOrigin, rayDirection, 4.5f);
-            if(blockRaycastResult != null && clientWorld.canPlaceBlockAt(blockRaycastResult.direction.offset(blockRaycastResult.x, blockRaycastResult.y, blockRaycastResult.z))) {
-                Vector3i blockPos = blockRaycastResult.direction.offset(blockRaycastResult.x, blockRaycastResult.y, blockRaycastResult.z);
+            if(blockRaycastResult != null && clientWorld.canPlaceBlockAt(blockRaycastResult.getPosition().add(blockRaycastResult.direction.offset()))) {
+                Vector3i blockPos = blockRaycastResult.getPosition().add(blockRaycastResult.direction.offset());
                 clientWorld.setBlock(blockPos.x, blockPos.y, blockPos.z, Blocks.STONE);
             }
         }

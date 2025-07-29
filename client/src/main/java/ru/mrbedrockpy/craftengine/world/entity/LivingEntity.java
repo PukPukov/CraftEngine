@@ -2,10 +2,12 @@ package ru.mrbedrockpy.craftengine.world.entity;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.joml.Vector2i;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
-import ru.mrbedrockpy.craftengine.phys.AABB;
+import ru.mrbedrockpy.renderer.phys.AABB;
 import ru.mrbedrockpy.craftengine.window.Camera;
+import ru.mrbedrockpy.craftengine.world.Chunk;
 import ru.mrbedrockpy.craftengine.world.ClientWorld;
 import ru.mrbedrockpy.craftengine.world.World;
 
@@ -121,5 +123,9 @@ public abstract class LivingEntity {
     
     public int getZ() {
         return (int) position.z;
+    }
+
+    public Vector2i getChunkPosition() {
+        return new Vector2i((int) (position.x / Chunk.WIDTH), (int) (position.y / Chunk.WIDTH));
     }
 }

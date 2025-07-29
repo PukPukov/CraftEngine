@@ -18,7 +18,7 @@ public class ButtonWidget extends AbstractWidget{
 
     @Override
     public void onMouseClick(int mouseX, int mouseY, int button) {
-        CraftEngineClient.INSTANCE.setPlayer(new ClientPlayerEntity(new Vector3f(800, 2, 800), null));
+        CraftEngineClient.INSTANCE.setPlayer(new ClientPlayerEntity(new Vector3f(800, 800, 2), null));
         ClientWorld world = new ClientWorld(100, CraftEngineClient.INSTANCE.getPlayer(), CraftEngineClient.INSTANCE.getTickSystem());
         CraftEngineClient.INSTANCE.setClientWorld(world);
         CraftEngineClient.INSTANCE.setScreen(null);

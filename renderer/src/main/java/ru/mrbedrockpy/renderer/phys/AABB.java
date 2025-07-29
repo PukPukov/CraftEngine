@@ -213,16 +213,15 @@ public class AABB {
         if (otherBoundingBox.maxX <= this.minX || otherBoundingBox.minX >= this.maxX) {
             return false;
         }
-        
+
         // Check on Y axis
         if (otherBoundingBox.maxY <= this.minY || otherBoundingBox.minY >= this.maxY) {
             return false;
         }
-        
+
         // Check on Z axis
-        return (!(otherBoundingBox.maxZ <= this.minZ)) && (!(otherBoundingBox.minZ >= this.maxZ));
+        return !(otherBoundingBox.maxZ <= this.minZ || otherBoundingBox.minZ >= this.maxZ);
     }
-    
     /**
      * Move the bounding box relative.
      *

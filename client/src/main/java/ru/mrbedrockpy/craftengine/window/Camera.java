@@ -3,8 +3,9 @@ package ru.mrbedrockpy.craftengine.window;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+import ru.mrbedrockpy.renderer.api.ICamera;
 
-public class Camera {
+public class Camera implements ICamera {
     
     private final Matrix4f viewMatrix = new Matrix4f();
     private final Matrix4f projectionMatrix = new Matrix4f();

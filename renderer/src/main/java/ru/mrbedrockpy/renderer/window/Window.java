@@ -28,7 +28,7 @@ public class Window {
         Window.vsync = settings.isVsync();
         Window.fullscreen = settings.isFullscreen();
 
-        //glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
+        glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
 
         if (!glfwInit()) throw new IllegalStateException("Unable to initialize GLFW");
 

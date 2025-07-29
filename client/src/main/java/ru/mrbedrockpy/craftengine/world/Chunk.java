@@ -4,25 +4,23 @@ import lombok.Getter;
 import org.joml.Matrix4f;
 import org.joml.Vector2i;
 import org.joml.Vector3i;
-import ru.mrbedrockpy.craftengine.graphics.FrustumCuller;
-import ru.mrbedrockpy.craftengine.graphics.Mesh;
-import ru.mrbedrockpy.craftengine.graphics.MeshBuilder;
-import ru.mrbedrockpy.craftengine.graphics.TextureAtlas;
+import ru.mrbedrockpy.renderer.api.IBlock;
+import ru.mrbedrockpy.renderer.api.ICamera;
+import ru.mrbedrockpy.renderer.graphics.Mesh;
+import ru.mrbedrockpy.renderer.graphics.MeshBuilder;
+import ru.mrbedrockpy.renderer.graphics.TextureAtlas;
 import ru.mrbedrockpy.craftengine.registry.Registries;
 import ru.mrbedrockpy.craftengine.window.Camera;
 import ru.mrbedrockpy.craftengine.world.block.Block;
 import ru.mrbedrockpy.craftengine.world.block.Blocks;
 import ru.mrbedrockpy.craftengine.world.entity.LivingEntity;
+import ru.mrbedrockpy.renderer.api.IChunk;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Chunk {
-    
-    public static final int WIDTH = 32;
-    public static final int HEIGHT = 16;
-    
+public class Chunk implements IChunk {
     @Getter
     private final Vector2i position;
     private final short[][][] blocks;
@@ -42,7 +40,7 @@ public class Chunk {
         this.dirty = true;
     }
     
-    public Block getBlock(int x, int y, int z) {
+    public IBlock getBlock(int x, int y, int z) {
         try {
             return Registries.BLOCKS.getById(blocks[x][y][z]);
         } catch (IndexOutOfBoundsException e) {
@@ -50,11 +48,11 @@ public class Chunk {
         }
     }
     
-    public Block getBlock(Vector3i pos) {
+    public IBlock getBlock(Vector3i pos) {
         return getBlock(pos.x, pos.y, pos.z);
     }
     
-    public boolean setBlock(int x, int y, int z, Block block) {
+    public boolean setBlock(int x, int y, int z, IBlock block) {
         try {
             short newId = (short) Registries.BLOCKS.getId(block);
             if (blocks[x][y][z] != newId) {
@@ -73,7 +71,7 @@ public class Chunk {
         }
     }
     
-    public Mesh getChunkMesh(Camera camera, TextureAtlas atlas) {
+    public Mesh getChunkMesh(ICamera camera, TextureAtlas atlas) {
         if (mesh == null || dirty) {
             if (mesh != null) {
                 mesh.cleanup();
@@ -83,12 +81,19 @@ public class Chunk {
             for (int x = 0; x < WIDTH; x++) {
                 for (int y = 0; y < WIDTH; y++) {
                     for (int z = 0; z < HEIGHT; z++) {
-                        Block block = getBlock(x, y, z);
+                        IBlock block = getBlock(x, y, z);
                         if (block == Blocks.AIR || !block.isSolid()) continue;
+                        List<Block.Direction> dirs = new ArrayList<>();
+                        for(Block.Direction dir : Arrays.stream(Block.Direction.values()).filter(dir -> dir != IBlock.Direction.NONE).toList()) {
+                            IBlock neighbor = getBlock(new Vector3i(x, y, z).add(dir.offset()));
+                            if (neighbor != Blocks.AIR || !neighbor.isSolid()) {
+                                dirs.add(dir);
+                            }
+                        }
                         float worldX = position.x * WIDTH + x;
                         float worldY = position.y * WIDTH + y;
                         float worldZ = z;
-                        builder.addCube((int) worldX, (int) worldY, (int) worldZ, block);
+                        builder.addFaces((int) worldX, (int) worldY, (int) worldZ, dirs, block);
                     }
                 }
             }
@@ -114,5 +119,13 @@ public class Chunk {
     
     public Vector2i getWorldPosition() {
         return new Vector2i(position.x * WIDTH, position.y * WIDTH);
+    }
+
+    @Override
+    public void cleanup() {
+        if(mesh != null) {
+            mesh.cleanup();
+            mesh = null;
+        }
     }
 }
