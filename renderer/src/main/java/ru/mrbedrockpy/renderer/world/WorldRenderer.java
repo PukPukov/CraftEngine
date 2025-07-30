@@ -51,6 +51,7 @@ public class WorldRenderer {
         shader.setUniformMatrix4f("view", camera.getViewMatrix());
         shader.setUniformMatrix4f("projection", camera.getProjectionMatrix());
         texture.use();
+        // TODO: сделать цикл по чанкам вокруг игрока для оптимизации
         for (IChunk[] chunks : world.getChunks()) {
             for (IChunk chunk : chunks) {
                 if (!culler.isBoxVisible(
@@ -59,6 +60,7 @@ public class WorldRenderer {
                         chunk.getWorldPosition().y + IChunk.WIDTH,
                         IChunk.HEIGHT
                 ) || getDistanceBetween(player.getChunkPosition(), chunk.getPosition()) > 12) {
+                    // TODO: изменить механизм отчистки чанков
                     chunk.cleanup();
                     continue;
                 }
@@ -72,6 +74,7 @@ public class WorldRenderer {
         texture.unbind();
     }
 
+    // TODO: добавить рендеринг аутлайна у блока на который смотрит игрок
     public void updateSelectedBlock(IWorld world, IPlayerEntity player) {
         Vector3f origin = new Vector3f(camera.getPosition()).add(0, player.getEyeOffset(), 0);
         Vector3f direction = camera.getFront();

@@ -33,7 +33,8 @@ public abstract class World implements IWorld {
         this.entities = new ArrayList<>();
         generateWorld();
     }
-    
+
+    // TODO: сделать генерацию чанков только вокруг игрока
     private void generateWorld() {
         for (int chunkX = 0; chunkX < chunks.length; chunkX++) {
             for (int chunkY = 0; chunkY < chunks.length; chunkY++) {

@@ -13,7 +13,7 @@ public class ClientPlayerEntity extends LivingEntity implements IPlayerEntity {
     @Getter
     private final Camera camera = new Camera();
     private final float speed = 1f;
-    private final float sensitivity = 20.0f;
+    private final float sensitivity = 0.03f;
     @Getter
     private final float eyeOffset = 1.8f;
     
@@ -27,8 +27,8 @@ public class ClientPlayerEntity extends LivingEntity implements IPlayerEntity {
         super.update(deltaTime, partialTick, world);
         if(!Input.isGUIOpen()) {
             camera.rotate(new Vector2f(
-                (float) ((float) -Input.getDeltaY() * sensitivity * deltaTime),
-                (float) ((float) -Input.getDeltaX() * sensitivity * deltaTime) // Inverted for correct right-turn
+                (float) ((float) -Input.getDeltaY() * sensitivity),
+                (float) ((float) -Input.getDeltaX() * sensitivity)
             ));
         }
         Vector3f cameraMove = interpolatePosition(prevPosition, position, partialTick);

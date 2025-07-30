@@ -44,11 +44,11 @@ public class CraftEngineClient {
     
     public void run() {
         this.initialize();
-        long lastTime = System.nanoTime();
+        long lastTime = System.currentTimeMillis();
         while(!Window.isShouldClose()) {
             Input.pullEvents();
-            long currentTime = System.nanoTime();
-            double deltaTime = (currentTime - lastTime) / 1_000_000_000.0;
+            long currentTime = System.currentTimeMillis();
+            double deltaTime = (currentTime - lastTime) / 1_000.0;
             lastTime = currentTime;
             this.update(deltaTime);
             Window.clear();
@@ -59,7 +59,7 @@ public class CraftEngineClient {
     }
     
     public void initialize() {
-        Window.initialize(new WindowSettings(1280, 720, "CraftEngine Client", true, false));
+        Window.initialize(new WindowSettings(1280, 720, "CraftEngine Client", false, false));
         Input.initialize();
         context = new DrawContext(Window.getWidth(), Window.getHeight());
         hudRenderer = new HudRenderer(Window.getWidth(), Window.getHeight());
