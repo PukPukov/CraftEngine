@@ -1,27 +1,24 @@
 package ru.mrbedrockpy.craftengine.world;
 
 import lombok.Getter;
-import org.joml.Matrix4f;
 import org.joml.Vector2i;
 import org.joml.Vector3i;
-import ru.mrbedrockpy.craftengine.graphics.FrustumCuller;
-import ru.mrbedrockpy.craftengine.graphics.Mesh;
-import ru.mrbedrockpy.craftengine.graphics.MeshBuilder;
-import ru.mrbedrockpy.craftengine.graphics.TextureAtlas;
 import ru.mrbedrockpy.craftengine.registry.Registries;
-import ru.mrbedrockpy.craftengine.window.Camera;
 import ru.mrbedrockpy.craftengine.world.block.Block;
 import ru.mrbedrockpy.craftengine.world.block.Blocks;
 import ru.mrbedrockpy.craftengine.world.entity.LivingEntity;
+import ru.mrbedrockpy.renderer.api.IBlock;
+import ru.mrbedrockpy.renderer.api.IChunk;
+import ru.mrbedrockpy.renderer.api.IEntity;
+import ru.mrbedrockpy.renderer.api.IWorld;
+import ru.mrbedrockpy.renderer.graphics.Mesh;
+import ru.mrbedrockpy.renderer.graphics.MeshBuilder;
+import ru.mrbedrockpy.renderer.graphics.TextureAtlas;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-public class Chunk {
-    
-    public static final int WIDTH = 32;
-    public static final int HEIGHT = 16;
+public class Chunk implements IChunk {
     
     @Getter
     private final Vector2i position;
@@ -29,7 +26,7 @@ public class Chunk {
     private Mesh mesh;
     @Getter
     private boolean dirty = true;
-    private final List<LivingEntity> entities = new ArrayList<>();
+    private final List<IEntity> entities = new ArrayList<>();
     
     public Chunk(Vector2i position) {
         this.position = position;
@@ -42,19 +39,19 @@ public class Chunk {
         this.dirty = true;
     }
     
-    public Block getBlock(int x, int y, int z) {
+    public IBlock getBlock(int x, int y, int z) {
         try {
             return Registries.BLOCKS.getById(blocks[x][y][z]);
         } catch (IndexOutOfBoundsException e) {
-            return null;
+            return Blocks.AIR;
         }
     }
     
-    public Block getBlock(Vector3i pos) {
+    public IBlock getBlock(Vector3i pos) {
         return getBlock(pos.x, pos.y, pos.z);
     }
     
-    public boolean setBlock(int x, int y, int z, Block block) {
+    public boolean setBlock(int x, int y, int z, IBlock block) {
         try {
             short newId = (short) Registries.BLOCKS.getId(block);
             if (blocks[x][y][z] != newId) {
@@ -68,12 +65,12 @@ public class Chunk {
     }
     
     public void tick() {
-        for (LivingEntity entity : entities) {
+        for (IEntity entity : entities) {
             entity.tick();
         }
     }
     
-    public Mesh getChunkMesh(World world, TextureAtlas atlas) {
+    public Mesh getChunkMesh(IWorld world, TextureAtlas atlas) {
         if (mesh == null || dirty) {
             if (mesh != null) {
                 mesh.cleanup();
@@ -83,25 +80,24 @@ public class Chunk {
             for (int x = 0; x < WIDTH; x++) {
                 for (int y = 0; y < WIDTH; y++) {
                     for (int z = 0; z < HEIGHT; z++) {
-                        Block block = getBlock(x, y, z);
-                        if (block == null || block == Blocks.AIR || !block.isSolid()) {
+                        IBlock block = getBlock(x, y, z);
+                        if (block == Blocks.AIR || !block.isSolid()) {
                             continue;
                         }
                         
                         int worldX = position.x * WIDTH + x;
                         int worldY = position.y * WIDTH + y;
                         
-                        for (Block.Direction dir : Block.Direction.values()) {
-                            if (dir == Block.Direction.NONE) continue;
+                        for (IBlock.Direction dir : IBlock.Direction.values()) {
+                            if (dir == IBlock.Direction.NONE) continue;
                             
                             int neighborX = worldX + dir.dx;
                             int neighborY = worldY + dir.dy;
                             int neighborZ = z + dir.dz;
                             
-                            Block neighborBlock = world.getBlock(neighborX, neighborY, neighborZ);
+                            IBlock neighborBlock = world.getBlock(neighborX, neighborY, neighborZ);
                             
-                            // If neighbor is null (outside world) or not solid (like air), draw the face
-                            if (neighborBlock == null || !neighborBlock.isSolid()) {
+                            if (neighborBlock == Blocks.AIR || !neighborBlock.isSolid()) {
                                 builder.addFace(worldX, worldY, z, dir, block, world);
                             }
                         }
@@ -119,16 +115,24 @@ public class Chunk {
         dirty = true;
     }
     
-    public void setEntities(List<LivingEntity> entities) {
+    public void setEntities(List<IEntity> entities) {
         this.entities.clear();
         this.entities.addAll(entities);
     }
     
-    public List<LivingEntity> getEntities() {
+    public List<IEntity> getEntities() {
         return new ArrayList<>(entities);
     }
     
     public Vector2i getWorldPosition() {
         return new Vector2i(position.x * WIDTH, position.y * WIDTH);
+    }
+
+    @Override
+    public void cleanup() {
+        if(mesh != null){
+            mesh.cleanup();
+            mesh = null;
+        }
     }
 }

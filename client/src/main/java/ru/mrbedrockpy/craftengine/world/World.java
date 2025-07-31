@@ -6,24 +6,28 @@ import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 import ru.mrbedrockpy.craftengine.CraftEngineClient;
-import ru.mrbedrockpy.craftengine.phys.AABB;
 import ru.mrbedrockpy.craftengine.world.block.Block;
 import ru.mrbedrockpy.craftengine.world.block.Blocks;
 import ru.mrbedrockpy.craftengine.world.entity.LivingEntity;
 import ru.mrbedrockpy.craftengine.world.generator.ChunkGenerator;
-import ru.mrbedrockpy.craftengine.world.raycast.BlockRaycastResult;
+import ru.mrbedrockpy.renderer.api.IBlock;
+import ru.mrbedrockpy.renderer.api.IChunk;
+import ru.mrbedrockpy.renderer.api.IEntity;
+import ru.mrbedrockpy.renderer.api.IWorld;
+import ru.mrbedrockpy.renderer.phys.AABB;
+import ru.mrbedrockpy.renderer.world.raycast.BlockRaycastResult;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class World {
+public abstract class World implements IWorld {
     
     @Getter
-    private final Chunk[][] chunks;
+    private final IChunk[][] chunks;
     
     private final ChunkGenerator chunkGenerator;
     
-    private final List<LivingEntity> entities;
+    private final List<IEntity> entities;
     
     public World(int size, ChunkGenerator chunkGenerator) {
         this.chunks = new Chunk[size][size];
@@ -45,9 +49,9 @@ public abstract class World {
     public void tick() {
         for (int chunkX = 0; chunkX < chunks.length; chunkX++) {
             for (int chunkY = 0; chunkY < chunks.length; chunkY++) {
-                Chunk chunk = getChunkByChunkPos(chunkX, chunkY);
-                List<LivingEntity> entitiesInChunk = new ArrayList<>();
-                for (LivingEntity entity: entities) {
+                IChunk chunk = getChunkByChunkPos(chunkX, chunkY);
+                List<IEntity> entitiesInChunk = new ArrayList<>();
+                for (IEntity entity: entities) {
                     if(chunk == getChunkByBlockPos(Math.round(entity.getPosition().x), Math.round(entity.getPosition().y))){
                         entitiesInChunk.add(entity);
                     }
@@ -96,9 +100,9 @@ public abstract class World {
         double distance = 0.0;
         double maxDistance = maxDistanceF;
         
-        Block.Direction lastFace = Block.Direction.NONE;
+        IBlock.Direction lastFace = Block.Direction.NONE;
         
-        Block block = getBlock(blockPos.x, blockPos.y, blockPos.z);
+        IBlock block = getBlock(blockPos.x, blockPos.y, blockPos.z);
         if (block != null && block.isSolid()) {
             return new BlockRaycastResult(blockPos.x, blockPos.y, blockPos.z, block, lastFace);
         }
@@ -142,7 +146,7 @@ public abstract class World {
         return null;
     }
     
-    public Chunk getChunkByChunkPos(int x, int y) {
+    public IChunk getChunkByChunkPos(int x, int y) {
         try {
             if(this.chunks[x][y] == null) {
                 this.chunks[x][y] = new Chunk(new Vector2i(x, y));
@@ -153,19 +157,19 @@ public abstract class World {
         }
     }
     
-    public Chunk getChunkByBlockPos(int x, int y) {
+    public IChunk getChunkByBlockPos(int x, int y) {
         return getChunkByChunkPos(Math.floorDiv(x, Chunk.WIDTH), Math.floorDiv(y, Chunk.WIDTH));
     }
     
-    public Block getBlock(Vector3i position) {
+    public IBlock getBlock(Vector3i position) {
         return getBlock(position.x, position.y, position.z);
     }
     
-    public Block getBlock(int x, int y, int z) {
+    public IBlock getBlock(int x, int y, int z) {
         if (z < 0 || z >= Chunk.HEIGHT) {
             return Blocks.AIR; // Outside of the world's vertical bounds
         }
-        Chunk chunk = getChunkByBlockPos(x, y);
+        IChunk chunk = getChunkByBlockPos(x, y);
         if (chunk == null) return Blocks.AIR; // Outside of the world's horizontal bounds
         return chunk.getBlock(
             Math.floorMod(x, Chunk.WIDTH),
@@ -174,15 +178,15 @@ public abstract class World {
         );
     }
     
-    public boolean setBlock(Vector3i position, Block block) {
+    public boolean setBlock(Vector3i position, IBlock block) {
         return setBlock(position.x, position.y, position.z, block);
     }
     
-    public boolean setBlock(int x, int y, int z, Block block) {
+    public boolean setBlock(int x, int y, int z, IBlock block) {
         if (z < 0 || z >= Chunk.HEIGHT) {
             return false;
         }
-        Chunk chunk = getChunkByBlockPos(x, y);
+        IChunk chunk = getChunkByBlockPos(x, y);
         if (chunk == null) return false;
         
         boolean success = chunk.setBlock(
@@ -198,18 +202,18 @@ public abstract class World {
             int localY = Math.floorMod(y, Chunk.WIDTH);
             
             if (localX == 0) {
-                Chunk neighbor = getChunkByBlockPos(x - 1, y);
+                IChunk neighbor = getChunkByBlockPos(x - 1, y);
                 if (neighbor != null) neighbor.markDirty();
             } else if (localX == Chunk.WIDTH - 1) {
-                Chunk neighbor = getChunkByBlockPos(x + 1, y);
+                IChunk neighbor = getChunkByBlockPos(x + 1, y);
                 if (neighbor != null) neighbor.markDirty();
             }
             
             if (localY == 0) {
-                Chunk neighbor = getChunkByBlockPos(x, y - 1);
+                IChunk neighbor = getChunkByBlockPos(x, y - 1);
                 if (neighbor != null) neighbor.markDirty();
             } else if (localY == Chunk.WIDTH - 1) {
-                Chunk neighbor = getChunkByBlockPos(x, y + 1);
+                IChunk neighbor = getChunkByBlockPos(x, y + 1);
                 if (neighbor != null) neighbor.markDirty();
             }
         }
@@ -239,7 +243,7 @@ public abstract class World {
             for (int y = minY; y < maxY; y++) {
                 for (int z = minZ; z < maxZ; z++) {
                     
-                    Block block = getBlock(x, y, z);
+                    IBlock block = getBlock(x, y, z);
                     if (block != Blocks.AIR) {
                         
                         AABB aabb = block.getAABB(x, y, z);
@@ -255,8 +259,8 @@ public abstract class World {
     
     public List<AABB> getAllEntityAABBs() {
         List<AABB> result = new ArrayList<>();
-        for (LivingEntity entity : this.entities) {
-            result.add(entity.boundingBox);
+        for (IEntity entity : this.entities) {
+            result.add(entity.getBoundingBox());
         }
         return result;
     }
@@ -281,7 +285,7 @@ public abstract class World {
         return this.chunks.length * Chunk.WIDTH;
     }
     
-    public void addEntity(LivingEntity entity) {
+    public void addEntity(IEntity entity) {
         entities.add(entity);
     }
     

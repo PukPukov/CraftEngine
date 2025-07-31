@@ -1,7 +1,8 @@
-package ru.mrbedrockpy.craftengine.graphics;
+package ru.mrbedrockpy.renderer.graphics;
 
+import lombok.Getter;
 import org.joml.Vector2i;
-import ru.mrbedrockpy.craftengine.world.block.Block;
+import ru.mrbedrockpy.renderer.api.IBlock;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -10,6 +11,7 @@ import java.util.Map;
 
 public class TextureAtlas {
     private final int tileSize;
+    @Getter
     private final int atlasSize;
     private final Map<String, Vector2i> uvMap = new HashMap<>();
     private int currentX = 0;
@@ -48,12 +50,8 @@ public class TextureAtlas {
     public Vector2i getUV(String name) {
         return uvMap.get(name);
     }
-    
-    public int getAtlasSize() {
-        return atlasSize;
-    }
-    
-    public float[] getNormalizedUV(String name, Block.Direction direction) {
+
+    public float[] getNormalizedUV(String name, IBlock.Direction direction) {
         Vector2i uv = getUV(name);
         float tileCount = atlasSize;
         float unit = 1.0f / tileCount;

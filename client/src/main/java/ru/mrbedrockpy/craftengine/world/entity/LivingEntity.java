@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.joml.Vector2i;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
+import ru.mrbedrockpy.renderer.api.IEntity;
 import ru.mrbedrockpy.renderer.phys.AABB;
 import ru.mrbedrockpy.craftengine.window.Camera;
 import ru.mrbedrockpy.craftengine.world.Chunk;
@@ -14,7 +15,7 @@ import ru.mrbedrockpy.craftengine.world.World;
 import java.util.List;
 
 // TODO: разделить LivingEntity на Entity и LivingEntity, чтобы не было лишних методов в LivingEntity
-public abstract class LivingEntity {
+public abstract class LivingEntity implements IEntity {
     
     @Getter
     protected Vector3f position = new Vector3f();
@@ -31,7 +32,7 @@ public abstract class LivingEntity {
     protected boolean onGround = false;
     
     private final float jumpStrength = 0.7f;
-    public AABB boundingBox;
+    protected AABB boundingBox;
     
     public LivingEntity(Vector3f position, Vector3f size, World world) {
         this.size.set(size);
@@ -127,5 +128,10 @@ public abstract class LivingEntity {
 
     public Vector2i getChunkPosition() {
         return new Vector2i((int) (position.x / Chunk.WIDTH), (int) (position.y / Chunk.WIDTH));
+    }
+
+    @Override
+    public AABB getBoundingBox() {
+        return boundingBox;
     }
 }

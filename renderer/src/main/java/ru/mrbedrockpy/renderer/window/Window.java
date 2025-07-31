@@ -1,9 +1,10 @@
-package ru.mrbedrockpy.craftengine.window;
+package ru.mrbedrockpy.renderer.window;
 
 import lombok.Getter;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
+import ru.mrbedrockpy.renderer.window.WindowSettings;
 
 import java.nio.IntBuffer;
 

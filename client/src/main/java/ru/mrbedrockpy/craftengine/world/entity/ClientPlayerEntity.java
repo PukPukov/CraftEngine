@@ -4,12 +4,11 @@ import lombok.Getter;
 import org.joml.*;
 import ru.mrbedrockpy.craftengine.window.Camera;
 import ru.mrbedrockpy.craftengine.world.ClientWorld;
-import ru.mrbedrockpy.renderer.api.IPlayerEntity;
 import ru.mrbedrockpy.renderer.window.Input;
 
 import static org.lwjgl.glfw.GLFW.*;
 
-public class ClientPlayerEntity extends LivingEntity implements IPlayerEntity {
+public class ClientPlayerEntity extends LivingEntity {
     @Getter
     private final Camera camera = new Camera();
     private final float speed = 1f;
@@ -34,7 +33,12 @@ public class ClientPlayerEntity extends LivingEntity implements IPlayerEntity {
         Vector3f cameraMove = interpolatePosition(prevPosition, position, partialTick);
         camera.setPosition(cameraMove.add(0, 0, eyeOffset));
     }
-    
+
+    @Override
+    public void render(Camera camera) {
+
+    }
+
     public Vector3f interpolatePosition(Vector3f prevPosition, Vector3f currentPosition, double deltaTime) {
         return new Vector3f(
             (float) (prevPosition.x + (currentPosition.x - prevPosition.x) * deltaTime),
@@ -67,14 +71,5 @@ public class ClientPlayerEntity extends LivingEntity implements IPlayerEntity {
             velocity.x *= 0.7f;
             velocity.y *= 0.7f;
         }
-    }
-    
-    @Override
-    public void render(Camera camera) {
-    }
-
-    @Override
-    public Vector2i getChunkPosition() {
-        return super.getChunkPosition();
     }
 }
