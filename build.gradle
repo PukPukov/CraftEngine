@@ -1,97 +1,10 @@
-plugins {
-    id 'java'
-    id 'com.gradleup.shadow' version '9.0.0-beta13'
-}
+subprojects {
+    apply plugin: 'java'
 
-group = 'ru.mrbedrockpy'
-version = '1.0'
-
-project.ext.lwjglVersion = "3.3.6"
-project.ext.jomlVersion = "1.10.8"
-
-repositories {
-    mavenCentral()
-}
-
-def lombok = "org.projectlombok:lombok:1.18.38";
-dependencies {
-    compileOnly lombok
-    annotationProcessor lombok
-
-    implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
-
-    implementation "org.lwjgl:lwjgl"
-    implementation "org.lwjgl:lwjgl-bgfx"
-    implementation "org.lwjgl:lwjgl-glfw"
-    implementation "org.lwjgl:lwjgl-opengl"
-    implementation "org.lwjgl:lwjgl-stb"
-
-    implementation "org.joml:joml:${jomlVersion}"
-
-    testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-
-    // Windows (x64)
-    runtimeOnly "org.lwjgl:lwjgl::natives-windows"
-    runtimeOnly "org.lwjgl:lwjgl-bgfx::natives-windows"
-    runtimeOnly "org.lwjgl:lwjgl-glfw::natives-windows"
-    runtimeOnly "org.lwjgl:lwjgl-opengl::natives-windows"
-    runtimeOnly "org.lwjgl:lwjgl-stb::natives-windows"
-
-    // Windows (x86)
-    runtimeOnly "org.lwjgl:lwjgl::natives-windows-x86"
-    runtimeOnly "org.lwjgl:lwjgl-bgfx::natives-windows-x86"
-    runtimeOnly "org.lwjgl:lwjgl-glfw::natives-windows-x86"
-    runtimeOnly "org.lwjgl:lwjgl-opengl::natives-windows-x86"
-    runtimeOnly "org.lwjgl:lwjgl-stb::natives-windows-x86"
-
-    // MacOS (ARM)
-    runtimeOnly "org.lwjgl:lwjgl::natives-macos-arm64"
-    runtimeOnly "org.lwjgl:lwjgl-bgfx::natives-macos-arm64"
-    runtimeOnly "org.lwjgl:lwjgl-glfw::natives-macos-arm64"
-    runtimeOnly "org.lwjgl:lwjgl-opengl::natives-macos-arm64"
-    runtimeOnly "org.lwjgl:lwjgl-stb::natives-macos-arm64"
-
-    // MacOS (x64)
-    runtimeOnly "org.lwjgl:lwjgl::natives-macos"
-    runtimeOnly "org.lwjgl:lwjgl-bgfx::natives-macos"
-    runtimeOnly "org.lwjgl:lwjgl-glfw::natives-macos"
-    runtimeOnly "org.lwjgl:lwjgl-opengl::natives-macos"
-    runtimeOnly "org.lwjgl:lwjgl-stb::natives-macos"
-
-    // Linux (x64)
-    runtimeOnly "org.lwjgl:lwjgl::natives-linux"
-    runtimeOnly "org.lwjgl:lwjgl-bgfx::natives-linux"
-    runtimeOnly "org.lwjgl:lwjgl-glfw::natives-linux"
-    runtimeOnly "org.lwjgl:lwjgl-opengl::natives-linux"
-    runtimeOnly "org.lwjgl:lwjgl-stb::natives-linux"
-
-    // Linux (arm32)
-    runtimeOnly "org.lwjgl:lwjgl::natives-linux-arm32"
-    runtimeOnly "org.lwjgl:lwjgl-bgfx::natives-linux-arm32"
-    runtimeOnly "org.lwjgl:lwjgl-glfw::natives-linux-arm32"
-    runtimeOnly "org.lwjgl:lwjgl-opengl::natives-linux-arm32"
-    runtimeOnly "org.lwjgl:lwjgl-stb::natives-linux-arm32"
-
-    // Linux (arm64)
-    runtimeOnly "org.lwjgl:lwjgl::natives-linux-arm64"
-    runtimeOnly "org.lwjgl:lwjgl-bgfx::natives-linux-arm64"
-    runtimeOnly "org.lwjgl:lwjgl-glfw::natives-linux-arm64"
-    runtimeOnly "org.lwjgl:lwjgl-opengl::natives-linux-arm64"
-    runtimeOnly "org.lwjgl:lwjgl-stb::natives-linux-arm64"
-}
-
-shadowJar {
-    configurations = project.configurations.named('runtimeClasspath').map { [it] }
-    archiveFileName = "${project.name}-${project.version}.jar"
-}
-
-jar {
-    manifest {
-        attributes 'Main-Class': 'ru.mrbedrockpy.craftengine.Main'
+    repositories {
+        mavenCentral()
     }
-}
 
-test {
-    useJUnitPlatform()
+    dependencies {
+    }
 }
