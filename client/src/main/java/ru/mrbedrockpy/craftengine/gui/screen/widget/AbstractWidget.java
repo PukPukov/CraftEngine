@@ -1,19 +1,21 @@
 package ru.mrbedrockpy.craftengine.gui.screen.widget;
 
 import lombok.Getter;
+import lombok.Setter;
 import ru.mrbedrockpy.renderer.gui.DrawContext;
 
 @Getter
 public abstract class AbstractWidget {
+    @Setter
     protected int x, y, width, height, zIndex;
+    @Setter
     private boolean visible = true;
 
-    public AbstractWidget(int x, int y, int width, int height, int zIndex) {
+    public AbstractWidget(int x, int y, int width, int height) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
-        this.zIndex = zIndex;
     }
 
     public boolean isMouseOver(int mouseX, int mouseY) {

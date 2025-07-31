@@ -67,7 +67,7 @@ public class CraftEngineClient {
         Blocks.register();
         Registries.freeze();
         RenderInit.BLOCKS = Registries.BLOCKS;
-        setScreen(new MainMenuScreen());
+        setScreen(MainMenuScreen.create());
     }
     
     private void update(double deltaTime) {

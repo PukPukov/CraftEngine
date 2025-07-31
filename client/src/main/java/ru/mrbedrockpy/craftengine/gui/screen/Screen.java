@@ -1,6 +1,7 @@
 package ru.mrbedrockpy.craftengine.gui.screen;
 
 import ru.mrbedrockpy.craftengine.event.MouseClickEvent;
+import ru.mrbedrockpy.craftengine.gui.screen.callback.RenderCallback;
 import ru.mrbedrockpy.renderer.gui.DrawContext;
 import ru.mrbedrockpy.craftengine.gui.screen.widget.AbstractWidget;
 import ru.mrbedrockpy.renderer.window.Input;
@@ -9,10 +10,17 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public abstract class Screen {
+public final class Screen {
     private final List<AbstractWidget> widgets = new ArrayList<>();
+    private Runnable onInit;
+    private RenderCallback onRender;
 
-    public abstract void init();
+    public void init(){
+        if(onInit != null) {
+            onInit.run();
+        }
+    }
+
     public void onClose() {
         Input.closeGUI();
     }
@@ -43,5 +51,16 @@ public abstract class Screen {
                 widget.render(context, mouseX, mouseY, delta);
             }
         }
+        if(onRender != null){
+            onRender.render(context, mouseX, mouseY, delta);
+        }
+    }
+
+    public void setInitCallback(Runnable onInit) {
+        this.onInit = onInit;
+    }
+
+    public void setRenderCallback(RenderCallback onRender){
+        this.onRender = onRender;
     }
 }

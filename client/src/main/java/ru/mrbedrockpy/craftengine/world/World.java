@@ -37,8 +37,8 @@ public abstract class World implements IWorld {
     }
     
     private void generateWorld() {
-        for (int chunkX = 0; chunkX < chunks.length; chunkX++) {
-            for (int chunkY = 0; chunkY < chunks.length; chunkY++) {
+        for (int chunkX = 0; chunkX < 8; chunkX++) {
+            for (int chunkY = 0; chunkY < 8; chunkY++) {
                 Chunk chunk = new Chunk(new Vector2i(chunkX, chunkY));
                 chunkGenerator.generate(chunk.getPosition(), chunk);
                 this.chunks[chunkX][chunkY] = chunk;
@@ -47,8 +47,8 @@ public abstract class World implements IWorld {
     }
     
     public void tick() {
-        for (int chunkX = 0; chunkX < chunks.length; chunkX++) {
-            for (int chunkY = 0; chunkY < chunks.length; chunkY++) {
+        for (int chunkX = 0; chunkX < 8; chunkX++) {
+            for (int chunkY = 0; chunkY < 8; chunkY++) {
                 IChunk chunk = getChunkByChunkPos(chunkX, chunkY);
                 List<IEntity> entitiesInChunk = new ArrayList<>();
                 for (IEntity entity: entities) {
@@ -167,7 +167,7 @@ public abstract class World implements IWorld {
     
     public IBlock getBlock(int x, int y, int z) {
         if (z < 0 || z >= Chunk.HEIGHT) {
-            return Blocks.AIR; // Outside of the world's vertical bounds
+            return Blocks.AIR;
         }
         IChunk chunk = getChunkByBlockPos(x, y);
         if (chunk == null) return Blocks.AIR; // Outside of the world's horizontal bounds

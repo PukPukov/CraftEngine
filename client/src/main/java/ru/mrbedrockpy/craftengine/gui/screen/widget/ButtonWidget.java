@@ -7,21 +7,21 @@ import ru.mrbedrockpy.craftengine.world.ClientWorld;
 import ru.mrbedrockpy.craftengine.world.entity.ClientPlayerEntity;
 
 import java.awt.*;
+import java.util.function.Consumer;
 
 public class ButtonWidget extends AbstractWidget{
     private final String text;
+    private final Consumer<ButtonWidget> onClick;
 
-    public ButtonWidget(String text, int x, int y, int width, int height, int zIndex) {
-        super(x, y, width, height, zIndex);
+    public ButtonWidget(String text, int x, int y, int width, int height, Consumer<ButtonWidget> onClick) {
+        super(x, y, width, height);
+        this.onClick = onClick;
         this.text = text;
     }
 
     @Override
     public void onMouseClick(int mouseX, int mouseY, int button) {
-        CraftEngineClient.INSTANCE.setPlayer(new ClientPlayerEntity(new Vector3f(0, 0, 2), null));
-        ClientWorld world = new ClientWorld(8, CraftEngineClient.INSTANCE.getPlayer(), CraftEngineClient.INSTANCE.getTickSystem());
-        CraftEngineClient.INSTANCE.setClientWorld(world);
-        CraftEngineClient.INSTANCE.setScreen(null);
+        onClick.accept(this);
     }
 
     @Override
