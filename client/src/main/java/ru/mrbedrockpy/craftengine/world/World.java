@@ -6,19 +6,17 @@ import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 import ru.mrbedrockpy.craftengine.CraftEngineClient;
-import ru.mrbedrockpy.renderer.api.IBlock;
-import ru.mrbedrockpy.renderer.phys.AABB;
+import ru.mrbedrockpy.craftengine.phys.AABB;
 import ru.mrbedrockpy.craftengine.world.block.Block;
 import ru.mrbedrockpy.craftengine.world.block.Blocks;
 import ru.mrbedrockpy.craftengine.world.entity.LivingEntity;
 import ru.mrbedrockpy.craftengine.world.generator.ChunkGenerator;
-import ru.mrbedrockpy.renderer.world.raycast.BlockRaycastResult;
-import ru.mrbedrockpy.renderer.api.IWorld;
+import ru.mrbedrockpy.craftengine.world.raycast.BlockRaycastResult;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class World implements IWorld {
+public abstract class World {
     
     @Getter
     private final Chunk[][] chunks;
@@ -33,8 +31,7 @@ public abstract class World implements IWorld {
         this.entities = new ArrayList<>();
         generateWorld();
     }
-
-    // TODO: сделать генерацию чанков только вокруг игрока
+    
     private void generateWorld() {
         for (int chunkX = 0; chunkX < chunks.length; chunkX++) {
             for (int chunkY = 0; chunkY < chunks.length; chunkY++) {
@@ -60,52 +57,52 @@ public abstract class World implements IWorld {
             }
         }
     }
-
+    
     public BlockRaycastResult raycast(Vector3f originF, Vector3f directionF, float maxDistanceF) {
-
+        
         Vector3d origin = new Vector3d(originF.x, originF.y, originF.z);
         Vector3d direction = new Vector3d(directionF.x, directionF.y, directionF.z);
-
+        
         Vector3d pos = new Vector3d(origin);
         Vector3i blockPos = new Vector3i(
             (int) Math.floor(pos.x),
             (int) Math.floor(pos.y),
             (int) Math.floor(pos.z)
         );
-
+        
         double deltaDistX = direction.x == 0 ? Double.POSITIVE_INFINITY : Math.abs(1.0 / direction.x);
         double deltaDistY = direction.y == 0 ? Double.POSITIVE_INFINITY : Math.abs(1.0 / direction.y);
         double deltaDistZ = direction.z == 0 ? Double.POSITIVE_INFINITY : Math.abs(1.0 / direction.z);
-
+        
         int stepX = (int) Math.signum(direction.x);
         int stepY = (int) Math.signum(direction.y);
         int stepZ = (int) Math.signum(direction.z);
-
+        
         double sideDistX = stepX > 0
             ? (Math.floor(pos.x) + 1.0 - pos.x) * deltaDistX
             : (pos.x - Math.floor(pos.x)) * deltaDistX;
         if (stepX == 0) sideDistX = Double.POSITIVE_INFINITY;
-
+        
         double sideDistY = stepY > 0
             ? (Math.floor(pos.y) + 1.0 - pos.y) * deltaDistY
             : (pos.y - Math.floor(pos.y)) * deltaDistY;
         if (stepY == 0) sideDistY = Double.POSITIVE_INFINITY;
-
+        
         double sideDistZ = stepZ > 0
             ? (Math.floor(pos.z) + 1.0 - pos.z) * deltaDistZ
             : (pos.z - Math.floor(pos.z)) * deltaDistZ;
         if (stepZ == 0) sideDistZ = Double.POSITIVE_INFINITY;
-
+        
         double distance = 0.0;
         double maxDistance = maxDistanceF;
-
-        IBlock.Direction lastFace = Block.Direction.NONE;
-
-        IBlock block = getBlock(blockPos.x, blockPos.y, blockPos.z);
+        
+        Block.Direction lastFace = Block.Direction.NONE;
+        
+        Block block = getBlock(blockPos.x, blockPos.y, blockPos.z);
         if (block != null && block.isSolid()) {
             return new BlockRaycastResult(blockPos.x, blockPos.y, blockPos.z, block, lastFace);
         }
-
+        
         while (distance <= maxDistance) {
             if (sideDistX < sideDistY) {
                 if (sideDistX < sideDistZ) {
@@ -135,16 +132,16 @@ public abstract class World implements IWorld {
             if (distance > maxDistance) {
                 break;
             }
-
+            
             block = getBlock(blockPos.x, blockPos.y, blockPos.z);
             if (block != null && block.isSolid()) {
                 return new BlockRaycastResult(blockPos.x, blockPos.y, blockPos.z, block, lastFace);
             }
         }
-
+        
         return null;
     }
-
+    
     public Chunk getChunkByChunkPos(int x, int y) {
         try {
             if(this.chunks[x][y] == null) {
@@ -157,49 +154,67 @@ public abstract class World implements IWorld {
     }
     
     public Chunk getChunkByBlockPos(int x, int y) {
-        return getChunkByChunkPos(x / Chunk.WIDTH, y / Chunk.WIDTH);
+        return getChunkByChunkPos(Math.floorDiv(x, Chunk.WIDTH), Math.floorDiv(y, Chunk.WIDTH));
     }
     
-    public IBlock getBlock(Vector3i position) {
-        Chunk chunk = getChunkByBlockPos(position.x, position.y);
-        if (chunk == null) return null;
-        return chunk.getBlock(
-            position.x % Chunk.WIDTH,
-            position.y % Chunk.WIDTH,
-            position.z % Chunk.HEIGHT
-        );
+    public Block getBlock(Vector3i position) {
+        return getBlock(position.x, position.y, position.z);
     }
     
-    public IBlock getBlock(int x, int y, int z) {
+    public Block getBlock(int x, int y, int z) {
+        if (z < 0 || z >= Chunk.HEIGHT) {
+            return Blocks.AIR; // Outside of the world's vertical bounds
+        }
         Chunk chunk = getChunkByBlockPos(x, y);
-        if (chunk == null) return Blocks.AIR;
+        if (chunk == null) return Blocks.AIR; // Outside of the world's horizontal bounds
         return chunk.getBlock(
-            x % Chunk.WIDTH,
-            y % Chunk.WIDTH,
-            z % Chunk.HEIGHT
+            Math.floorMod(x, Chunk.WIDTH),
+            Math.floorMod(y, Chunk.WIDTH),
+            z
         );
     }
     
-    public boolean setBlock(Vector3i position, IBlock block) {
-        Chunk chunk = getChunkByBlockPos(position.x, position.y);
-        if (chunk == null) return false;
-        return chunk.setBlock(
-            position.x % Chunk.WIDTH,
-            position.y % Chunk.WIDTH,
-            position.z % Chunk.HEIGHT,
-            block
-        );
+    public boolean setBlock(Vector3i position, Block block) {
+        return setBlock(position.x, position.y, position.z, block);
     }
     
     public boolean setBlock(int x, int y, int z, Block block) {
+        if (z < 0 || z >= Chunk.HEIGHT) {
+            return false;
+        }
         Chunk chunk = getChunkByBlockPos(x, y);
         if (chunk == null) return false;
-        return chunk.setBlock(
-            x % Chunk.WIDTH,
-            y % Chunk.WIDTH,
-            z % Chunk.HEIGHT,
+        
+        boolean success = chunk.setBlock(
+            Math.floorMod(x, Chunk.WIDTH),
+            Math.floorMod(y, Chunk.WIDTH),
+            z,
             block
         );
+        
+        if (success) {
+            // Mark neighboring chunks as dirty if the block is on a boundary
+            int localX = Math.floorMod(x, Chunk.WIDTH);
+            int localY = Math.floorMod(y, Chunk.WIDTH);
+            
+            if (localX == 0) {
+                Chunk neighbor = getChunkByBlockPos(x - 1, y);
+                if (neighbor != null) neighbor.markDirty();
+            } else if (localX == Chunk.WIDTH - 1) {
+                Chunk neighbor = getChunkByBlockPos(x + 1, y);
+                if (neighbor != null) neighbor.markDirty();
+            }
+            
+            if (localY == 0) {
+                Chunk neighbor = getChunkByBlockPos(x, y - 1);
+                if (neighbor != null) neighbor.markDirty();
+            } else if (localY == Chunk.WIDTH - 1) {
+                Chunk neighbor = getChunkByBlockPos(x, y + 1);
+                if (neighbor != null) neighbor.markDirty();
+            }
+        }
+        
+        return success;
     }
     
     public ArrayList<AABB> getCubes(AABB boundingBox) {
@@ -224,7 +239,7 @@ public abstract class World implements IWorld {
             for (int y = minY; y < maxY; y++) {
                 for (int z = minZ; z < maxZ; z++) {
                     
-                    IBlock block = getBlock(x, y, z);
+                    Block block = getBlock(x, y, z);
                     if (block != Blocks.AIR) {
                         
                         AABB aabb = block.getAABB(x, y, z);

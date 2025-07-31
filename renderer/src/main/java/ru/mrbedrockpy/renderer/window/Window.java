@@ -1,4 +1,4 @@
-package ru.mrbedrockpy.renderer.window;
+package ru.mrbedrockpy.craftengine.window;
 
 import lombok.Getter;
 import org.lwjgl.glfw.GLFWVidMode;
@@ -28,7 +28,7 @@ public class Window {
         Window.vsync = settings.isVsync();
         Window.fullscreen = settings.isFullscreen();
 
-        glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
+        if (System.getProperty("os.name").toLowerCase().contains("linux")) glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
 
         if (!glfwInit()) throw new IllegalStateException("Unable to initialize GLFW");
 
