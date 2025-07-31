@@ -66,12 +66,6 @@ public class FaceData {
     public static final float[][] FACE_UVS = {
         // UP
         {
-            0, 0,
-            1, 0,
-            1, 1,
-            0, 0,
-            1, 1,
-            0, 1
         },
         // DOWN
         {
@@ -85,11 +79,11 @@ public class FaceData {
         // NORTH
         {
             0, 1,
-            1, 1,
+            0, 0,
             1, 0,
             0, 1,
             1, 0,
-            0, 0
+            1, 1
         },
         // SOUTH
         {

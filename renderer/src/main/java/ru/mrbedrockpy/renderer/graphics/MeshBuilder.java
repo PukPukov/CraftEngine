@@ -60,7 +60,7 @@ public class MeshBuilder {
                 break;
             case NORTH: // -Y
                 corners[0] = new float[]{x,     y, z    }; corners[1] = new float[]{x + 1, y, z    }; corners[2] = new float[]{x + 1, y, z + 1}; corners[3] = new float[]{x,     y, z + 1};
-                uvs[0] = new float[]{0, 1}; uvs[1] = new float[]{1, 1}; uvs[2] = new float[]{1, 0}; uvs[3] = new float[]{0, 0};
+                uvs[0] = new float[]{0, 0}; uvs[1] = new float[]{1, 0}; uvs[2] = new float[]{1, 1}; uvs[3] = new float[]{0, 1};
                 cornerAO[0] = calculateAO(world.getBlock(x, y - 1, z - 1).isSolid(), world.getBlock(x - 1, y - 1, z).isSolid(), world.getBlock(x - 1, y - 1, z - 1).isSolid());
                 cornerAO[1] = calculateAO(world.getBlock(x, y - 1, z - 1).isSolid(), world.getBlock(x + 1, y - 1, z).isSolid(), world.getBlock(x + 1, y - 1, z - 1).isSolid());
                 cornerAO[2] = calculateAO(world.getBlock(x, y - 1, z + 1).isSolid(), world.getBlock(x + 1, y - 1, z).isSolid(), world.getBlock(x + 1, y - 1, z + 1).isSolid());
@@ -68,7 +68,7 @@ public class MeshBuilder {
                 break;
             case SOUTH: // +Y
                 corners[0] = new float[]{x + 1, y + 1, z    }; corners[1] = new float[]{x,     y + 1, z    }; corners[2] = new float[]{x,     y + 1, z + 1}; corners[3] = new float[]{x + 1, y + 1, z + 1};
-                uvs[0] = new float[]{1, 1}; uvs[1] = new float[]{0, 1}; uvs[2] = new float[]{0, 0}; uvs[3] = new float[]{1, 0};
+                uvs[0] = new float[]{0, 0}; uvs[1] = new float[]{1, 0}; uvs[2] = new float[]{1, 1}; uvs[3] = new float[]{0, 1};
                 cornerAO[0] = calculateAO(world.getBlock(x, y + 1, z - 1).isSolid(), world.getBlock(x + 1, y + 1, z).isSolid(), world.getBlock(x + 1, y + 1, z - 1).isSolid());
                 cornerAO[1] = calculateAO(world.getBlock(x, y + 1, z - 1).isSolid(), world.getBlock(x - 1, y + 1, z).isSolid(), world.getBlock(x - 1, y + 1, z - 1).isSolid());
                 cornerAO[2] = calculateAO(world.getBlock(x, y + 1, z + 1).isSolid(), world.getBlock(x - 1, y + 1, z).isSolid(), world.getBlock(x - 1, y + 1, z + 1).isSolid());
@@ -76,7 +76,7 @@ public class MeshBuilder {
                 break;
             case WEST: // -X
                 corners[0] = new float[]{x, y + 1, z    }; corners[1] = new float[]{x, y,     z    }; corners[2] = new float[]{x, y,     z + 1}; corners[3] = new float[]{x, y + 1, z + 1};
-                uvs[0] = new float[]{1, 1}; uvs[1] = new float[]{0, 1}; uvs[2] = new float[]{0, 0}; uvs[3] = new float[]{1, 0};
+                uvs[0] = new float[]{0, 0}; uvs[1] = new float[]{1, 0}; uvs[2] = new float[]{1, 1}; uvs[3] = new float[]{0, 1};
                 cornerAO[0] = calculateAO(world.getBlock(x - 1, y, z - 1).isSolid(), world.getBlock(x - 1, y + 1, z).isSolid(), world.getBlock(x - 1, y + 1, z - 1).isSolid());
                 cornerAO[1] = calculateAO(world.getBlock(x - 1, y, z - 1).isSolid(), world.getBlock(x - 1, y - 1, z).isSolid(), world.getBlock(x - 1, y - 1, z - 1).isSolid());
                 cornerAO[2] = calculateAO(world.getBlock(x - 1, y, z + 1).isSolid(), world.getBlock(x - 1, y - 1, z).isSolid(), world.getBlock(x - 1, y - 1, z + 1).isSolid());
@@ -84,7 +84,7 @@ public class MeshBuilder {
                 break;
             case EAST: // +X
                 corners[0] = new float[]{x + 1, y,     z    }; corners[1] = new float[]{x + 1, y + 1, z    }; corners[2] = new float[]{x + 1, y + 1, z + 1}; corners[3] = new float[]{x + 1, y,     z + 1};
-                uvs[0] = new float[]{0, 1}; uvs[1] = new float[]{1, 1}; uvs[2] = new float[]{1, 0}; uvs[3] = new float[]{0, 0};
+                uvs[0] = new float[]{0, 0}; uvs[1] = new float[]{1, 0}; uvs[2] = new float[]{1, 1}; uvs[3] = new float[]{0, 1};
                 cornerAO[0] = calculateAO(world.getBlock(x + 1, y, z - 1).isSolid(), world.getBlock(x + 1, y - 1, z).isSolid(), world.getBlock(x + 1, y - 1, z - 1).isSolid());
                 cornerAO[1] = calculateAO(world.getBlock(x + 1, y, z - 1).isSolid(), world.getBlock(x + 1, y + 1, z).isSolid(), world.getBlock(x + 1, y + 1, z - 1).isSolid());
                 cornerAO[2] = calculateAO(world.getBlock(x + 1, y, z + 1).isSolid(), world.getBlock(x + 1, y + 1, z).isSolid(), world.getBlock(x + 1, y + 1, z + 1).isSolid());
