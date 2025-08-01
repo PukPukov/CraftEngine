@@ -3,19 +3,15 @@ package ru.mrbedrockpy.renderer.graphics;
 import org.joml.Vector2i;
 import ru.mrbedrockpy.renderer.RenderInit;
 import ru.mrbedrockpy.renderer.api.IBlock;
-import ru.mrbedrockpy.renderer.api.IChunk;
 import ru.mrbedrockpy.renderer.api.IWorld;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class MeshBuilder {
     private final List<Float> vertices = new ArrayList<>();
     private final List<Float> texCoords = new ArrayList<>();
     private final List<Float> aoValues = new ArrayList<>();
-    private final List<Integer> indices = new ArrayList<>();
-    private int indexOffset = 0;
     private final TextureAtlas atlas;
 
     public MeshBuilder(TextureAtlas atlas) {
@@ -27,69 +23,39 @@ public class MeshBuilder {
             return 0.5f; // Occluded by two adjacent sides, the corner doesn't matter as much.
         }
         int occlusion = (side1 ? 1 : 0) + (side2 ? 1 : 0) + (corner ? 1 : 0);
-        switch (occlusion) {
-            case 0: return 1.0f;  // No occlusion
-            case 1: return 0.8f;  // Occluded by one block
-            case 2: return 0.65f; // Occluded by two blocks
-            default: return 0.5f; // Occluded by three blocks
-        }
+        return switch (occlusion) {
+            case 0 -> 1.0f;  // No occlusion
+            case 1 -> 0.8f;  // Occluded by one block
+            case 2 -> 0.65f; // Occluded by two blocks
+            default -> 0.5f; // Occluded by three blocks
+        };
     }
 
     public void addFace(int x, int y, int z, IBlock.Direction dir, IBlock block, IWorld world) {
-        float[][] corners = new float[4][3];
-        float[][] uvs = new float[4][2];
-        float[] cornerAO = new float[4];
+        FaceData data = FaceData.valueOf(dir.name());
 
-        // Define the 4 corners, their UVs, and calculate AO for each corner of the face.
-        switch (dir) {
-            case UP: // +Z
-                corners[0] = new float[]{x,     y,     z + 1}; corners[1] = new float[]{x + 1, y,     z + 1}; corners[2] = new float[]{x + 1, y + 1, z + 1}; corners[3] = new float[]{x,     y + 1, z + 1};
-                uvs[0] = new float[]{0, 0}; uvs[1] = new float[]{1, 0}; uvs[2] = new float[]{1, 1}; uvs[3] = new float[]{0, 1};
-                cornerAO[0] = calculateAO(world.getBlock(x, y - 1, z + 1).isSolid(), world.getBlock(x - 1, y, z + 1).isSolid(), world.getBlock(x - 1, y - 1, z + 1).isSolid());
-                cornerAO[1] = calculateAO(world.getBlock(x, y - 1, z + 1).isSolid(), world.getBlock(x + 1, y, z + 1).isSolid(), world.getBlock(x + 1, y - 1, z + 1).isSolid());
-                cornerAO[2] = calculateAO(world.getBlock(x, y + 1, z + 1).isSolid(), world.getBlock(x + 1, y, z + 1).isSolid(), world.getBlock(x + 1, y + 1, z + 1).isSolid());
-                cornerAO[3] = calculateAO(world.getBlock(x, y + 1, z + 1).isSolid(), world.getBlock(x - 1, y, z + 1).isSolid(), world.getBlock(x - 1, y + 1, z + 1).isSolid());
-                break;
-            case DOWN: // -Z
-                corners[0] = new float[]{x,     y + 1, z}; corners[1] = new float[]{x + 1, y + 1, z}; corners[2] = new float[]{x + 1, y,     z}; corners[3] = new float[]{x,     y,     z};
-                uvs[0] = new float[]{0, 1}; uvs[1] = new float[]{1, 1}; uvs[2] = new float[]{1, 0}; uvs[3] = new float[]{0, 0};
-                cornerAO[0] = calculateAO(world.getBlock(x, y + 1, z - 1).isSolid(), world.getBlock(x - 1, y, z - 1).isSolid(), world.getBlock(x - 1, y + 1, z - 1).isSolid());
-                cornerAO[1] = calculateAO(world.getBlock(x, y + 1, z - 1).isSolid(), world.getBlock(x + 1, y, z - 1).isSolid(), world.getBlock(x + 1, y + 1, z - 1).isSolid());
-                cornerAO[2] = calculateAO(world.getBlock(x, y - 1, z - 1).isSolid(), world.getBlock(x + 1, y, z - 1).isSolid(), world.getBlock(x + 1, y - 1, z - 1).isSolid());
-                cornerAO[3] = calculateAO(world.getBlock(x, y - 1, z - 1).isSolid(), world.getBlock(x - 1, y, z - 1).isSolid(), world.getBlock(x - 1, y - 1, z - 1).isSolid());
-                break;
-            case NORTH: // -Y
-                corners[0] = new float[]{x,     y, z    }; corners[1] = new float[]{x + 1, y, z    }; corners[2] = new float[]{x + 1, y, z + 1}; corners[3] = new float[]{x,     y, z + 1};
-                uvs[0] = new float[]{0, 0}; uvs[1] = new float[]{1, 0}; uvs[2] = new float[]{1, 1}; uvs[3] = new float[]{0, 1};
-                cornerAO[0] = calculateAO(world.getBlock(x, y - 1, z - 1).isSolid(), world.getBlock(x - 1, y - 1, z).isSolid(), world.getBlock(x - 1, y - 1, z - 1).isSolid());
-                cornerAO[1] = calculateAO(world.getBlock(x, y - 1, z - 1).isSolid(), world.getBlock(x + 1, y - 1, z).isSolid(), world.getBlock(x + 1, y - 1, z - 1).isSolid());
-                cornerAO[2] = calculateAO(world.getBlock(x, y - 1, z + 1).isSolid(), world.getBlock(x + 1, y - 1, z).isSolid(), world.getBlock(x + 1, y - 1, z + 1).isSolid());
-                cornerAO[3] = calculateAO(world.getBlock(x, y - 1, z + 1).isSolid(), world.getBlock(x - 1, y - 1, z).isSolid(), world.getBlock(x - 1, y - 1, z + 1).isSolid());
-                break;
-            case SOUTH: // +Y
-                corners[0] = new float[]{x + 1, y + 1, z    }; corners[1] = new float[]{x,     y + 1, z    }; corners[2] = new float[]{x,     y + 1, z + 1}; corners[3] = new float[]{x + 1, y + 1, z + 1};
-                uvs[0] = new float[]{0, 0}; uvs[1] = new float[]{1, 0}; uvs[2] = new float[]{1, 1}; uvs[3] = new float[]{0, 1};
-                cornerAO[0] = calculateAO(world.getBlock(x, y + 1, z - 1).isSolid(), world.getBlock(x + 1, y + 1, z).isSolid(), world.getBlock(x + 1, y + 1, z - 1).isSolid());
-                cornerAO[1] = calculateAO(world.getBlock(x, y + 1, z - 1).isSolid(), world.getBlock(x - 1, y + 1, z).isSolid(), world.getBlock(x - 1, y + 1, z - 1).isSolid());
-                cornerAO[2] = calculateAO(world.getBlock(x, y + 1, z + 1).isSolid(), world.getBlock(x - 1, y + 1, z).isSolid(), world.getBlock(x - 1, y + 1, z + 1).isSolid());
-                cornerAO[3] = calculateAO(world.getBlock(x, y + 1, z + 1).isSolid(), world.getBlock(x + 1, y + 1, z).isSolid(), world.getBlock(x + 1, y + 1, z + 1).isSolid());
-                break;
-            case WEST: // -X
-                corners[0] = new float[]{x, y + 1, z    }; corners[1] = new float[]{x, y,     z    }; corners[2] = new float[]{x, y,     z + 1}; corners[3] = new float[]{x, y + 1, z + 1};
-                uvs[0] = new float[]{0, 0}; uvs[1] = new float[]{1, 0}; uvs[2] = new float[]{1, 1}; uvs[3] = new float[]{0, 1};
-                cornerAO[0] = calculateAO(world.getBlock(x - 1, y, z - 1).isSolid(), world.getBlock(x - 1, y + 1, z).isSolid(), world.getBlock(x - 1, y + 1, z - 1).isSolid());
-                cornerAO[1] = calculateAO(world.getBlock(x - 1, y, z - 1).isSolid(), world.getBlock(x - 1, y - 1, z).isSolid(), world.getBlock(x - 1, y - 1, z - 1).isSolid());
-                cornerAO[2] = calculateAO(world.getBlock(x - 1, y, z + 1).isSolid(), world.getBlock(x - 1, y - 1, z).isSolid(), world.getBlock(x - 1, y - 1, z + 1).isSolid());
-                cornerAO[3] = calculateAO(world.getBlock(x - 1, y, z + 1).isSolid(), world.getBlock(x - 1, y + 1, z).isSolid(), world.getBlock(x - 1, y + 1, z + 1).isSolid());
-                break;
-            case EAST: // +X
-                corners[0] = new float[]{x + 1, y,     z    }; corners[1] = new float[]{x + 1, y + 1, z    }; corners[2] = new float[]{x + 1, y + 1, z + 1}; corners[3] = new float[]{x + 1, y,     z + 1};
-                uvs[0] = new float[]{0, 0}; uvs[1] = new float[]{1, 0}; uvs[2] = new float[]{1, 1}; uvs[3] = new float[]{0, 1};
-                cornerAO[0] = calculateAO(world.getBlock(x + 1, y, z - 1).isSolid(), world.getBlock(x + 1, y - 1, z).isSolid(), world.getBlock(x + 1, y - 1, z - 1).isSolid());
-                cornerAO[1] = calculateAO(world.getBlock(x + 1, y, z - 1).isSolid(), world.getBlock(x + 1, y + 1, z).isSolid(), world.getBlock(x + 1, y + 1, z - 1).isSolid());
-                cornerAO[2] = calculateAO(world.getBlock(x + 1, y, z + 1).isSolid(), world.getBlock(x + 1, y + 1, z).isSolid(), world.getBlock(x + 1, y + 1, z + 1).isSolid());
-                cornerAO[3] = calculateAO(world.getBlock(x + 1, y, z + 1).isSolid(), world.getBlock(x + 1, y - 1, z).isSolid(), world.getBlock(x + 1, y - 1, z + 1).isSolid());
-                break;
+        float[][] corners = new float[4][3];
+        for (int i = 0; i < 4; i++) {
+            corners[i][0] = x + data.corners[i][0];
+            corners[i][1] = y + data.corners[i][1];
+            corners[i][2] = z + data.corners[i][2];
+        }
+
+        float[][] uvs = {
+            {0, 0}, {1, 0}, {1, 1}, {0, 1}
+        };
+
+        float[] cornerAO = new float[4];
+        for (int i = 0; i < 4; i++) {
+            int[] o1 = data.aoOffsets[i][0];
+            int[] o2 = data.aoOffsets[i][1];
+            int[] o3 = data.aoOffsets[i][2];
+
+            cornerAO[i] = calculateAO(
+                    world.getBlock(x + o1[0], y + o1[1], z + o1[2]).isSolid(),
+                    world.getBlock(x + o2[0], y + o2[1], z + o2[2]).isSolid(),
+                    world.getBlock(x + o3[0], y + o3[1], z + o3[2]).isSolid()
+            );
         }
 
         Vector2i tileUV = atlas.getUV(RenderInit.BLOCKS.getName(block));
@@ -103,31 +69,29 @@ public class MeshBuilder {
             uvs[i][1] = baseY + uvs[i][1] * unit;
         }
 
-        // Build the two triangles for the quad, choosing the diagonal
-        // that produces the best lighting (avoids sharp dark/light cuts)
+        // Это не OpenGL индексы — просто порядок вершин, передаваемых в v()
+        int[][] indices;
         if (cornerAO[0] + cornerAO[2] > cornerAO[1] + cornerAO[3]) {
-            // Flipped diagonal: (0, 1, 3) and (1, 2, 3) -> This is wrong, it should be (0,1,2) and (0,2,3) vs (0,1,3) and (1,2,3)
-            // It should be (v0, v1, v3) and (v3, v1, v2)
-            addVertex(corners[0], uvs[0], cornerAO[0]);
-            addVertex(corners[1], uvs[1], cornerAO[1]);
-            addVertex(corners[3], uvs[3], cornerAO[3]);
-
-            addVertex(corners[1], uvs[1], cornerAO[1]);
-            addVertex(corners[2], uvs[2], cornerAO[2]);
-            addVertex(corners[3], uvs[3], cornerAO[3]);
+            indices = new int[][]{
+                    {0, 1, 3},
+                    {1, 2, 3}
+            };
         } else {
-            // Standard diagonal: (0, 1, 2) and (0, 2, 3)
-            addVertex(corners[0], uvs[0], cornerAO[0]);
-            addVertex(corners[1], uvs[1], cornerAO[1]);
-            addVertex(corners[2], uvs[2], cornerAO[2]);
+            indices = new int[][]{
+                    {0, 1, 2},
+                    {0, 2, 3}
+            };
+        }
 
-            addVertex(corners[0], uvs[0], cornerAO[0]);
-            addVertex(corners[2], uvs[2], cornerAO[2]);
-            addVertex(corners[3], uvs[3], cornerAO[3]);
+        for (int[] tri : indices) {
+            for (int idx : tri) {
+                v(corners[idx], uvs[idx], cornerAO[idx]);
+            }
         }
     }
 
-    private void addVertex(float[] pos, float[] uv, float ao) {
+    // Поскольку метод private и он в классе связянным с мешем можно сократить addVertex до v
+    private void v(float[] pos, float[] uv, float ao) {
         vertices.add(pos[0]);
         vertices.add(pos[1]);
         vertices.add(pos[2]);
@@ -148,11 +112,80 @@ public class MeshBuilder {
         return new Mesh.MeshData(vertArray, uvArray, aoArray);
     }
 
-    public void addCube(int x, int y, int z, IBlock block) {
-        for (IBlock.Direction dir : Arrays.stream(IBlock.Direction.values()).filter(d -> d != IBlock.Direction.NONE).toList()) {
-            // This method is now broken as it doesn't have a World reference for AO calculation.
-            // Leaving it as-is per instructions not to modify unrelated code.
-            // addFace(x, y, z, dir, block);
+    public enum FaceData {
+        UP(
+            new int[][]{
+                {0, 0, 1}, {1, 0, 1}, {1, 1, 1}, {0, 1, 1}
+            },
+            new int[][][]{
+                {{0, -1, 1}, {-1, 0, 1}, {-1, -1, 1}},
+                {{0, -1, 1}, { 1, 0, 1}, { 1, -1, 1}},
+                {{0,  1, 1}, { 1, 0, 1}, { 1,  1, 1}},
+                {{0,  1, 1}, {-1, 0, 1}, {-1,  1, 1}}
+            }
+        ),
+        DOWN(
+            new int[][]{
+                {0, 1, 0}, {1, 1, 0}, {1, 0, 0}, {0, 0, 0}
+            },
+            new int[][][]{
+                {{0, 1, -1}, {-1, 0, -1}, {-1, 1, -1}},
+                {{0, 1, -1}, { 1, 0, -1}, { 1, 1, -1}},
+                {{0, -1, -1}, {1, 0, -1}, {1, -1, -1}},
+                {{0, -1, -1}, {-1, 0, -1}, {-1, -1, -1}}
+            }
+        ),
+        NORTH(
+            new int[][]{
+                {0, 0, 0}, {1, 0, 0}, {1, 0, 1}, {0, 0, 1}
+            },
+            new int[][][]{
+                {{0, -1, -1}, {-1, -1, 0}, {-1, -1, -1}},
+                {{0, -1, -1}, { 1, -1, 0}, { 1, -1, -1}},
+                {{0, -1, 1}, { 1, -1, 0}, { 1, -1, 1}},
+                {{0, -1, 1}, {-1, -1, 0}, {-1, -1, 1}}
+            }
+        ),
+        SOUTH(
+            new int[][]{
+                {1, 1, 0}, {0, 1, 0}, {0, 1, 1}, {1, 1, 1}
+            },
+            new int[][][]{
+                {{0, 1, -1}, {1, 1, 0}, {1, 1, -1}},
+                {{0, 1, -1}, {-1, 1, 0}, {-1, 1, -1}},
+                {{0, 1, 1}, {-1, 1, 0}, {-1, 1, 1}},
+                {{0, 1, 1}, {1, 1, 0}, {1, 1, 1}}
+            }
+        ),
+        WEST(
+            new int[][]{
+                {0, 1, 0}, {0, 0, 0}, {0, 0, 1}, {0, 1, 1}
+            },
+            new int[][][]{
+                {{-1, 1, -1}, {-1, 0, 0}, {-1, 1, 0}},
+                {{-1, -1, -1}, {-1, 0, 0}, {-1, -1, 0}},
+                {{-1, -1, 1}, {-1, 0, 0}, {-1, -1, 0}},
+                {{-1, 1, 1}, {-1, 0, 0}, {-1, 1, 0}}
+            }
+        ),
+        EAST(
+                new int[][]{
+                {1, 0, 0}, {1, 1, 0}, {1, 1, 1}, {1, 0, 1}
+            },
+            new int[][][]{
+                {{1, -1, -1}, {1, 0, 0}, {1, -1, 0}},
+                {{1, 1, -1}, {1, 0, 0}, {1, 1, 0}},
+                {{1, 1, 1}, {1, 0, 0}, {1, 1, 0}},
+                {{1, -1, 1}, {1, 0, 0}, {1, -1, 0}}
+            }
+        );
+
+        public final int[][] corners;
+        public final int[][][] aoOffsets;
+
+        FaceData(int[][] corners, int[][][] aoOffsets) {
+            this.corners = corners;
+            this.aoOffsets = aoOffsets;
         }
     }
 }
