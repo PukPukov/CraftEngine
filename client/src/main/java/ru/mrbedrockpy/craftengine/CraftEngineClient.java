@@ -6,6 +6,8 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 import org.lwjgl.glfw.GLFW;
+import ru.mrbedrockpy.craftengine.config.CraftEngineConfiguration;
+import ru.mrbedrockpy.craftengine.config.JsonConfig;
 import ru.mrbedrockpy.craftengine.event.EventManager;
 import ru.mrbedrockpy.craftengine.event.MouseClickEvent;
 import ru.mrbedrockpy.craftengine.gui.screen.InventoryScreen;
@@ -42,7 +44,7 @@ public class CraftEngineClient {
     private Screen currentScreen = null;
     @Getter
     private final TickSystem tickSystem = new TickSystem(20);
-    
+
     private CraftEngineClient() {}
     
     public void run() {
@@ -62,10 +64,10 @@ public class CraftEngineClient {
     }
     
     public void initialize() {
-        Window.initialize(new WindowSettings(1280, 720, "CraftEngine Client", false, false));
+        CraftEngineConfiguration.register();
+        Window.initialize(CraftEngineConfiguration.MAIN_CONFIG.getObject("window.settings", WindowSettings.class, WindowSettings.DEFAULT));
         Input.initialize();
         context = new DrawContext(Window.width(), Window.height());
-        hudRenderer = new HudRenderer(Window.width(), Window.height());
         eventManager.addListener(MouseClickEvent.class, this::onMouseClick);
         Blocks.register();
         Items.register();
@@ -98,12 +100,12 @@ public class CraftEngineClient {
     }
     
     private void render() {
-        if(clientWorld != null) {
+        if(clientWorld != null && player != null) {
             clientWorld.render();
-            hudRenderer.render(context);
+            hudRenderer.render(context, (int) Input.x(), (int) Input.y(), (float) tickSystem.partialTick());
         }
         if(currentScreen != null) {
-            currentScreen.render(context, (int) Input.x(), (int) Input.y(), 0);
+            currentScreen.render(context, (int) Input.x(), (int) Input.y(), (float) tickSystem.partialTick());
         }
     }
     

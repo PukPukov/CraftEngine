@@ -12,7 +12,7 @@ public class InventoryScreen {
         return UI.create().grid(i -> slot(inv, i, InventoryScreen::slotClick), 3, 9, 0, 0, 16 * 5, 16 * 5).b();
     }
 
-    private static void slotClick(SlotWidget slot){
+    public static void slotClick(SlotWidget slot){
         PlayerInventory inv = CraftEngineClient.INSTANCE.player().inventory();
 
         ItemStack cursor = inv.cursorStack();

@@ -2,6 +2,7 @@ package ru.mrbedrockpy.craftengine.gui.screen;
 
 import org.joml.Vector3f;
 import ru.mrbedrockpy.craftengine.CraftEngineClient;
+import ru.mrbedrockpy.craftengine.gui.HudRenderer;
 import ru.mrbedrockpy.craftengine.world.ClientWorld;
 import ru.mrbedrockpy.craftengine.world.entity.ClientPlayerEntity;
 import ru.mrbedrockpy.craftengine.world.item.ItemStack;
@@ -20,6 +21,7 @@ public class MainMenuScreen {
             for(int i = 0; i < 8; i++) {
                 player.inventory().item(new ItemStack(Items.GOLDEN_APPLE));
             }
+            CraftEngineClient.INSTANCE.hudRenderer = new HudRenderer(Window.width(), Window.height());
         }).b();
     }
 }
