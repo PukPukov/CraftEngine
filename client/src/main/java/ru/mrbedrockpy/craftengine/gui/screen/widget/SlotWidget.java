@@ -46,8 +46,9 @@ public class SlotWidget extends AbstractWidget {
         if (!visible) return;
 
         ItemStack s = stack();
-        if (!s.isEmpty()) {
-            ctx.drawTexture(x + 1, y + 1, 16, 16, Texture.load(Registries.ITEMS.name(s.item()) + ".png"));
+        if (s != null &&!s.isEmpty()) {
+            // пока так, надо сделать скейлинг
+            ctx.drawTexture(x + 1, y + 1, 16 * 5, 16 * 5, Texture.load(Registries.ITEMS.name(s.item()) + ".png"));
         }
     }
 

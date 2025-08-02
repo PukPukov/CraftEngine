@@ -78,6 +78,7 @@ public class UI {
                     int y = startY + i * (w.height() + spacingY);
                     w.setPosition(x, y);
                     screen.addWidget(w);
+                    index++;
                 }
             }
             return this;

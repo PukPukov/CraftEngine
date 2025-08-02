@@ -9,7 +9,7 @@ import static ru.mrbedrockpy.craftengine.gui.screen.UI.*;
 
 public class InventoryScreen {
     public static Screen create(PlayerInventory inv){
-        return UI.create().grid(i -> slot(inv, i, InventoryScreen::slotClick), 3, 9, 0, 0, 18, 18).b();
+        return UI.create().grid(i -> slot(inv, i, InventoryScreen::slotClick), 3, 9, 0, 0, 16 * 5, 16 * 5).b();
     }
 
     private static void slotClick(SlotWidget slot){
