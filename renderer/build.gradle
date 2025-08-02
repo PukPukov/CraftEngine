@@ -11,6 +11,7 @@ project.ext.jomlVersion = "1.10.8"
 
 repositories {
     mavenCentral()
+    maven { url 'https://projectlombok.org/edge-releases' }
 }
 
 def lombok = "org.projectlombok:lombok:1.18.38";

@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.joml.Vector2i;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
+import org.joml.Vector3i;
 import ru.mrbedrockpy.renderer.api.IEntity;
 import ru.mrbedrockpy.renderer.phys.AABB;
 import ru.mrbedrockpy.craftengine.window.Camera;
@@ -31,7 +32,7 @@ public abstract class LivingEntity implements IEntity {
     
     protected boolean onGround = false;
     
-    private final float jumpStrength = 0.7f;
+    private final float jumpStrength = 0.5f;
     protected AABB boundingBox;
     
     public LivingEntity(Vector3f nextTickPosition, Vector3f size, World world) {
@@ -49,42 +50,70 @@ public abstract class LivingEntity implements IEntity {
         previousTickPosition = new Vector3f(nextTickPosition);
     }
     
-    public void move(Vector3d movement) {
-        Vector3d prevDir = new Vector3d(movement);
+    public void move(Vector3d movement, boolean sneaked) {
+        Vector3d originalMovement = new Vector3d(movement);
         
         List<AABB> aabbs = this.world.cubes(this.boundingBox.expand(movement));
         
         for (AABB aABB : aabbs) {
             movement.x = aABB.clipXCollide(this.boundingBox, movement.x);
         }
-        this.boundingBox.move(movement.x, 0.0F, 0.0F);
         
         for (AABB aABB : aabbs) {
             movement.y = aABB.clipYCollide(this.boundingBox, movement.y);
         }
-        this.boundingBox.move(0.0F, movement.y, 0.0F);
         
         for (AABB abb : aabbs) {
             movement.z = abb.clipZCollide(this.boundingBox, movement.z);
         }
+        
+        if (sneaked && onGround) {
+            
+            double foundationBoxFaceX = (movement.x > 0 ? this.boundingBox.minX : this.boundingBox.maxX);
+            double foundationBoxFaceY = (movement.y > 0 ? this.boundingBox.minY : this.boundingBox.maxY);
+            
+            int foundationBlockX = (int) foundationBoxFaceX;
+            int foundationBlockY = (int) foundationBoxFaceY;
+            int nextBlockX = (int) (foundationBlockX + movement.x);
+            int nextBlockY = (int) (foundationBlockY + movement.y);
+            Vector3i foundationBlock = new Vector3i(foundationBlockX, foundationBlockY, (int) (this.blockZ() - 0.1));
+            Vector3i nextFoundationBlockInX = new Vector3i(foundationBlock);
+            nextFoundationBlockInX.x = nextBlockX;
+            Vector3i nextFoundationBlockInY = new Vector3i(foundationBlock);
+            nextFoundationBlockInY.y = nextBlockY;
+            
+            if (!foundationBlock.equals(nextFoundationBlockInX)) {
+                if (!this.world.block(nextFoundationBlockInX).solid()) {
+                    // пододвинуть по x так чтоб не падал
+                }
+            }
+            if (!foundationBlock.equals(nextFoundationBlockInY)) {
+                if (!this.world.block(nextFoundationBlockInY).solid()) {
+                    // пододвинуть по y так чтоб не падал
+                }
+            }
+        }
+        
+        this.boundingBox.move(movement.x, 0.0F, 0.0F);
+        this.boundingBox.move(0.0F, movement.y, 0.0F);
         this.boundingBox.move(0.0F, 0.0F, movement.z);
         
-        this.onGround = prevDir.z != movement.z && prevDir.z < 0.0F;
+        this.onGround = originalMovement.z != movement.z && originalMovement.z < 0.0F;
         
-        if (prevDir.x != movement.x) this.velocity.x = 0.0F;
-        if (prevDir.y != movement.y) this.velocity.y  = 0.0F;
-        if (prevDir.z != movement.z) this.velocity.z = 0.0F;
+        if (originalMovement.x != movement.x) this.velocity.x = 0.0F;
+        if (originalMovement.y != movement.y) this.velocity.y  = 0.0F;
+        if (originalMovement.z != movement.z) this.velocity.z = 0.0F;
         
         nextTickPosition.set(this.boundingBox.root());
     }
     
-    protected void moveRelative(float x, float y, float speed) {
+    protected void changeVelocityByForce(float x, float y, float force) {
         float distance = x * x + y * y;
         
         if (distance < 0.01F)
             return;
         
-        distance = speed / (float) Math.sqrt(distance);
+        distance = force / (float) Math.sqrt(distance);
         x *= distance;
         y *= distance;
         
@@ -111,15 +140,15 @@ public abstract class LivingEntity implements IEntity {
         }
     }
     
-    public int x() {
+    public int blockX() {
         return (int) nextTickPosition.x;
     }
     
-    public int y() {
+    public int blockY() {
         return (int) nextTickPosition.y;
     }
     
-    public int z() {
+    public int blockZ() {
         return (int) nextTickPosition.z;
     }
     
