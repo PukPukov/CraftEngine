@@ -44,6 +44,7 @@ public abstract class LivingEntity implements IEntity {
     }
     public abstract void render(Camera camera);
     
+    @Override
     public void tick() {
         prevPosition = new Vector3f(position);
     }
@@ -51,7 +52,7 @@ public abstract class LivingEntity implements IEntity {
     public void move(Vector3d direction) {
         Vector3d prevDir = new Vector3d(direction);
         
-        List<AABB> aABBs = this.world.getCubes(this.boundingBox.expand(direction));
+        List<AABB> aABBs = this.world.cubes(this.boundingBox.expand(direction));
         
         for (AABB abb : aABBs) {
             direction.z = abb.clipZCollide(this.boundingBox, direction.z);
@@ -114,24 +115,25 @@ public abstract class LivingEntity implements IEntity {
         }
     }
     
-    public int getX() {
+    public int x() {
         return (int) position.x;
     }
     
-    public int getY() {
+    public int y() {
         return (int) position.y;
     }
     
-    public int getZ() {
+    public int z() {
         return (int) position.z;
     }
-
-    public Vector2i getChunkPosition() {
+    
+    @Override
+    public Vector2i chunkPosition() {
         return new Vector2i((int) (position.x / Chunk.WIDTH), (int) (position.y / Chunk.WIDTH));
     }
 
     @Override
-    public AABB getBoundingBox() {
+    public AABB boundingBox() {
         return boundingBox;
     }
 }

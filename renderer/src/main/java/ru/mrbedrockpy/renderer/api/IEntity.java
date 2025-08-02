@@ -5,9 +5,9 @@ import org.joml.Vector3f;
 import ru.mrbedrockpy.renderer.phys.AABB;
 
 public interface IEntity {
-    float getEyeOffset();
-    Vector2i getChunkPosition();
-    Vector3f getPosition();
+    float currentEyeOffset();
+    Vector2i chunkPosition();
+    Vector3f position();
     void tick();
-    AABB getBoundingBox();
+    AABB boundingBox();
 }

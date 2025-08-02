@@ -4,9 +4,7 @@ import lombok.Getter;
 import org.joml.Vector2i;
 import org.joml.Vector3i;
 import ru.mrbedrockpy.craftengine.registry.Registries;
-import ru.mrbedrockpy.craftengine.world.block.Block;
 import ru.mrbedrockpy.craftengine.world.block.Blocks;
-import ru.mrbedrockpy.craftengine.world.entity.LivingEntity;
 import ru.mrbedrockpy.renderer.api.IBlock;
 import ru.mrbedrockpy.renderer.api.IChunk;
 import ru.mrbedrockpy.renderer.api.IEntity;
@@ -39,21 +37,24 @@ public class Chunk implements IChunk {
         this.dirty = true;
     }
     
-    public IBlock getBlock(int x, int y, int z) {
+    @Override
+    public IBlock block(int x, int y, int z) {
         try {
-            return Registries.BLOCKS.getById(blocks[x][y][z]);
+            return Registries.BLOCKS.get(blocks[x][y][z]);
         } catch (IndexOutOfBoundsException e) {
             return Blocks.AIR;
         }
     }
     
-    public IBlock getBlock(Vector3i pos) {
-        return getBlock(pos.x, pos.y, pos.z);
+    @Override
+    public IBlock block(Vector3i pos) {
+        return block(pos.x, pos.y, pos.z);
     }
     
+    @Override
     public boolean setBlock(int x, int y, int z, IBlock block) {
         try {
-            short newId = (short) Registries.BLOCKS.getId(block);
+            short newId = (short) Registries.BLOCKS.id(block);
             if (blocks[x][y][z] != newId) {
                 blocks[x][y][z] = newId;
                 markDirty();
@@ -64,13 +65,15 @@ public class Chunk implements IChunk {
         }
     }
     
+    @Override
     public void tick() {
         for (IEntity entity : entities) {
             entity.tick();
         }
     }
     
-    public Mesh getChunkMesh(IWorld world, TextureAtlas atlas) {
+    @Override
+    public Mesh chunkMesh(IWorld world, TextureAtlas atlas) {
         if (mesh == null || dirty) {
             if (mesh != null) {
                 mesh.cleanup();
@@ -80,8 +83,8 @@ public class Chunk implements IChunk {
             for (int x = 0; x < WIDTH; x++) {
                 for (int y = 0; y < WIDTH; y++) {
                     for (int z = 0; z < HEIGHT; z++) {
-                        IBlock block = getBlock(x, y, z);
-                        if (block == Blocks.AIR || !block.isSolid()) {
+                        IBlock block = block(x, y, z);
+                        if (block == Blocks.AIR || !block.solid()) {
                             continue;
                         }
                         
@@ -95,9 +98,9 @@ public class Chunk implements IChunk {
                             int neighborY = worldY + dir.dy;
                             int neighborZ = z + dir.dz;
                             
-                            IBlock neighborBlock = world.getBlock(neighborX, neighborY, neighborZ);
+                            IBlock neighborBlock = world.block(neighborX, neighborY, neighborZ);
                             
-                            if (neighborBlock == Blocks.AIR || !neighborBlock.isSolid()) {
+                            if (neighborBlock == Blocks.AIR || !neighborBlock.solid()) {
                                 builder.addFace(worldX, worldY, z, dir, block, world);
                             }
                         }
@@ -111,20 +114,23 @@ public class Chunk implements IChunk {
         return mesh;
     }
     
+    @Override
     public void markDirty() {
         dirty = true;
     }
     
+    @Override
     public void setEntities(List<IEntity> entities) {
         this.entities.clear();
         this.entities.addAll(entities);
     }
     
-    public List<IEntity> getEntities() {
+    public List<IEntity> entities() {
         return new ArrayList<>(entities);
     }
     
-    public Vector2i getWorldPosition() {
+    @Override
+    public Vector2i worldPosition() {
         return new Vector2i(position.x * WIDTH, position.y * WIDTH);
     }
 

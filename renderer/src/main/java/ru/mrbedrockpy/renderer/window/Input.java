@@ -81,7 +81,7 @@ public class Input {
     }
 
     public static void initialize() {
-        long window = Window.getWindow();
+        long window = Window.window();
         keys = new boolean[KEYS];
         frames = new long[KEYS];
 
@@ -104,7 +104,7 @@ public class Input {
     }
 
     public static void setCursorLocked(boolean flag) {
-        glfwSetInputMode(Window.getWindow(), GLFW_CURSOR, flag ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+        glfwSetInputMode(Window.window(), GLFW_CURSOR, flag ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
     }
 
     public static boolean pressed(int key) {

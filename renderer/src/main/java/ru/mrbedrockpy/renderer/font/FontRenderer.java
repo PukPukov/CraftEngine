@@ -12,8 +12,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 import static org.lwjgl.opengl.GL46C.*;
 import static org.lwjgl.stb.STBTruetype.*;
@@ -75,7 +73,7 @@ public class FontRenderer {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    public Vector2i getTextSize(String text) {
+    public Vector2i size(String text) {
         int width = 0;
         int maxHeight = 0;
 

@@ -114,7 +114,7 @@ public class FaceData {
         }
     };
 
-    public static float[] getVertices(IBlock.Direction dir, int x, int y, int z) {
+    public static float[] vertices(IBlock.Direction dir, int x, int y, int z) {
         float[] base = FACE_VERTICES[dir.ordinal()];
         float[] out = new float[base.length];
 
@@ -127,7 +127,7 @@ public class FaceData {
         return out;
     }
 
-    public static float[] getUVs(IBlock block, IBlock.Direction dir, TextureAtlas atlas) {
-        return atlas.getNormalizedUV(RenderInit.BLOCKS.getName(block), dir);
+    public static float[] uvs(IBlock block, IBlock.Direction dir, TextureAtlas atlas) {
+        return atlas.normalizedUV(RenderInit.BLOCKS.name(block), dir);
     }
 }

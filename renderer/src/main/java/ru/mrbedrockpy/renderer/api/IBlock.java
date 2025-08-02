@@ -4,8 +4,8 @@ import org.joml.Vector3i;
 import ru.mrbedrockpy.renderer.phys.AABB;
 
 public interface IBlock {
-    boolean isSolid();
-    AABB getAABB(int x, int y, int z);
+    boolean solid();
+    AABB aabb(int x, int y, int z);
 
 
     enum Direction {

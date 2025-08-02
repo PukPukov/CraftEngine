@@ -27,6 +27,7 @@ public class AABB {
      *
      * @return Clone of the bounding box
      */
+    @Override
     public AABB clone() {
         return new AABB(this.minX, this.minY, this.minZ, this.maxX, this.maxY, this.maxZ);
     }

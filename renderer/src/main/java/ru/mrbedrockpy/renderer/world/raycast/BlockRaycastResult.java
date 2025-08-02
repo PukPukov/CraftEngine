@@ -9,7 +9,7 @@ public class BlockRaycastResult {
     public final int x, y, z;
     public final IBlock block;
     public final IBlock.Direction direction;
-    public Vector3i getPosition() {
+    public Vector3i position() {
         return new Vector3i(x, y, z);
     }
 }

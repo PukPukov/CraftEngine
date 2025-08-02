@@ -29,18 +29,18 @@ public class Registry<T> implements IRegistryProvider<T> {
     }
 
     @Override
-    public int getId(T value) {
+    public int id(T value) {
         return objectToId.getOrDefault(value, -1);
     }
 
     @Override
-    public T getById(int id) {
+    public T get(int id) {
         if (id < 0 || id >= idToObject.size()) return null;
         return idToObject.get(id);
     }
 
     @Override
-    public String getName(T value) {
+    public String name(T value) {
         return objectToName.get(value);
     }
 

@@ -83,11 +83,11 @@ public class DrawContext {
         glDisable(GL_CULL_FACE);
 
         uiShader.use();
-        uiShader.setUniformMatrix4f("projection", matrices.getMatrix());
+        uiShader.setUniformMatrix4f("projection", matrices.matrix());
         uiShader.setUniform1b("useColor", false);
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture.getId());
+        glBindTexture(GL_TEXTURE_2D, texture.id());
 
         glBindVertexArray(vaoId);
         glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -106,7 +106,7 @@ public class DrawContext {
     }
 
     public void drawCentredText(String text, int x, int y, float scale){
-        Vector2i textSize = fontRenderer.getTextSize(text);
+        Vector2i textSize = fontRenderer.size(text);
         drawText(text, x - textSize.x / 2, y - textSize.y / 2, scale);
     }
 
@@ -120,18 +120,18 @@ public class DrawContext {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, fontRenderer.getTextureId());
+        glBindTexture(GL_TEXTURE_2D, fontRenderer.textureId());
 
         textShader.use();
-        textShader.setUniformMatrix4f("projection", matrices.getMatrix());
+        textShader.setUniformMatrix4f("projection", matrices.matrix());
 
         glBindVertexArray(vaoId);
 
         float cursorX = x;
-        STBTTPackedchar.Buffer chars = fontRenderer.getCharData();
+        STBTTPackedchar.Buffer chars = fontRenderer.charData();
 
-        float ascent = fontRenderer.getAscent();
-        float scaleFactor = fontRenderer.getScale();
+        float ascent = fontRenderer.ascent();
+        float scaleFactor = fontRenderer.scale();
         float baseline = ascent * scaleFactor * scale;
 
         for (int i = 0; i < text.length(); i++) {
@@ -182,7 +182,7 @@ public class DrawContext {
         glDisable(GL_CULL_FACE);
 
         uiShader.use();
-        uiShader.setUniformMatrix4f("projection", matrices.getMatrix());
+        uiShader.setUniformMatrix4f("projection", matrices.matrix());
         uiShader.setUniform4f("color", color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
         uiShader.setUniform1b("useColor", true);
 
@@ -216,7 +216,7 @@ public class DrawContext {
         glDeleteBuffers(vboId);
         uiShader.dispose();
         textShader.dispose();
-        fontRenderer.getCharData().free();
-        GL11C.glDeleteTextures(fontRenderer.getTextureId());
+        fontRenderer.charData().free();
+        GL11C.glDeleteTextures(fontRenderer.textureId());
     }
 }

@@ -14,11 +14,11 @@ public class ClientPlayerEntity extends LivingEntity {
     private final float speed = 1f;
     private final float sensitivity = 0.03f;
     @Getter
-    private final float eyeOffset = 1.8f;
+    private float currentEyeOffset = 1.8f;
     
     public ClientPlayerEntity(Vector3f position, ClientWorld world) {
         super(position, new Vector3f(0.6f, 0.6f, 1.8f), world);
-        this.camera.setPosition(position.add(0, 0, eyeOffset));
+        this.camera.position(position.add(0, 0, currentEyeOffset));
     }
     
     @Override
@@ -26,13 +26,17 @@ public class ClientPlayerEntity extends LivingEntity {
         super.update(deltaTime, partialTick, world);
         if(!Input.isGUIOpen()) {
             camera.rotate(new Vector2f(
-                (float) ((float) -Input.getDeltaY() * sensitivity),
-                (float) ((float) -Input.getDeltaX() * sensitivity)
+                (float) ((float) -Input.deltaY() * sensitivity),
+                (float) ((float) -Input.deltaX() * sensitivity)
             ));
         }
         Vector3f cameraMove = interpolatePosition(prevPosition, position, partialTick);
-        camera.setPosition(cameraMove.add(0, 0, eyeOffset));
+        camera.position(cameraMove.add(0, 0, currentEyeOffset));
     }
+    
+    //public void sneak(boolean sneak) {
+    //    sneak ? this.currentEyeOffset = 
+    //}
 
     @Override
     public void render(Camera camera) {
@@ -51,7 +55,7 @@ public class ClientPlayerEntity extends LivingEntity {
     public void tick(){
         super.tick();
         Vector3f direction = new Vector3f();
-        Vector3f front = camera.getFlatFront();
+        Vector3f front = camera.flatFront();
         Vector3f right = new Vector3f();
         front.cross(new Vector3f(0, 0, 1), right).normalize();
         

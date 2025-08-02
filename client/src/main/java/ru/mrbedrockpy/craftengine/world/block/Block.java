@@ -12,12 +12,12 @@ public class Block implements IBlock {
     }
 
     @Override
-    public boolean isSolid() {
+    public boolean solid() {
         return solid;
     }
 
     @Override
-    public AABB getAABB(int x, int y, int z) {
+    public AABB aabb(int x, int y, int z) {
         return new AABB(x, y, z, x + 1, y + 1, z + 1);
     }
 }
