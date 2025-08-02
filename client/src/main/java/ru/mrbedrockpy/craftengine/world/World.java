@@ -181,7 +181,9 @@ public abstract class World implements IWorld {
             return Blocks.AIR;
         }
         IChunk chunk = chunkByBlockPosition(x, y);
-        if (chunk == null) return Blocks.AIR; // Outside of the world's horizontal bounds
+        if (chunk == null) {
+            return Blocks.AIR; // Outside of the world's horizontal bounds
+        }
         return chunk.block(
             Math.floorMod(x, Chunk.WIDTH),
             Math.floorMod(y, Chunk.WIDTH),

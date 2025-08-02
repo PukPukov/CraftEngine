@@ -88,9 +88,6 @@ public class ClientPlayerEntity extends LivingEntity {
         if (Input.pressed(GLFW_KEY_D)) direction.add(new Vector3f(right));
         if (Input.pressed(GLFW_KEY_SPACE)) this.jump();
         
-        changeVelocityByForce(direction.x, direction.y, this.speed()); // изменение велосити игроком
-        this.move(new Vector3d(velocity.x, velocity.y, velocity.z), this.sneaking);
-        
         // изменение велосити окружающей средой
         velocity.z -= 0.08f; // гравитация
         velocity.mul(0.97f, 0.97f, 0.97f); // сопротивление воздуха
@@ -98,6 +95,10 @@ public class ClientPlayerEntity extends LivingEntity {
             velocity.x *= 0.7f;
             velocity.y *= 0.7f;
         }
+        // изменение велосити игроком
+        changeVelocityByForce(direction.x, direction.y, this.speed());
+        
+        this.moveLimited(new Vector3d(velocity.x, velocity.y, velocity.z), this.sneaking);
     }
     
     @Override

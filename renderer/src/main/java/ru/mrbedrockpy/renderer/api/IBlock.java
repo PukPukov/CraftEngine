@@ -4,6 +4,8 @@ import org.joml.Vector3i;
 import ru.mrbedrockpy.renderer.phys.AABB;
 
 public interface IBlock {
+    
+    String id();
     boolean solid();
     AABB aabb(int x, int y, int z);
 
