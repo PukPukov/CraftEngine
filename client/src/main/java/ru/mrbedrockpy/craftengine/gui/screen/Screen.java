@@ -27,10 +27,10 @@ public final class Screen {
 
     public int addWidget(AbstractWidget widget) {
         widgets.add(widget);
-        widgets.sort(Comparator.comparingInt(AbstractWidget::getZIndex));
+        widgets.sort(Comparator.comparingInt(AbstractWidget::zIndex));
         return widgets.indexOf(widget);
     }
-
+    
     public void removeWidget(int index) {
         widgets.remove(index);
     }
@@ -38,8 +38,8 @@ public final class Screen {
     public void onMouseClick(MouseClickEvent event) {
         if(Input.isGUIOpen()) {
             for (AbstractWidget widget : widgets) {
-                if (widget.isVisible() && widget.isMouseOver((int) event.getX(), (int) event.getY())) {
-                    widget.onMouseClick((int) event.getX(), (int) event.getY(), event.getButton());
+                if (widget.visible() && widget.isMouseOver((int) event.x(), (int) event.y())) {
+                    widget.onMouseClick((int) event.x(), (int) event.y(), event.button());
                 }
             }
         }
@@ -47,7 +47,7 @@ public final class Screen {
 
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         for(AbstractWidget widget : widgets) {
-            if (widget.isVisible()) {
+            if (widget.visible()) {
                 widget.render(context, mouseX, mouseY, delta);
             }
         }

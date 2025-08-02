@@ -44,7 +44,7 @@ public class MatrixStack {
         current.rotateZ(radians);
     }
 
-    public Matrix4f getMatrix() {
+    public Matrix4f matrix() {
         return current;
     }
 

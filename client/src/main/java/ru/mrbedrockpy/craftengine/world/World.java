@@ -5,7 +5,6 @@ import org.joml.Vector2i;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
-import ru.mrbedrockpy.craftengine.CraftEngineClient;
 import ru.mrbedrockpy.craftengine.world.block.Block;
 import ru.mrbedrockpy.craftengine.world.block.Blocks;
 import ru.mrbedrockpy.craftengine.world.entity.LivingEntity;
@@ -40,7 +39,7 @@ public abstract class World implements IWorld {
         for (int chunkX = 0; chunkX < 8; chunkX++) {
             for (int chunkY = 0; chunkY < 8; chunkY++) {
                 Chunk chunk = new Chunk(new Vector2i(chunkX, chunkY));
-                chunkGenerator.generate(chunk.getPosition(), chunk);
+                chunkGenerator.generate(chunk.position(), chunk);
                 this.chunks[chunkX][chunkY] = chunk;
             }
         }
@@ -49,10 +48,10 @@ public abstract class World implements IWorld {
     public void tick() {
         for (int chunkX = 0; chunkX < 8; chunkX++) {
             for (int chunkY = 0; chunkY < 8; chunkY++) {
-                IChunk chunk = getChunkByChunkPos(chunkX, chunkY);
+                IChunk chunk = chunk(chunkX, chunkY);
                 List<IEntity> entitiesInChunk = new ArrayList<>();
                 for (IEntity entity: entities) {
-                    if(chunk == getChunkByBlockPos(Math.round(entity.getPosition().x), Math.round(entity.getPosition().y))){
+                    if(chunk == chunkByBlockPosition(Math.round(entity.nextTickPosition().x), Math.round(entity.nextTickPosition().y))){
                         entitiesInChunk.add(entity);
                     }
                 }
@@ -60,8 +59,12 @@ public abstract class World implements IWorld {
                 chunk.tick();
             }
         }
+        for (var entity : this.entities) {
+            entity.tick();
+        }
     }
     
+    @Override
     public BlockRaycastResult raycast(Vector3f originF, Vector3f directionF, float maxDistanceF) {
         
         Vector3d origin = new Vector3d(originF.x, originF.y, originF.z);
@@ -102,8 +105,8 @@ public abstract class World implements IWorld {
         
         IBlock.Direction lastFace = Block.Direction.NONE;
         
-        IBlock block = getBlock(blockPos.x, blockPos.y, blockPos.z);
-        if (block != null && block.isSolid()) {
+        IBlock block = block(blockPos.x, blockPos.y, blockPos.z);
+        if (block != null && block.solid()) {
             return new BlockRaycastResult(blockPos.x, blockPos.y, blockPos.z, block, lastFace);
         }
         
@@ -137,8 +140,8 @@ public abstract class World implements IWorld {
                 break;
             }
             
-            block = getBlock(blockPos.x, blockPos.y, blockPos.z);
-            if (block != null && block.isSolid()) {
+            block = block(blockPos.x, blockPos.y, blockPos.z);
+            if (block != null && block.solid()) {
                 return new BlockRaycastResult(blockPos.x, blockPos.y, blockPos.z, block, lastFace);
             }
         }
@@ -146,7 +149,8 @@ public abstract class World implements IWorld {
         return null;
     }
     
-    public IChunk getChunkByChunkPos(int x, int y) {
+    @Override
+    public IChunk chunk(int x, int y) {
         try {
             if(this.chunks[x][y] == null) {
                 this.chunks[x][y] = new Chunk(new Vector2i(x, y));
@@ -157,21 +161,24 @@ public abstract class World implements IWorld {
         }
     }
     
-    public IChunk getChunkByBlockPos(int x, int y) {
-        return getChunkByChunkPos(Math.floorDiv(x, Chunk.WIDTH), Math.floorDiv(y, Chunk.WIDTH));
+    @Override
+    public IChunk chunkByBlockPosition(int x, int y) {
+        return chunk(Math.floorDiv(x, Chunk.WIDTH), Math.floorDiv(y, Chunk.WIDTH));
     }
     
-    public IBlock getBlock(Vector3i position) {
-        return getBlock(position.x, position.y, position.z);
+    @Override
+    public IBlock block(Vector3i position) {
+        return block(position.x, position.y, position.z);
     }
     
-    public IBlock getBlock(int x, int y, int z) {
+    @Override
+    public IBlock block(int x, int y, int z) {
         if (z < 0 || z >= Chunk.HEIGHT) {
             return Blocks.AIR;
         }
-        IChunk chunk = getChunkByBlockPos(x, y);
+        IChunk chunk = chunkByBlockPosition(x, y);
         if (chunk == null) return Blocks.AIR; // Outside of the world's horizontal bounds
-        return chunk.getBlock(
+        return chunk.block(
             Math.floorMod(x, Chunk.WIDTH),
             Math.floorMod(y, Chunk.WIDTH),
             z
@@ -186,7 +193,7 @@ public abstract class World implements IWorld {
         if (z < 0 || z >= Chunk.HEIGHT) {
             return false;
         }
-        IChunk chunk = getChunkByBlockPos(x, y);
+        IChunk chunk = chunkByBlockPosition(x, y);
         if (chunk == null) return false;
         
         boolean success = chunk.setBlock(
@@ -202,18 +209,18 @@ public abstract class World implements IWorld {
             int localY = Math.floorMod(y, Chunk.WIDTH);
             
             if (localX == 0) {
-                IChunk neighbor = getChunkByBlockPos(x - 1, y);
+                IChunk neighbor = chunkByBlockPosition(x - 1, y);
                 if (neighbor != null) neighbor.markDirty();
             } else if (localX == Chunk.WIDTH - 1) {
-                IChunk neighbor = getChunkByBlockPos(x + 1, y);
+                IChunk neighbor = chunkByBlockPosition(x + 1, y);
                 if (neighbor != null) neighbor.markDirty();
             }
             
             if (localY == 0) {
-                IChunk neighbor = getChunkByBlockPos(x, y - 1);
+                IChunk neighbor = chunkByBlockPosition(x, y - 1);
                 if (neighbor != null) neighbor.markDirty();
             } else if (localY == Chunk.WIDTH - 1) {
-                IChunk neighbor = getChunkByBlockPos(x, y + 1);
+                IChunk neighbor = chunkByBlockPosition(x, y + 1);
                 if (neighbor != null) neighbor.markDirty();
             }
         }
@@ -221,7 +228,7 @@ public abstract class World implements IWorld {
         return success;
     }
     
-    public ArrayList<AABB> getCubes(AABB boundingBox) {
+    public ArrayList<AABB> cubes(AABB boundingBox) {
         ArrayList<AABB> boundingBoxList = new ArrayList<>();
         
         int minX = (int) (Math.floor(boundingBox.minX) - 1);
@@ -235,18 +242,18 @@ public abstract class World implements IWorld {
         minY = Math.max(0, minY);
         minZ = Math.max(0, minZ);
         
-        maxX = Math.min(Chunk.WIDTH * getWorldSize(), maxX);
-        maxY = Math.min(Chunk.WIDTH * getWorldSize(), maxY);
+        maxX = Math.min(Chunk.WIDTH * size(), maxX);
+        maxY = Math.min(Chunk.WIDTH * size(), maxY);
         maxZ = Math.min(Chunk.HEIGHT, maxZ);
         
         for (int x = minX; x < maxX; x++) {
             for (int y = minY; y < maxY; y++) {
                 for (int z = minZ; z < maxZ; z++) {
                     
-                    IBlock block = getBlock(x, y, z);
+                    IBlock block = block(x, y, z);
                     if (block != Blocks.AIR) {
                         
-                        AABB aabb = block.getAABB(x, y, z);
+                        AABB aabb = block.aabb(x, y, z);
                         if (aabb != null) {
                             boundingBoxList.add(aabb);
                         }
@@ -257,10 +264,10 @@ public abstract class World implements IWorld {
         return boundingBoxList;
     }
     
-    public List<AABB> getAllEntityAABBs() {
+    public List<AABB> allEntityAABBs() {
         List<AABB> result = new ArrayList<>();
         for (IEntity entity : this.entities) {
-            result.add(entity.getBoundingBox());
+            result.add(entity.boundingBox());
         }
         return result;
     }
@@ -272,7 +279,7 @@ public abstract class World implements IWorld {
     public boolean canPlaceBlockAt(int x, int y, int z) {
         AABB blockAABB = new AABB(x, y, z, x + 1, y + 1, z + 1);
         
-        for (AABB entityAABB : getAllEntityAABBs()) {
+        for (AABB entityAABB : allEntityAABBs()) {
             if (blockAABB.intersects(entityAABB)) {
                 return false;
             }
@@ -281,7 +288,8 @@ public abstract class World implements IWorld {
         return true;
     }
     
-    public int getWorldSize() {
+    @Override
+    public int size() {
         return this.chunks.length * Chunk.WIDTH;
     }
     

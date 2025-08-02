@@ -61,8 +61,8 @@ public class CraftEngineClient {
     public void initialize() {
         Window.initialize(new WindowSettings(1280, 720, "CraftEngine Client", false, false));
         Input.initialize();
-        context = new DrawContext(Window.getWidth(), Window.getHeight());
-        hudRenderer = new HudRenderer(Window.getWidth(), Window.getHeight());
+        context = new DrawContext(Window.width(), Window.height());
+        hudRenderer = new HudRenderer(Window.width(), Window.height());
         eventManager.addListener(MouseClickEvent.class, this::onMouseClick);
         Blocks.register();
         Registries.freeze();
@@ -77,16 +77,16 @@ public class CraftEngineClient {
             Window.setShouldClose(true);
         }
         if (Input.jclicked(GLFW.GLFW_MOUSE_BUTTON_LEFT)) {
-            MouseClickEvent clickEvent = new MouseClickEvent(GLFW.GLFW_MOUSE_BUTTON_LEFT, Input.getX(), Input.getY());
+            MouseClickEvent clickEvent = new MouseClickEvent(GLFW.GLFW_MOUSE_BUTTON_LEFT, Input.x(), Input.y());
             eventManager.callEvent(clickEvent);
         }
         if (Input.jclicked(GLFW.GLFW_MOUSE_BUTTON_RIGHT)) {
-            MouseClickEvent clickEvent = new MouseClickEvent(GLFW.GLFW_MOUSE_BUTTON_RIGHT, Input.getX(), Input.getY());
+            MouseClickEvent clickEvent = new MouseClickEvent(GLFW.GLFW_MOUSE_BUTTON_RIGHT, Input.x(), Input.y());
             eventManager.callEvent(clickEvent);
         }
         
         if(player != null) {
-            player.update(deltaTime, tickSystem.getPartialTick(), clientWorld);
+            player.update(deltaTime, tickSystem.partialTick(), clientWorld);
         }
     }
     
@@ -96,7 +96,7 @@ public class CraftEngineClient {
             hudRenderer.render(context);
         }
         if(currentScreen != null) {
-            currentScreen.render(context, (int) Input.getX(), (int) Input.getY(), 0);
+            currentScreen.render(context, (int) Input.x(), (int) Input.y(), 0);
         }
     }
     
@@ -117,18 +117,18 @@ public class CraftEngineClient {
             return;
         }
         
-        Vector3f rayOrigin = player.getCamera().getPosition();
-        Vector3f rayDirection = player.getCamera().getFront();
+        Vector3f rayOrigin = player.camera().position();
+        Vector3f rayDirection = player.camera().front();
         
-        if (event.getButton() == GLFW_MOUSE_BUTTON_LEFT) {
+        if (event.button() == GLFW_MOUSE_BUTTON_LEFT) {
             BlockRaycastResult blockRaycastResult = clientWorld.raycast(rayOrigin, rayDirection, 4.5f);
             if(blockRaycastResult != null){
                 clientWorld.setBlock(blockRaycastResult.x, blockRaycastResult.y, blockRaycastResult.z, Blocks.AIR);
             }
-        } else if (event.getButton() == GLFW_MOUSE_BUTTON_RIGHT) {
+        } else if (event.button() == GLFW_MOUSE_BUTTON_RIGHT) {
             BlockRaycastResult blockRaycastResult = clientWorld.raycast(rayOrigin, rayDirection, 4.5f);
-            if(blockRaycastResult != null && clientWorld.canPlaceBlockAt(blockRaycastResult.getPosition().add(blockRaycastResult.direction.offset()))) {
-                Vector3i blockPos = blockRaycastResult.getPosition().add(blockRaycastResult.direction.offset());
+            if(blockRaycastResult != null && clientWorld.canPlaceBlockAt(blockRaycastResult.position().add(blockRaycastResult.direction.offset()))) {
+                Vector3i blockPos = blockRaycastResult.position().add(blockRaycastResult.direction.offset());
                 clientWorld.setBlock(blockPos.x, blockPos.y, blockPos.z, Blocks.STONE);
             }
         }

@@ -1,5 +1,6 @@
 package ru.mrbedrockpy.renderer.graphics;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import org.joml.Vector2i;
 import ru.mrbedrockpy.renderer.api.IBlock;
@@ -11,7 +12,7 @@ import java.util.Map;
 
 public class TextureAtlas {
     private final int tileSize;
-    @Getter
+    @Getter(AccessLevel.PUBLIC)
     private final int atlasSize;
     private final Map<String, Vector2i> uvMap = new HashMap<>();
     private int currentX = 0;
@@ -47,12 +48,12 @@ public class TextureAtlas {
         return atlasImage;
     }
     
-    public Vector2i getUV(String name) {
+    public Vector2i uv(String name) {
         return uvMap.get(name);
     }
 
-    public float[] getNormalizedUV(String name, IBlock.Direction direction) {
-        Vector2i uv = getUV(name);
+    public float[] normalizedUV(String name, IBlock.Direction direction) {
+        Vector2i uv = uv(name);
         float tileCount = atlasSize;
         float unit = 1.0f / tileCount;
         

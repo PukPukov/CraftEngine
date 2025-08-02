@@ -1,6 +1,7 @@
 package ru.mrbedrockpy.renderer.phys;
 
 import org.joml.Vector3d;
+import org.joml.Vector3f;
 
 public class AABB {
     
@@ -27,6 +28,7 @@ public class AABB {
      *
      * @return Clone of the bounding box
      */
+    @Override
     public AABB clone() {
         return new AABB(this.minX, this.minY, this.minZ, this.maxX, this.maxY, this.maxZ);
     }
@@ -249,4 +251,13 @@ public class AABB {
     public AABB offset(double x, double y, double z) {
         return new AABB(this.minX + x, this.minY + y, this.minZ + z, this.maxX + x, this.maxY + y, this.maxZ + z);
     }
+    
+    public Vector3f root() {
+        return new Vector3f(
+            (float) ((this.minX + this.maxX) / 2.0D),
+            (float) ((this.minY + this.maxY) / 2.0D),
+            (float) this.minZ
+        );
+    }
+    
 }

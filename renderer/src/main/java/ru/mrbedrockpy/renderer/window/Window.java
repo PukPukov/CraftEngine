@@ -23,11 +23,11 @@ public class Window {
 
     public static void initialize(WindowSettings settings) {
 
-        Window.width = settings.getWidth();
-        Window.height = settings.getHeight();
-        Window.title = settings.getTitle();
-        Window.vsync = settings.isVsync();
-        Window.fullscreen = settings.isFullscreen();
+        Window.width = settings.width();
+        Window.height = settings.height();
+        Window.title = settings.title();
+        Window.vsync = settings.vsync();
+        Window.fullscreen = settings.fullscreen();
 
         if (System.getProperty("os.name").toLowerCase().contains("linux")) glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
 

@@ -28,7 +28,7 @@ public class EventManager {
         if (list != null) {
             for (Listener listener : list) {
                 ((Listener<T>) listener).execute(event);
-                if (event.isCancelled()) break;
+                if (event.cancelled()) break;
             }
         }
     }

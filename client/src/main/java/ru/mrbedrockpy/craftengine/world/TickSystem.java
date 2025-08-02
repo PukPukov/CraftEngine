@@ -39,7 +39,7 @@ public class TickSystem {
         }
     }
 
-    public double getPartialTick() {
-        return accumulator / tickTime;
+    public double partialTick() {
+        return ((double) accumulator) / ((double) tickTime);
     }
 }
