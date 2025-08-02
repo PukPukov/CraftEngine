@@ -49,37 +49,33 @@ public abstract class LivingEntity implements IEntity {
         previousTickPosition = new Vector3f(nextTickPosition);
     }
     
-    public void move(Vector3d direction) {
-        Vector3d prevDir = new Vector3d(direction);
+    public void move(Vector3d movement) {
+        Vector3d prevDir = new Vector3d(movement);
         
-        List<AABB> aabbs = this.world.cubes(this.boundingBox.expand(direction));
+        List<AABB> aabbs = this.world.cubes(this.boundingBox.expand(movement));
+        
+        for (AABB aABB : aabbs) {
+            movement.x = aABB.clipXCollide(this.boundingBox, movement.x);
+        }
+        this.boundingBox.move(movement.x, 0.0F, 0.0F);
+        
+        for (AABB aABB : aabbs) {
+            movement.y = aABB.clipYCollide(this.boundingBox, movement.y);
+        }
+        this.boundingBox.move(0.0F, movement.y, 0.0F);
         
         for (AABB abb : aabbs) {
-            direction.z = abb.clipZCollide(this.boundingBox, direction.z);
+            movement.z = abb.clipZCollide(this.boundingBox, movement.z);
         }
-        this.boundingBox.move(0.0F, 0.0F, direction.z);
+        this.boundingBox.move(0.0F, 0.0F, movement.z);
         
-        for (AABB aABB : aabbs) {
-            direction.x = aABB.clipXCollide(this.boundingBox, direction.x);
-        }
-        this.boundingBox.move(direction.x, 0.0F, 0.0F);
+        this.onGround = prevDir.z != movement.z && prevDir.z < 0.0F;
         
-        for (AABB aABB : aabbs) {
-            direction.y = aABB.clipYCollide(this.boundingBox, direction.y);
-        }
-        this.boundingBox.move(0.0F, direction.y, 0.0F);
+        if (prevDir.x != movement.x) this.velocity.x = 0.0F;
+        if (prevDir.y != movement.y) this.velocity.y  = 0.0F;
+        if (prevDir.z != movement.z) this.velocity.z = 0.0F;
         
-        this.onGround = prevDir.z != direction.z && prevDir.z < 0.0F;
-        
-        if (prevDir.x != direction.x) this.velocity.x = 0.0F;
-        if (prevDir.y != direction.y) this.velocity.y  = 0.0F;
-        if (prevDir.z != direction.z) this.velocity.z = 0.0F;
-        
-        nextTickPosition.set(
-            (float) ((this.boundingBox.minX + this.boundingBox.maxX) / 2.0D),
-            (float) ((this.boundingBox.minY + this.boundingBox.maxY) / 2.0D),
-            (float) this.boundingBox.minZ
-        );
+        nextTickPosition.set(this.boundingBox.root());
     }
     
     protected void moveRelative(float x, float y, float speed) {
