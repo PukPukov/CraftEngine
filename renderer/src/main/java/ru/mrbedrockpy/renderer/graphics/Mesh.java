@@ -74,25 +74,6 @@ public class Mesh {
         glBindVertexArray(0);
     }
 
-//    public MeshData getMeshData() {
-//        glBindVertexArray(vaoId);
-//        FloatBuffer positionBuffer = MemoryUtil.memAllocFloat(indexCount * 3);
-//        FloatBuffer uvBuffer = MemoryUtil.memAllocFloat(indexCount * 2);
-//
-//        glGetBufferSubData(GL_ARRAY_BUFFER, 0, positionBuffer);
-//        glGetBufferSubData(GL_ARRAY_BUFFER, indexCount * 3 * Float.BYTES, uvBuffer);
-//
-//        float[] positions = new float[positionBuffer.remaining()];
-//        float[] uvs = new float[uvBuffer.remaining()];
-//
-//        positionBuffer.get(positions);
-//        uvBuffer.get(uvs);
-//
-//        MemoryUtil.memFree(positionBuffer);
-//        MemoryUtil.memFree(uvBuffer);
-//
-//        return new MeshData(positions, uvs);
-//    }
 
     public static Mesh mergeMeshes(List<MeshData> meshDataList) {
         List<Float> combinedPositions = new ArrayList<>();
