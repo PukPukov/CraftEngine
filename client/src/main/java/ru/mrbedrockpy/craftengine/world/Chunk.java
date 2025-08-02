@@ -34,7 +34,6 @@ public class Chunk implements IChunk {
     public Chunk(Vector2i position, short[][][] blocks) {
         this.position = position;
         this.blocks = blocks;
-        this.dirty = true;
     }
     
     @Override
