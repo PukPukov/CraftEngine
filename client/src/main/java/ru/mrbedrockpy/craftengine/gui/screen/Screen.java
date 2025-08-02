@@ -21,14 +21,14 @@ public final class Screen {
         }
     }
 
-    public void onClose() {
+    public void close() {
         Input.closeGUI();
     }
 
-    public int addWidget(AbstractWidget widget) {
+    public void addWidget(AbstractWidget widget) {
         widgets.add(widget);
         widgets.sort(Comparator.comparingInt(AbstractWidget::zIndex));
-        return widgets.indexOf(widget);
+        widgets.indexOf(widget);
     }
     
     public void removeWidget(int index) {

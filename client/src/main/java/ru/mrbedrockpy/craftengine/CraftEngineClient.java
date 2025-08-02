@@ -2,11 +2,14 @@ package ru.mrbedrockpy.craftengine;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 import org.lwjgl.glfw.GLFW;
 import ru.mrbedrockpy.craftengine.event.EventManager;
 import ru.mrbedrockpy.craftengine.event.MouseClickEvent;
+import ru.mrbedrockpy.craftengine.gui.screen.InventoryScreen;
+import ru.mrbedrockpy.craftengine.world.item.Items;
 import ru.mrbedrockpy.renderer.RenderInit;
 import ru.mrbedrockpy.renderer.gui.DrawContext;
 import ru.mrbedrockpy.craftengine.gui.HudRenderer;
@@ -65,6 +68,7 @@ public class CraftEngineClient {
         hudRenderer = new HudRenderer(Window.width(), Window.height());
         eventManager.addListener(MouseClickEvent.class, this::onMouseClick);
         Blocks.register();
+        Items.register();
         Registries.freeze();
         RenderInit.BLOCKS = Registries.BLOCKS;
         setScreen(MainMenuScreen.create());
@@ -84,6 +88,9 @@ public class CraftEngineClient {
             MouseClickEvent clickEvent = new MouseClickEvent(GLFW.GLFW_MOUSE_BUTTON_RIGHT, Input.x(), Input.y());
             eventManager.callEvent(clickEvent);
         }
+        if (Input.jpressed(GLFW.GLFW_KEY_TAB)){
+            setScreen(InventoryScreen.create(player.inventory()));
+        }
         
         if(player != null) {
             player.update(deltaTime, tickSystem.partialTick(), clientWorld);
@@ -100,9 +107,9 @@ public class CraftEngineClient {
         }
     }
     
-    public void setScreen(Screen screen) {
+    public void setScreen(@Nullable Screen screen) {
         if (currentScreen != null) {
-            currentScreen.onClose();
+            currentScreen.close();
         }
         this.currentScreen = screen;
         if (screen != null) {

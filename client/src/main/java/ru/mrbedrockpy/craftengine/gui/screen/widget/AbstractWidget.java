@@ -9,7 +9,7 @@ public abstract class AbstractWidget {
     @Setter
     protected int x, y, width, height, zIndex;
     @Setter
-    private boolean visible = true;
+    protected boolean visible = true;
 
     public AbstractWidget(int x, int y, int width, int height) {
         this.x = x;
