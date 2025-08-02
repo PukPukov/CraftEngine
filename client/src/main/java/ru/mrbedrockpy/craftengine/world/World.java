@@ -59,6 +59,9 @@ public abstract class World implements IWorld {
                 chunk.tick();
             }
         }
+        for (var entity : this.entities) {
+            entity.tick();
+        }
     }
     
     @Override

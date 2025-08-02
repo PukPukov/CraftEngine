@@ -67,9 +67,6 @@ public class Chunk implements IChunk {
     
     @Override
     public void tick() {
-        for (IEntity entity : entities) {
-            entity.tick();
-        }
     }
     
     @Override
