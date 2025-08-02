@@ -51,7 +51,7 @@ public abstract class World implements IWorld {
                 IChunk chunk = chunk(chunkX, chunkY);
                 List<IEntity> entitiesInChunk = new ArrayList<>();
                 for (IEntity entity: entities) {
-                    if(chunk == chunkByBlockPosition(Math.round(entity.position().x), Math.round(entity.position().y))){
+                    if(chunk == chunkByBlockPosition(Math.round(entity.nextTickPosition().x), Math.round(entity.nextTickPosition().y))){
                         entitiesInChunk.add(entity);
                     }
                 }

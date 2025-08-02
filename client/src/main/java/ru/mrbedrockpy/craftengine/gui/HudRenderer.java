@@ -22,7 +22,7 @@ public class HudRenderer {
         context.drawTexture(width / 2 - 25,height / 2 - 25, 50, 50, texture);
         context.drawTexture(width / 2 - hudTexture.width() / 2 * 5, height - hudTexture.height() * 5, hudTexture.width() * 5, hudTexture.height() * 5, hudTexture);
         context.drawText(String.valueOf(CraftEngineClient.INSTANCE.fpsCounter().fps()), 5, 5, 0.5f);
-        context.drawText(positionToString(CraftEngineClient.INSTANCE.player().position()), 5, 20, 0.5f);
+        context.drawText(positionToString(CraftEngineClient.INSTANCE.player().nextTickPosition()), 5, 20, 0.5f);
         context.drawText(CraftEngineClient.INSTANCE.player().camera().angle().toString(), 5, 35, 0.5f);
     }
 

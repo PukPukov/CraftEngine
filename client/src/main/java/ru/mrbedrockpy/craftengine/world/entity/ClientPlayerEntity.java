@@ -26,12 +26,12 @@ public class ClientPlayerEntity extends LivingEntity {
         super.update(deltaTime, partialTick, world);
         if(!Input.isGUIOpen()) {
             camera.rotate(new Vector2f(
-                (float) ((float) -Input.deltaY() * sensitivity),
-                (float) ((float) -Input.deltaX() * sensitivity)
+                (float) -Input.deltaY() * sensitivity,
+                (float) -Input.deltaX() * sensitivity
             ));
         }
-        Vector3f cameraMove = interpolatePosition(prevPosition, position, partialTick);
-        camera.position(cameraMove.add(0, 0, currentEyeOffset));
+        Vector3f position = partialTick < 0.03 ? this.previousTickPosition : new Vector3f(this.previousTickPosition).lerp(this.nextTickPosition, (float) partialTick);
+        camera.position(new Vector3f(position).add(0, 0, currentEyeOffset));
     }
     
     //public void sneak(boolean sneak) {
@@ -41,14 +41,6 @@ public class ClientPlayerEntity extends LivingEntity {
     @Override
     public void render(Camera camera) {
 
-    }
-
-    public Vector3f interpolatePosition(Vector3f prevPosition, Vector3f currentPosition, double deltaTime) {
-        return new Vector3f(
-            (float) (prevPosition.x + (currentPosition.x - prevPosition.x) * deltaTime),
-            (float) (prevPosition.y + (currentPosition.y - prevPosition.y) * deltaTime),
-            (float) (prevPosition.z + (currentPosition.z - prevPosition.z) * deltaTime)
-        );
     }
     
     @Override

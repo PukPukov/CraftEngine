@@ -18,9 +18,9 @@ import java.util.List;
 public abstract class LivingEntity implements IEntity {
     
     @Getter
-    protected Vector3f position = new Vector3f();
+    protected Vector3f nextTickPosition = new Vector3f();
     protected Vector3f velocity = new Vector3f();
-    public Vector3f prevPosition = new Vector3f();
+    public Vector3f previousTickPosition = new Vector3f();
     @Getter
     protected Vector3f size = new Vector3f(1, 1, 1);
     protected int pitch;
@@ -34,10 +34,10 @@ public abstract class LivingEntity implements IEntity {
     private final float jumpStrength = 0.7f;
     protected AABB boundingBox;
     
-    public LivingEntity(Vector3f position, Vector3f size, World world) {
+    public LivingEntity(Vector3f nextTickPosition, Vector3f size, World world) {
         this.size.set(size);
         this.world = world;
-        setPosition(position);
+        setNextTickPosition(nextTickPosition);
     }
     
     public void update(double deltaTime, double partialTick, ClientWorld world){
@@ -46,7 +46,7 @@ public abstract class LivingEntity implements IEntity {
     
     @Override
     public void tick() {
-        prevPosition = new Vector3f(position);
+        previousTickPosition = new Vector3f(nextTickPosition);
     }
     
     public void move(Vector3d direction) {
@@ -75,7 +75,7 @@ public abstract class LivingEntity implements IEntity {
         if (prevDir.y != direction.y) this.velocity.y  = 0.0F;
         if (prevDir.z != direction.z) this.velocity.z = 0.0F;
         
-        position.set(
+        nextTickPosition.set(
             (float) ((this.boundingBox.minX + this.boundingBox.maxX) / 2.0D),
             (float) ((this.boundingBox.minY + this.boundingBox.maxY) / 2.0D),
             (float) this.boundingBox.minZ
@@ -99,11 +99,11 @@ public abstract class LivingEntity implements IEntity {
         velocity.y += (float) (y * cos + x * sin);
     }
     
-    public void setPosition(Vector3f position) {
-        this.position.set(position);
+    public void setNextTickPosition(Vector3f nextTickPosition) {
+        this.nextTickPosition.set(nextTickPosition);
         this.boundingBox = new AABB(
-            position.x - size.x / 2, position.y - size.y / 2, position.z,
-            position.x + size.x / 2, position.y + size.y / 2, position.z + size.z
+            nextTickPosition.x - size.x / 2, nextTickPosition.y - size.y / 2, nextTickPosition.z,
+            nextTickPosition.x + size.x / 2, nextTickPosition.y + size.y / 2, nextTickPosition.z + size.z
         );
     }
     
@@ -116,20 +116,20 @@ public abstract class LivingEntity implements IEntity {
     }
     
     public int x() {
-        return (int) position.x;
+        return (int) nextTickPosition.x;
     }
     
     public int y() {
-        return (int) position.y;
+        return (int) nextTickPosition.y;
     }
     
     public int z() {
-        return (int) position.z;
+        return (int) nextTickPosition.z;
     }
     
     @Override
     public Vector2i chunkPosition() {
-        return new Vector2i((int) (position.x / Chunk.WIDTH), (int) (position.y / Chunk.WIDTH));
+        return new Vector2i((int) (nextTickPosition.x / Chunk.WIDTH), (int) (nextTickPosition.y / Chunk.WIDTH));
     }
 
     @Override

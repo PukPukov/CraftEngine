@@ -40,6 +40,6 @@ public class TickSystem {
     }
 
     public double partialTick() {
-        return accumulator / tickTime;
+        return ((double) accumulator) / ((double) tickTime);
     }
 }
