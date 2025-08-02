@@ -52,19 +52,19 @@ public abstract class LivingEntity implements IEntity {
     public void move(Vector3d direction) {
         Vector3d prevDir = new Vector3d(direction);
         
-        List<AABB> aABBs = this.world.cubes(this.boundingBox.expand(direction));
+        List<AABB> aabbs = this.world.cubes(this.boundingBox.expand(direction));
         
-        for (AABB abb : aABBs) {
+        for (AABB abb : aabbs) {
             direction.z = abb.clipZCollide(this.boundingBox, direction.z);
         }
         this.boundingBox.move(0.0F, 0.0F, direction.z);
         
-        for (AABB aABB : aABBs) {
+        for (AABB aABB : aabbs) {
             direction.x = aABB.clipXCollide(this.boundingBox, direction.x);
         }
         this.boundingBox.move(direction.x, 0.0F, 0.0F);
         
-        for (AABB aABB : aABBs) {
+        for (AABB aABB : aabbs) {
             direction.y = aABB.clipYCollide(this.boundingBox, direction.y);
         }
         this.boundingBox.move(0.0F, direction.y, 0.0F);
