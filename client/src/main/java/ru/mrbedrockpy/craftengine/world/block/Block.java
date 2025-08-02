@@ -1,20 +1,17 @@
 package ru.mrbedrockpy.craftengine.world.block;
 
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import ru.mrbedrockpy.renderer.api.IBlock;
 import ru.mrbedrockpy.renderer.phys.AABB;
 
+@RequiredArgsConstructor
+@Getter
 public class Block implements IBlock {
+    
+    private final String id;
     private final boolean solid;
-
-    public Block(boolean solid) {
-        this.solid = solid;
-    }
-
-    @Override
-    public boolean solid() {
-        return solid;
-    }
 
     @Override
     public AABB aabb(int x, int y, int z) {

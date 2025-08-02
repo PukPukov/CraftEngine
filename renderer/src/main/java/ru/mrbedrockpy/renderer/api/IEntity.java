@@ -5,7 +5,7 @@ import org.joml.Vector3f;
 import ru.mrbedrockpy.renderer.phys.AABB;
 
 public interface IEntity {
-    float currentEyeOffset();
+    double currentEyeOffset();
     Vector2i chunkPosition();
     Vector3f nextTickPosition();
     void tick();

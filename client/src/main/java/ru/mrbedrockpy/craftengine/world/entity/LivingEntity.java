@@ -13,6 +13,7 @@ import ru.mrbedrockpy.craftengine.world.ClientWorld;
 import ru.mrbedrockpy.craftengine.world.World;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 // TODO: разделить LivingEntity на Entity и LivingEntity, чтобы не было лишних методов в LivingEntity
 public abstract class LivingEntity implements IEntity {
@@ -31,7 +32,7 @@ public abstract class LivingEntity implements IEntity {
     
     protected boolean onGround = false;
     
-    private final float jumpStrength = 0.7f;
+    private final float jumpStrength = 0.5f;
     protected AABB boundingBox;
     
     public LivingEntity(Vector3f nextTickPosition, Vector3f size, World world) {
@@ -49,42 +50,78 @@ public abstract class LivingEntity implements IEntity {
         previousTickPosition = new Vector3f(nextTickPosition);
     }
     
-    public void move(Vector3d movement) {
-        Vector3d prevDir = new Vector3d(movement);
+    // MOVE LIMITED
+    public void moveLimited(Vector3d movement, boolean protectFromFalling) {
+        Vector3d originalMovement = new Vector3d(movement);
         
         List<AABB> aabbs = this.world.cubes(this.boundingBox.expand(movement));
         
-        for (AABB aABB : aabbs) {
-            movement.x = aABB.clipXCollide(this.boundingBox, movement.x);
+        if (protectFromFalling && this.onGround) {
+            var xProbeBox = this.boundingBox.clone();
+            xProbeBox.move(movement.x, 0f, 0f);
+            var yProbeBox = this.boundingBox.clone();
+            yProbeBox.move(0f, movement.y, 0f);
+            
+            double initialProbe = -0.25;
+            double xProbe = initialProbe, yProbe = initialProbe;
+            for (AABB aabb : aabbs) {
+                xProbe = aabb.clipZCollide(xProbeBox, xProbe);
+                yProbe = aabb.clipZCollide(yProbeBox, yProbe);
+            }
+            if (xProbe == initialProbe) this.moveCloseToBounds(
+                movement.x, (x) -> movement.x = x,
+                this.boundingBox.minX, this.boundingBox.maxX
+            );
+            if (yProbe == initialProbe) this.moveCloseToBounds(
+                movement.y, (y) -> movement.y = y,
+                this.boundingBox.minY, this.boundingBox.maxY
+            );
+        }
+        
+        for (AABB aabb : aabbs) {
+            movement.x = aabb.clipXCollide(this.boundingBox, movement.x);
         }
         this.boundingBox.move(movement.x, 0.0F, 0.0F);
         
-        for (AABB aABB : aabbs) {
-            movement.y = aABB.clipYCollide(this.boundingBox, movement.y);
+        for (AABB aabb : aabbs) {
+            movement.y = aabb.clipYCollide(this.boundingBox, movement.y);
         }
         this.boundingBox.move(0.0F, movement.y, 0.0F);
         
-        for (AABB abb : aabbs) {
-            movement.z = abb.clipZCollide(this.boundingBox, movement.z);
+        for (AABB aabb : aabbs) {
+            movement.z = aabb.clipZCollide(this.boundingBox, movement.z);
         }
         this.boundingBox.move(0.0F, 0.0F, movement.z);
         
-        this.onGround = prevDir.z != movement.z && prevDir.z < 0.0F;
+        this.onGround = originalMovement.z != movement.z && originalMovement.z < 0.0F;
         
-        if (prevDir.x != movement.x) this.velocity.x = 0.0F;
-        if (prevDir.y != movement.y) this.velocity.y  = 0.0F;
-        if (prevDir.z != movement.z) this.velocity.z = 0.0F;
+        if (originalMovement.x != movement.x) this.velocity.x = 0.0F;
+        if (originalMovement.y != movement.y) this.velocity.y  = 0.0F;
+        if (originalMovement.z != movement.z) this.velocity.z = 0.0F;
         
         nextTickPosition.set(this.boundingBox.root());
     }
     
-    protected void moveRelative(float x, float y, float speed) {
+    private void moveCloseToBounds(double coordinate, Consumer<Double> coordinateSetter, double min, double max) {
+        boolean forward = coordinate > 0;
+        double fBoxFace = (forward ? min : max);
+        double next = fBoxFace + coordinate;
+        int target = forward ? (int) next : (int) Math.ceil(next);
+        double resultMove = target-fBoxFace;
+        if (forward) resultMove -= 0.0001;
+        else resultMove += 0.0001;
+        coordinateSetter.accept(resultMove);
+    }
+    
+    // MOVE LIMITED.END
+    
+    protected void changeVelocityByForce(float x, float y, float force) {
         float distance = x * x + y * y;
         
         if (distance < 0.01F)
             return;
         
-        distance = speed / (float) Math.sqrt(distance);
+        distance = force / (float) Math.sqrt(distance);
         x *= distance;
         y *= distance;
         
@@ -111,15 +148,15 @@ public abstract class LivingEntity implements IEntity {
         }
     }
     
-    public int x() {
+    public int blockX() {
         return (int) nextTickPosition.x;
     }
     
-    public int y() {
+    public int blockY() {
         return (int) nextTickPosition.y;
     }
     
-    public int z() {
+    public int blockZ() {
         return (int) nextTickPosition.z;
     }
     

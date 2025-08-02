@@ -1,5 +1,6 @@
 package ru.mrbedrockpy.craftengine.registry;
 
+import ru.mrbedrockpy.craftengine.world.block.Block;
 import ru.mrbedrockpy.renderer.api.IRegistryProvider;
 
 import java.util.*;
@@ -35,8 +36,9 @@ public class Registry<T> implements IRegistryProvider<T> {
 
     @Override
     public T get(int id) {
-        if (id < 0 || id >= idToObject.size()) return null;
-        return idToObject.get(id);
+        if (id < 0 || id >= idToObject.size()) throw new IllegalStateException("No such entry");
+        T entry = idToObject.get(id);
+        return entry;
     }
 
     @Override
