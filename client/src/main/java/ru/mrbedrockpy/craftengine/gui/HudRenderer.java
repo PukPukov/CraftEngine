@@ -5,13 +5,18 @@ import ru.mrbedrockpy.craftengine.CraftEngineClient;
 import ru.mrbedrockpy.renderer.graphics.Texture;
 import ru.mrbedrockpy.renderer.gui.DrawContext;
 
+import java.text.DecimalFormat;
+
 public class HudRenderer {
-
+    
+    private final DecimalFormat decimalFormat = new DecimalFormat();
+    
     public int width;
-
     public int height;
 
     public HudRenderer(int width, int height) {
+        this.decimalFormat.setMaximumFractionDigits(3);
+        this.decimalFormat.setMinimumFractionDigits(3);
         this.width = width;
         this.height = height;
     }
@@ -25,8 +30,8 @@ public class HudRenderer {
         context.drawText(positionToString(CraftEngineClient.INSTANCE.player().nextTickPosition()), 5, 20, 0.5f);
         context.drawText(CraftEngineClient.INSTANCE.player().camera().angle().toString(), 5, 35, 0.5f);
     }
-
+    
     public String positionToString(Vector3f position) {
-        return Math.round(position.x) + ", " + Math.round(position.y) + ", " + Math.round(position.z);
+        return this.decimalFormat.format(position.x) + ", " + this.decimalFormat.format(position.y) + ", " + this.decimalFormat.format(position.z);
     }
 }
