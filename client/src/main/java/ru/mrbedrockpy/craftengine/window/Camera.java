@@ -3,23 +3,60 @@ package ru.mrbedrockpy.craftengine.window;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+import ru.mrbedrockpy.craftengine.Util;
 import ru.mrbedrockpy.renderer.api.ICamera;
 
 public class Camera implements ICamera {
     
+    // CONSTANTS
+    
+    private static final float standardFovDegrees = 80;
+    private static final float sprintFovDegrees = standardFovDegrees+20;
+    private static final float aspectRatio = 16f / 9f;
+    private static final float zNear = 0.1f;
+    private static final float zFar = 1000f;
+    private static final double fovChangeStepRadians = Math.toRadians(Util.genericLerpStep(sprintFovDegrees, standardFovDegrees, 100));
+    
+    // STATE
+    private       boolean  fovChangePhase = false;
+    private       double   targetFovRadians = (float) Math.toRadians(standardFovDegrees);
+    private       double   actualFovRadians = targetFovRadians;
     private final Matrix4f viewMatrix = new Matrix4f();
     private final Matrix4f projectionMatrix = new Matrix4f();
     private final Vector3f position = new Vector3f(0,0,0);
     private final Vector2f angle = new Vector2f(0,0); // pitch (x), yaw (y)
     
-    private final float fov = (float) Math.toRadians(80.0);
-    private final float aspectRatio = 16f / 9f;
-    private final float zNear = 0.1f;
-    private final float zFar = 1000f;
-    
     public Camera() {
         updateProjectionMatrix();
         updateViewMatrix();
+    }
+    
+    public void frameUpdate(long previousTime, long currentTime) {
+        Util.genericLerp(
+            previousTime, currentTime,
+            this.actualFovRadians, this.targetFovRadians, this::changeFov,
+            fovChangeStepRadians,
+            this.fovChangePhase, (phase) -> this.fovChangePhase = phase
+        );
+        updateProjectionMatrix();
+    }
+    
+    public void walk() {
+        this.lerpFovTo(standardFovDegrees);
+    }
+    
+    public void sprint() {
+        this.lerpFovTo(sprintFovDegrees);
+    }
+    
+    public void lerpFovTo(float targetFov) {
+        this.targetFovRadians = (float) Math.toRadians(targetFov);
+        this.fovChangePhase = true;
+    }
+    
+    public void changeFov(double actualFovRadians) {
+        this.actualFovRadians = actualFovRadians;
+        this.updateProjectionMatrix();
     }
     
     public void position(Vector3f position) {
@@ -72,7 +109,7 @@ public class Camera implements ICamera {
     
     public void updateProjectionMatrix() {
         projectionMatrix.identity();
-        projectionMatrix.perspective(fov, aspectRatio, zNear, zFar);
+        projectionMatrix.perspective((float) actualFovRadians, aspectRatio, zNear, zFar);
     }
     
     public void updateViewMatrix() {
