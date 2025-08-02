@@ -6,6 +6,11 @@ plugins {
 group = 'ru.mrbedrockpy.craftengine'
 version = '1.0.0'
 
+repositories {
+    mavenCentral()
+    maven { url 'https://projectlombok.org/edge-releases' }
+}
+
 def lombok = "org.projectlombok:lombok:1.18.38";
 dependencies {
     compileOnly lombok

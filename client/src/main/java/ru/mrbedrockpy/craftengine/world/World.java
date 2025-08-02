@@ -1,6 +1,8 @@
 package ru.mrbedrockpy.craftengine.world;
 
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2i;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
@@ -18,6 +20,7 @@ import ru.mrbedrockpy.renderer.world.raycast.BlockRaycastResult;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public abstract class World implements IWorld {
     
@@ -49,6 +52,7 @@ public abstract class World implements IWorld {
         for (int chunkX = 0; chunkX < 8; chunkX++) {
             for (int chunkY = 0; chunkY < 8; chunkY++) {
                 IChunk chunk = chunk(chunkX, chunkY);
+                if (chunk == null) throw new IllegalStateException();
                 List<IEntity> entitiesInChunk = new ArrayList<>();
                 for (IEntity entity: entities) {
                     if(chunk == chunkByBlockPosition(Math.round(entity.nextTickPosition().x), Math.round(entity.nextTickPosition().y))){
@@ -150,7 +154,7 @@ public abstract class World implements IWorld {
     }
     
     @Override
-    public IChunk chunk(int x, int y) {
+    public @Nullable IChunk chunk(int x, int y) {
         try {
             if(this.chunks[x][y] == null) {
                 this.chunks[x][y] = new Chunk(new Vector2i(x, y));
@@ -162,7 +166,7 @@ public abstract class World implements IWorld {
     }
     
     @Override
-    public IChunk chunkByBlockPosition(int x, int y) {
+    public @Nullable IChunk chunkByBlockPosition(int x, int y) {
         return chunk(Math.floorDiv(x, Chunk.WIDTH), Math.floorDiv(y, Chunk.WIDTH));
     }
     
@@ -177,7 +181,9 @@ public abstract class World implements IWorld {
             return Blocks.AIR;
         }
         IChunk chunk = chunkByBlockPosition(x, y);
-        if (chunk == null) return Blocks.AIR; // Outside of the world's horizontal bounds
+        if (chunk == null) {
+            return Blocks.AIR; // Outside of the world's horizontal bounds
+        }
         return chunk.block(
             Math.floorMod(x, Chunk.WIDTH),
             Math.floorMod(y, Chunk.WIDTH),

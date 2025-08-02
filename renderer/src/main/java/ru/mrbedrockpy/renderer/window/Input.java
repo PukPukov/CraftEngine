@@ -3,6 +3,8 @@ package ru.mrbedrockpy.renderer.window;
 import lombok.Getter;
 
 import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11C.glViewport;
@@ -40,14 +42,22 @@ public class Input {
     @Getter private static double y = 0f;
 
     private static boolean cursorStarted = false;
+    
+    public static Map<Integer, Runnable> onPress = new ConcurrentHashMap<>();
+    public static Map<Integer, Runnable> onRelease = new ConcurrentHashMap<>();
+    
 
-    private static void keyCallback(long window, int key, int scancode, int action, int mode) {
-        if (action == GLFW_PRESS) {
+    private static void keyCallback(long window, int key, int scancode, int inputAction, int mode) {
+        if (inputAction == GLFW_PRESS) {
             keys[key] = true;
             frames[key] = current;
-        } else if (action == GLFW_RELEASE) {
+            Runnable resultGameAction = onPress.get(key);
+            if (resultGameAction != null) resultGameAction.run();
+        } else if (inputAction == GLFW_RELEASE) {
             keys[key] = false;
             frames[key] = current;
+            Runnable resultGameAction = onRelease.get(key);
+            if (resultGameAction != null) resultGameAction.run();
         }
     }
 
