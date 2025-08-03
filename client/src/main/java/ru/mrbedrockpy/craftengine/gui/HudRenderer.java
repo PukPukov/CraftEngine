@@ -33,7 +33,7 @@ public class HudRenderer {
     public Texture texture = Texture.load("cursor.png"), hudTexture = Texture.load("hotbar.png");
     
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        context.drawTexture(width / 2, height / 2, 10, 10, texture);
+        context.drawTextureCentred(width / 2, height / 2, 10, 10, texture);
         context.drawTexture(width / 2 - hudTexture.width() / 2, height - hudTexture.height(), hudTexture.width(), hudTexture.height(), hudTexture);
         context.drawText(String.valueOf(CraftEngineClient.INSTANCE.fpsCounter().fps()), 5, 5, 0.5f);
         context.drawText(positionToString(CraftEngineClient.INSTANCE.player().tickPosition()), 5, 10, 0.5f);
