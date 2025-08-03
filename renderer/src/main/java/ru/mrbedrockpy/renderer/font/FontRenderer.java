@@ -98,7 +98,7 @@ public class FontRenderer {
             }
         }
 
-        return new Vector2i(width, maxHeight);
+        return new Vector2i(Math.ceilDiv(width, 6), Math.ceilDiv(maxHeight, 6));
     }
 
     public void dispose() {

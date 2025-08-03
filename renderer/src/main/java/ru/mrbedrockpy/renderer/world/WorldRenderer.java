@@ -53,7 +53,7 @@ public class WorldRenderer {
         for(IChunk[] chunks : world.chunks()){
             for (IChunk chunk : chunks){
                 if (chunk == null) continue;
-                if (!culler.isBoxVisible(
+                if (player.chunkPosition().gridDistance(chunk.position()) > 8 || !culler.isBoxVisible(
                         chunk.worldPosition().x, chunk.worldPosition().y, 0,
                         chunk.worldPosition().x + IChunk.WIDTH,
                         chunk.worldPosition().y + IChunk.WIDTH,

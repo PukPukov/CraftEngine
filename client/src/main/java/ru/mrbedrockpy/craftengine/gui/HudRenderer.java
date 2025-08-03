@@ -5,6 +5,7 @@ import ru.mrbedrockpy.craftengine.CraftEngineClient;
 import ru.mrbedrockpy.craftengine.gui.screen.InventoryScreen;
 import ru.mrbedrockpy.craftengine.gui.screen.UI;
 import ru.mrbedrockpy.craftengine.gui.screen.widget.SlotWidget;
+import ru.mrbedrockpy.craftengine.world.entity.ClientPlayerEntity;
 import ru.mrbedrockpy.renderer.graphics.Texture;
 import ru.mrbedrockpy.renderer.gui.DrawContext;
 
@@ -25,18 +26,24 @@ public class HudRenderer {
         this.height = height;
         for (int i = 0; i < hotbarSlots.length; i++) {
             hotbarSlots[i] = UI.slot(CraftEngineClient.INSTANCE.player().inventory(), i, InventoryScreen::slotClick);
-            hotbarSlots[i].setPosition(width / 2 + 15 + i * 18 * 5 - hudTexture.width() / 2 * 5, height - hudTexture.height() / 2 - 80);
+            hotbarSlots[i].setPosition(width / 2 + i * 20 - hudTexture.width() / 2 + 2, height - hudTexture.height() + 2);
         }
     }
 
     public Texture texture = Texture.load("cursor.png"), hudTexture = Texture.load("hotbar.png");
 
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        context.drawTexture(width / 2 - 25,height / 2 - 25, 50, 50, texture);
-        context.drawTexture(width / 2 - hudTexture.width() / 2 * 5, height - hudTexture.height() * 5, hudTexture.width() * 5, hudTexture.height() * 5, hudTexture);
+        context.drawTexture(width / 2,height / 2, 10, 10, texture);
+        context.drawTexture(width / 2 - hudTexture.width() / 2, height - hudTexture.height(), hudTexture.width(), hudTexture.height(), hudTexture);
         context.drawText(String.valueOf(CraftEngineClient.INSTANCE.fpsCounter().fps()), 5, 5, 0.5f);
-        context.drawText(positionToString(CraftEngineClient.INSTANCE.player().nextTickPosition()), 5, 20, 0.5f);
-        context.drawText(CraftEngineClient.INSTANCE.player().camera().angle().toString(), 5, 35, 0.5f);
+        context.drawText(positionToString(CraftEngineClient.INSTANCE.player().position()), 5, 10, 0.5f);
+        context.drawText(CraftEngineClient.INSTANCE.player().camera().angle().toString(), 5, 15, 0.5f);
+        ClientPlayerEntity player = CraftEngineClient.INSTANCE.player();
+        double dx = player.position().x - player.prevPosition.x;
+        double dz = player.position().y - player.prevPosition.y;
+        double speed = Math.sqrt(dx * dx + dz * dz) * 20;
+        String speedText = String.format("Speed: %.2f b/s", speed);
+        context.drawText(speedText, 5, 20, 0.5f);
         for(SlotWidget slot : hotbarSlots) {
             slot.render(context, mouseX, mouseY, delta);
         }

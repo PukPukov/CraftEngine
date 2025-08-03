@@ -106,4 +106,12 @@ public class Window {
     public static void setVsync(boolean flag) {
         glfwSwapInterval(flag ? 1 : 0);
     }
+
+    public static int scaledWidth(int scale) {
+        return Math.ceilDiv(width(), Math.max(scale, 1));
+    }
+
+    public static int scaledHeight(int scale) {
+        return Math.ceilDiv(height(), Math.max(scale, 1));
+    }
 }

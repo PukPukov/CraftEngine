@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 import org.lwjgl.glfw.GLFW;
+import ru.mrbedrockpy.craftengine.config.ConfigVars;
 import ru.mrbedrockpy.craftengine.config.CraftEngineConfiguration;
 import ru.mrbedrockpy.craftengine.config.JsonConfig;
 import ru.mrbedrockpy.craftengine.event.EventManager;
@@ -65,9 +66,10 @@ public class CraftEngineClient {
     
     public void initialize() {
         CraftEngineConfiguration.register();
-        Window.initialize(CraftEngineConfiguration.MAIN_CONFIG.getObject("window.settings", WindowSettings.class, WindowSettings.DEFAULT));
+        ConfigVars.update();
+        Window.initialize(ConfigVars.WINDOW_SETTINGS);
         Input.initialize();
-        context = new DrawContext(Window.width(), Window.height());
+        context = new DrawContext(Window.scaledWidth(ConfigVars.GUI_SCALE), Window.scaledHeight(ConfigVars.GUI_SCALE));
         eventManager.addListener(MouseClickEvent.class, this::onMouseClick);
         Blocks.register();
         Items.register();
@@ -102,10 +104,10 @@ public class CraftEngineClient {
     private void render() {
         if(clientWorld != null && player != null) {
             clientWorld.render();
-            hudRenderer.render(context, (int) Input.x(), (int) Input.y(), (float) tickSystem.partialTick());
+            hudRenderer.render(context, scale((int) Input.x()),  scale((int) Input.y()), (float) tickSystem.partialTick());
         }
         if(currentScreen != null) {
-            currentScreen.render(context, (int) Input.x(), (int) Input.y(), (float) tickSystem.partialTick());
+            currentScreen.render(context, scale((int) Input.x()), scale((int) Input.y()), (float) tickSystem.partialTick());
         }
     }
     
@@ -141,5 +143,10 @@ public class CraftEngineClient {
                 clientWorld.setBlock(blockPos.x, blockPos.y, blockPos.z, Blocks.STONE);
             }
         }
+    }
+
+    // Я хз как адекватно сделать масштабирование, поэтому просто делаю так
+    private int scale(int value) {
+        return (int) (value / (float) Window.width() * Window.scaledWidth(ConfigVars.GUI_SCALE));
     }
 }

@@ -1,10 +1,12 @@
 package ru.mrbedrockpy.craftengine.gui.screen;
 
+import ru.mrbedrockpy.craftengine.config.ConfigVars;
 import ru.mrbedrockpy.craftengine.event.MouseClickEvent;
 import ru.mrbedrockpy.craftengine.gui.screen.callback.RenderCallback;
 import ru.mrbedrockpy.renderer.gui.DrawContext;
 import ru.mrbedrockpy.craftengine.gui.screen.widget.AbstractWidget;
 import ru.mrbedrockpy.renderer.window.Input;
+import ru.mrbedrockpy.renderer.window.Window;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -38,8 +40,8 @@ public final class Screen {
     public void onMouseClick(MouseClickEvent event) {
         if(Input.isGUIOpen()) {
             for (AbstractWidget widget : widgets) {
-                if (widget.visible() && widget.isMouseOver((int) event.x(), (int) event.y())) {
-                    widget.onMouseClick((int) event.x(), (int) event.y(), event.button());
+                if (widget.visible() && widget.isMouseOver(scale((int) event.x()), scale((int) event.y()))) {
+                    widget.onMouseClick(scale((int) event.x()), scale((int) event.y()), event.button());
                 }
             }
         }
@@ -62,5 +64,9 @@ public final class Screen {
 
     public void setRenderCallback(RenderCallback onRender){
         this.onRender = onRender;
+    }
+
+    private int scale(int value) {
+        return (int) (value / (float) Window.width() * Window.scaledWidth(ConfigVars.GUI_SCALE));
     }
 }

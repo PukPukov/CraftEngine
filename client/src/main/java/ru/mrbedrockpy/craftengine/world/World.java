@@ -1,7 +1,6 @@
 package ru.mrbedrockpy.craftengine.world;
 
 import lombok.Getter;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2i;
 import org.joml.Vector3d;
@@ -20,7 +19,6 @@ import ru.mrbedrockpy.renderer.world.raycast.BlockRaycastResult;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public abstract class World implements IWorld {
     
@@ -39,8 +37,8 @@ public abstract class World implements IWorld {
     }
     
     private void generateWorld() {
-        for (int chunkX = 0; chunkX < 8; chunkX++) {
-            for (int chunkY = 0; chunkY < 8; chunkY++) {
+        for (int chunkX = 0; chunkX < chunks.length; chunkX++) {
+            for (int chunkY = 0; chunkY < chunks.length; chunkY++) {
                 Chunk chunk = new Chunk(new Vector2i(chunkX, chunkY));
                 chunkGenerator.generate(chunk.position(), chunk);
                 this.chunks[chunkX][chunkY] = chunk;
@@ -55,7 +53,7 @@ public abstract class World implements IWorld {
                 if (chunk == null) throw new IllegalStateException();
                 List<IEntity> entitiesInChunk = new ArrayList<>();
                 for (IEntity entity: entities) {
-                    if(chunk == chunkByBlockPosition(Math.round(entity.nextTickPosition().x), Math.round(entity.nextTickPosition().y))){
+                    if(chunk == chunkByBlockPosition(Math.round(entity.position().x), Math.round(entity.position().y))){
                         entitiesInChunk.add(entity);
                     }
                 }

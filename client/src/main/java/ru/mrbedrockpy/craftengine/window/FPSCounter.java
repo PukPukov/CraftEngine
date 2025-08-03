@@ -18,7 +18,7 @@ public class FPSCounter {
         long currentTime = System.currentTimeMillis();
         int frametime = (int) (currentTime-this.previousTime);
         if (currentTime - this.previousTime > 5) {
-            System.out.println("STUTTER: "+frametime);
+//            System.out.println("STUTTER: "+frametime);
         }
         if (currentTime - secStart >= 1000) {
             fps = frames;

@@ -6,8 +6,7 @@ import ru.mrbedrockpy.renderer.api.IRegistryProvider;
 
 public class RenderInit {
     public static IRegistryProvider<IBlock> BLOCKS;
-    public static <T> void init() {
+    public static void init() {
 
     }
-
 }

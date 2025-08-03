@@ -8,16 +8,14 @@ import ru.mrbedrockpy.craftengine.world.ClientWorld;
 import ru.mrbedrockpy.craftengine.world.inventory.PlayerInventory;
 import ru.mrbedrockpy.renderer.window.Input;
 
-import java.util.function.DoublePredicate;
-
 import static org.lwjgl.glfw.GLFW.*;
 
 public class ClientPlayerEntity extends LivingEntity {
 
     // CONSTANTS
 
-    private static final float speedStandard = 0.1f;
-    private static final float speedSneaking = 0.05f; // сделано не мультиплаерами т.к. приседание в воздухе не должно менять скорость
+    private static final float speedStandard = 0.07f;
+    private static final float speedSneaking = 0.035f; // сделано не мультиплаерами т.к. приседание в воздухе не должно менять скорость
     private static final float speedInAir = 0.02f;
     private static final float sprintingMultiplier = 1.3f;
 
@@ -71,8 +69,13 @@ public class ClientPlayerEntity extends LivingEntity {
         this.camera.frameUpdate(this.previousFrameTimeNanos, currentTime);
         this.previousFrameTimeNanos = currentTime;
 
-        Vector3f position = partialTick < 0.03 ? this.previousTickPosition : new Vector3f(this.previousTickPosition).lerp(this.nextTickPosition, (float) partialTick);
+        Vector3f position = partialTick < 0.03 ? this.prevPosition : new Vector3f(this.prevPosition).lerp(this.position, (float) partialTick);
         camera.position(new Vector3f(position).add(0, 0, (float) currentEyeOffset));
+    }
+
+    @Override
+    public Vector3f position() {
+        return position;
     }
 
     @Override

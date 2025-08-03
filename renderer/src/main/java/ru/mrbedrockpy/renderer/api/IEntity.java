@@ -7,7 +7,7 @@ import ru.mrbedrockpy.renderer.phys.AABB;
 public interface IEntity {
     double currentEyeOffset();
     Vector2i chunkPosition();
-    Vector3f nextTickPosition();
+    Vector3f position();
     void tick();
     AABB boundingBox();
 }

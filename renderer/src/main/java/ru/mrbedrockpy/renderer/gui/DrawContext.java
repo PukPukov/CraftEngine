@@ -9,6 +9,7 @@ import ru.mrbedrockpy.renderer.font.FontRenderer;
 import ru.mrbedrockpy.renderer.graphics.MatrixStack;
 import ru.mrbedrockpy.renderer.graphics.Shader;
 import ru.mrbedrockpy.renderer.graphics.Texture;
+import ru.mrbedrockpy.renderer.window.Window;
 
 import java.awt.*;
 import java.io.IOException;
@@ -36,12 +37,6 @@ public class DrawContext {
         textShader = Shader.load("ui_vertex.glsl", "text_fragment.glsl");
 
         matrices.set(new Matrix4f().ortho(0.0f, screenWidth, screenHeight, 0.0f, -1.0f, 1.0f));
-        // TODO: скейлинг экранов
-//        matrices.push();
-//        if(scaled){
-//            matrices.scale(Math.ceilDiv(screenHeight, 6), Math.ceilDiv(screenHeight, 6), 0.0f);
-//        }
-//        matrices.pop();
 
         vaoId = glGenVertexArrays();
         vboId = glGenBuffers();
@@ -59,7 +54,8 @@ public class DrawContext {
 
         fontRenderer = new FontRenderer();
         try {
-            fontRenderer.init("UbuntuMono.ttf");
+            // Выберите другой шрифт если хотите, для теста 6, когда api будет изменим
+            fontRenderer.init("minecraft.ttf");
         } catch (IOException e) {
             throw new RuntimeException("Font load error", e);
         }
@@ -115,6 +111,7 @@ public class DrawContext {
         drawText(text, x, y, 1.0f);
     }
     public void drawText(String text, int x, int y, float scale) {
+        scale *= 0.3f;
         glDisable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
         glDisable(GL_CULL_FACE);

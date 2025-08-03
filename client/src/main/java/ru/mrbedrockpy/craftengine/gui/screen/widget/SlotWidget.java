@@ -21,7 +21,7 @@ public class SlotWidget extends AbstractWidget {
                       Supplier<ItemStack> getter,
                       Consumer<ItemStack> setter,
                       Consumer<SlotWidget> onClick) {
-        super(x, y, 18, 18);
+        super(x, y, 16, 16);
         this.getter = getter;
         this.setter = setter;
         this.onClick = onClick;
@@ -31,7 +31,7 @@ public class SlotWidget extends AbstractWidget {
 
     /** Текущий стек в этом игровом слоте */
     public ItemStack stack() {
-        return getter.get();
+        return getter.get() != null ? getter.get() : ItemStack.EMPTY;
     }
 
     /** Записать новый стек в слот */
@@ -47,8 +47,7 @@ public class SlotWidget extends AbstractWidget {
 
         ItemStack s = stack();
         if (s != null &&!s.isEmpty()) {
-            // пока так, надо сделать скейлинг
-            ctx.drawTexture(x + 1, y + 1, 16 * 5, 16 * 5, Texture.load(Registries.ITEMS.name(s.item()) + ".png"));
+            ctx.drawTexture(x + 1, y + 1, 16, 16, Texture.load(Registries.ITEMS.name(s.item()) + ".png"));
         }
     }
 
