@@ -150,7 +150,13 @@ public abstract class World implements IWorld {
         
         return null;
     }
-    
+
+    @Nullable
+    @Override
+    public IChunk chunk(Vector2i pos) {
+        return this.chunk(pos.x, pos.y);
+    }
+
     @Override
     public @Nullable IChunk chunk(int x, int y) {
         try {

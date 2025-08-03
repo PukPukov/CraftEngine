@@ -1,8 +1,10 @@
 package ru.mrbedrockpy.renderer.world;
 
 import org.joml.Matrix4f;
+import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
+import ru.mrbedrockpy.renderer.RenderVars;
 import ru.mrbedrockpy.renderer.api.ICamera;
 import ru.mrbedrockpy.renderer.api.IChunk;
 import ru.mrbedrockpy.renderer.api.IEntity;
@@ -50,21 +52,19 @@ public class WorldRenderer {
         shader.setUniformMatrix4f("view", camera.viewMatrix());
         shader.setUniformMatrix4f("projection", camera.projectionMatrix());
         texture.use();
-        for(IChunk[] chunks : world.chunks()){
-            for (IChunk chunk : chunks){
-                if (chunk == null) continue;
-                if (player.chunkPosition().gridDistance(chunk.position()) > 8 || !culler.isBoxVisible(
-                        chunk.worldPosition().x, chunk.worldPosition().y, 0,
-                        chunk.worldPosition().x + IChunk.WIDTH,
-                        chunk.worldPosition().y + IChunk.WIDTH,
-                        IChunk.HEIGHT
-                )) {
-                    continue;
-                }
-                Mesh mesh = chunk.chunkMesh(world, atlas);
-                mesh.render();
-//                mesh.cleanup();
+        for(IChunk chunk : chunksAround(player.chunkPosition(), RenderVars.RENDER_DISTANCE, world)) {
+            if (chunk == null) continue;
+            if (distanceByAxis(player.chunkPosition(), chunk.position()) > RenderVars.RENDER_DISTANCE || !culler.isBoxVisible(
+                    chunk.worldPosition().x, chunk.worldPosition().y, 0,
+                    chunk.worldPosition().x + IChunk.WIDTH,
+                    chunk.worldPosition().y + IChunk.WIDTH,
+                    IChunk.HEIGHT
+            )) {
+                continue;
             }
+            Mesh mesh = chunk.chunkMesh(world, atlas);
+            mesh.render();
+//                mesh.cleanup();
         }
         shader.unbind();
         texture.unbind();
@@ -82,7 +82,24 @@ public class WorldRenderer {
         }
     }
     
-    
     public void cleanup() {
+    }
+
+    private int distanceByAxis(Vector2i pos1, Vector2i pos2) {
+        return Math.max(Math.abs(pos1.x - pos2.x), Math.abs(pos1.y - pos2.y));
+    }
+
+    private IChunk[] chunksAround(Vector2i pos, int radius, IWorld world) {
+        int diameter = 2 * radius + 1;
+        IChunk[] chunks = new IChunk[diameter * diameter];
+        int index = 0;
+
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dz = -radius; dz <= radius; dz++) {
+                chunks[index++] = world.chunk(pos.x + dx, pos.y + dz);
+            }
+        }
+
+        return chunks;
     }
 }
