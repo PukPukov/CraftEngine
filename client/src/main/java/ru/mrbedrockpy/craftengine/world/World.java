@@ -53,7 +53,7 @@ public abstract class World implements IWorld {
                 if (chunk == null) throw new IllegalStateException();
                 List<IEntity> entitiesInChunk = new ArrayList<>();
                 for (IEntity entity: entities) {
-                    if(chunk == chunkByBlockPosition(Math.round(entity.position().x), Math.round(entity.position().y))){
+                    if(chunk == chunkByBlockPosition(Math.round(entity.tickPosition().x), Math.round(entity.tickPosition().y))){
                         entitiesInChunk.add(entity);
                     }
                 }

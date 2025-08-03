@@ -6,6 +6,7 @@ import ru.mrbedrockpy.renderer.window.WindowSettings;
 import java.util.Map;
 
 public class CraftEngineConfiguration {
+    
     private static final Map<String, Object> DEFAULTS = Map.of(
             "render.distance", 8,
             "window.settings", WindowSettings.DEFAULT,
@@ -13,6 +14,9 @@ public class CraftEngineConfiguration {
             "fov", 70.0f,
             "gui.scale", 6
     );
+    
     public static final JsonConfig MAIN_CONFIG = JsonConfig.load("config/craftengine.json", DEFAULTS);
+    
     public static void register() {}
+    
 }

@@ -4,6 +4,7 @@ import ru.mrbedrockpy.renderer.RenderVars;
 import ru.mrbedrockpy.renderer.window.WindowSettings;
 
 public class ConfigVars {
+    
     public static int GUI_SCALE;
     public static int RENDER_DISTANCE;
     public static WindowSettings WINDOW_SETTINGS;
@@ -13,4 +14,5 @@ public class ConfigVars {
         RENDER_DISTANCE = CraftEngineConfiguration.MAIN_CONFIG.getInt("render.distance", 8);
         RenderVars.RENDER_DISTANCE = RENDER_DISTANCE;
     }
+    
 }

@@ -5,9 +5,11 @@ import org.joml.Vector3f;
 import ru.mrbedrockpy.renderer.phys.AABB;
 
 public interface IEntity {
+    
     double currentEyeOffset();
     Vector2i chunkPosition();
-    Vector3f position();
+    Vector3f tickPosition();
     void tick();
     AABB boundingBox();
+    
 }

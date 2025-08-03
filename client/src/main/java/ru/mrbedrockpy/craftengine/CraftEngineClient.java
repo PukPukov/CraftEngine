@@ -33,25 +33,25 @@ import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_RIGHT;
 
 public class CraftEngineClient {
+    
     public static CraftEngineClient INSTANCE = new CraftEngineClient();
-    private DrawContext context;
-    public HudRenderer hudRenderer;
+    
     public final EventManager eventManager = new EventManager();
-    @Getter private final FPSCounter fpsCounter = new FPSCounter();
-    @Getter @Setter
-    private ClientWorld clientWorld;
-    @Getter @Setter
-    private ClientPlayerEntity player;
-    private Screen currentScreen = null;
-    @Getter
-    private final TickSystem tickSystem = new TickSystem(20);
-
+    public       HudRenderer hudRenderer;
+    
+    private                 DrawContext context;
+    private @Getter final   FPSCounter fpsCounter = new FPSCounter();
+    private @Getter @Setter ClientWorld clientWorld;
+    private @Getter @Setter ClientPlayerEntity player;
+    private                 Screen currentScreen = null;
+    private @Getter final   TickSystem tickSystem = new TickSystem(20);
+    
     private CraftEngineClient() {}
     
     public void run() {
         this.initialize();
         long lastTime = System.currentTimeMillis();
-        while(!Window.isShouldClose()) {
+        while (!Window.isShouldClose()) {
             Input.pullEvents();
             long currentTime = System.currentTimeMillis();
             double deltaTime = (currentTime - lastTime) / 1_000.0;
@@ -92,21 +92,21 @@ public class CraftEngineClient {
             MouseClickEvent clickEvent = new MouseClickEvent(GLFW.GLFW_MOUSE_BUTTON_RIGHT, Input.x(), Input.y());
             eventManager.callEvent(clickEvent);
         }
-        if (Input.jpressed(GLFW.GLFW_KEY_TAB)){
+        if (Input.jpressed(GLFW.GLFW_KEY_TAB)) {
             setScreen(InventoryScreen.create(player.inventory()));
         }
         
-        if(player != null) {
+        if (player != null) {
             player.update(deltaTime, tickSystem.partialTick(), clientWorld);
         }
     }
     
     private void render() {
-        if(clientWorld != null && player != null) {
+        if (clientWorld != null && player != null) {
             clientWorld.render();
-            hudRenderer.render(context, scale((int) Input.x()),  scale((int) Input.y()), (float) tickSystem.partialTick());
+            hudRenderer.render(context, scale((int) Input.x()), scale((int) Input.y()), (float) tickSystem.partialTick());
         }
-        if(currentScreen != null) {
+        if (currentScreen != null) {
             currentScreen.render(context, scale((int) Input.x()), scale((int) Input.y()), (float) tickSystem.partialTick());
         }
     }
@@ -123,7 +123,7 @@ public class CraftEngineClient {
     }
     
     public void onMouseClick(MouseClickEvent event) {
-        if(currentScreen != null) {
+        if (currentScreen != null) {
             currentScreen.onMouseClick(event);
             return;
         }
@@ -133,18 +133,18 @@ public class CraftEngineClient {
         
         if (event.button() == GLFW_MOUSE_BUTTON_LEFT) {
             BlockRaycastResult blockRaycastResult = clientWorld.raycast(rayOrigin, rayDirection, 4.5f);
-            if(blockRaycastResult != null){
+            if (blockRaycastResult != null) {
                 clientWorld.setBlock(blockRaycastResult.x, blockRaycastResult.y, blockRaycastResult.z, Blocks.AIR);
             }
         } else if (event.button() == GLFW_MOUSE_BUTTON_RIGHT) {
             BlockRaycastResult blockRaycastResult = clientWorld.raycast(rayOrigin, rayDirection, 4.5f);
-            if(blockRaycastResult != null && clientWorld.canPlaceBlockAt(blockRaycastResult.position().add(blockRaycastResult.direction.offset()))) {
+            if (blockRaycastResult != null && clientWorld.canPlaceBlockAt(blockRaycastResult.position().add(blockRaycastResult.direction.offset()))) {
                 Vector3i blockPos = blockRaycastResult.position().add(blockRaycastResult.direction.offset());
                 clientWorld.setBlock(blockPos.x, blockPos.y, blockPos.z, Blocks.STONE);
             }
         }
     }
-
+    
     // Я хз как адекватно сделать масштабирование, поэтому просто делаю так
     private int scale(int value) {
         return (int) (value / (float) Window.width() * Window.scaledWidth(ConfigVars.GUI_SCALE));
