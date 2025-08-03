@@ -1,22 +1,24 @@
 package ru.mrbedrockpy.craftengine.window;
 
+import lombok.Getter;
+
 public class FPSCounter {
     private long previousTime;
     private long secStart;
     private int frames;
-    private int fps;
-
+    private @Getter int fps;
+    
     public FPSCounter() {
         this.previousTime = System.currentTimeMillis();
         this.secStart = previousTime;
         this.frames = 0;
         this.fps = 0;
     }
-
+    
     public void update() {
         frames++;
         long currentTime = System.currentTimeMillis();
-        int frametime = (int) (currentTime-this.previousTime);
+        int frametime = (int) (currentTime - this.previousTime);
         if (currentTime - this.previousTime > 5) {
 //            System.out.println("STUTTER: "+frametime);
         }
@@ -27,8 +29,5 @@ public class FPSCounter {
         }
         this.previousTime = currentTime;
     }
-
-    public int fps() {
-        return fps;
-    }
+    
 }
