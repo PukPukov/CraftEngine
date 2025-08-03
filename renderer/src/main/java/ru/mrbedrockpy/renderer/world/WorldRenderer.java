@@ -41,6 +41,7 @@ public class WorldRenderer {
         atlas.addTile("dirt", ImageIO.read(getClass().getClassLoader().getResourceAsStream("dirt.png")));
         atlas.addTile("stone", ImageIO.read(getClass().getClassLoader().getResourceAsStream("stone.png")));
     }
+
     private final FrustumCuller culler = new FrustumCuller();
     
     public void render(IWorld world, IEntity player) {
@@ -52,13 +53,13 @@ public class WorldRenderer {
         shader.setUniformMatrix4f("view", camera.viewMatrix());
         shader.setUniformMatrix4f("projection", camera.projectionMatrix());
         texture.use();
-        for(IChunk chunk : chunksAround(player.chunkPosition(), RenderVars.RENDER_DISTANCE, world)) {
+        for (IChunk chunk : chunksAround(player.chunkPosition(), RenderVars.RENDER_DISTANCE, world)) {
             if (chunk == null) continue;
             if (distanceByAxis(player.chunkPosition(), chunk.position()) > RenderVars.RENDER_DISTANCE || !culler.isBoxVisible(
-                    chunk.worldPosition().x, chunk.worldPosition().y, 0,
-                    chunk.worldPosition().x + IChunk.WIDTH,
-                    chunk.worldPosition().y + IChunk.WIDTH,
-                    IChunk.HEIGHT
+                chunk.worldPosition().x, chunk.worldPosition().y, 0,
+                chunk.worldPosition().x + IChunk.WIDTH,
+                chunk.worldPosition().y + IChunk.WIDTH,
+                IChunk.HEIGHT
             )) {
                 continue;
             }
@@ -75,7 +76,7 @@ public class WorldRenderer {
         Vector3f direction = camera.front();
         
         BlockRaycastResult blockRaycastResult = world.raycast(origin, direction, 4.5f);
-        if(blockRaycastResult != null) {
+        if (blockRaycastResult != null) {
             selectedBlock = new Vector3i(blockRaycastResult.x, blockRaycastResult.y, blockRaycastResult.z);
         } else {
             selectedBlock = null;
