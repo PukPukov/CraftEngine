@@ -61,6 +61,10 @@ public class DrawContext {
         }
     }
 
+    public void drawTextureCentred(int x, int y, float width, float height, Texture texture) {
+        drawTexture((int) (x - width / 2), (int) (y - height / 2), width, height, texture);
+    }
+
     public void drawTexture(int x, int y, float width, float height, Texture texture) {
         float[] vertices = {
                 x,          y,          0.0f, 1.0f,
