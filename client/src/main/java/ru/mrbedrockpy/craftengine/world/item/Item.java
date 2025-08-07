@@ -26,7 +26,5 @@ public class Item {
      * ClientPlayerEntity - надо разделить на Player и ClientPlayerEntity, чтобы не было путаницы.
      * @param player Игрок, использующий предмет
      */
-    public void use(ClientPlayerEntity player) {
-        // default: ничего не происходит
-    }
+    public void use(ClientPlayerEntity player) {}
 }

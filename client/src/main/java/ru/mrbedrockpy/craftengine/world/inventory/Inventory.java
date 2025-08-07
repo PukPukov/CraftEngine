@@ -73,4 +73,8 @@ public class Inventory {
         }
         return -1;
     }
+
+    public void slot(int slot, ItemStack stack){
+        slots.set(slot, stack);
+    }
 }

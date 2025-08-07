@@ -4,6 +4,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import ru.mrbedrockpy.craftengine.Util;
+import ru.mrbedrockpy.craftengine.config.ConfigVars;
 import ru.mrbedrockpy.craftengine.config.CraftEngineConfiguration;
 import ru.mrbedrockpy.renderer.api.ICamera;
 
@@ -11,7 +12,7 @@ public class Camera implements ICamera {
     
     // CONSTANTS
     private static final float standardFovDegrees = CraftEngineConfiguration.MAIN_CONFIG.getFloat("fov", 70.0f);
-    private static final float sprintFovDegrees = standardFovDegrees + 10 * CraftEngineConfiguration.MAIN_CONFIG.getFloat("fov.dynamic_multiplier", 1.0f);
+    private static final float sprintFovDegrees = standardFovDegrees + 10 * ConfigVars.FOV_CHANGE_MULTIPLIER;
     private static final float aspectRatio = 16f / 9f;
     private static final float zNear = 0.1f;
     private static final float zFar = 1000f;
@@ -35,7 +36,7 @@ public class Camera implements ICamera {
         Util.genericLerp(
             previousTime, currentTime,
             this.actualFovRadians, this.targetFovRadians, this::changeFov,
-            fovChangeStepRadians,
+            fovChangeStepRadians * ConfigVars.FOV_CHANGE_MULTIPLIER,
             this.fovChangePhase, (phase) -> this.fovChangePhase = phase
         );
         updateProjectionMatrix();

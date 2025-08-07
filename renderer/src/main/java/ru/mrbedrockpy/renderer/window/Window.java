@@ -57,7 +57,6 @@ public class Window {
                     (vidmode.height() - pHeight.get(0)) / 2
             );
         }
-
         glfwMakeContextCurrent(window);
         setVsync(vsync);
         glfwShowWindow(window);
