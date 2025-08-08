@@ -26,15 +26,14 @@ public class HudRenderer {
         this.height = height;
         for (int i = 0; i < hotbarSlots.length; i++) {
             hotbarSlots[i] = UI.slot(CraftEngineClient.INSTANCE.player().inventory(), i, InventoryScreen::slotClick);
-            hotbarSlots[i].setPosition(width / 2 + i * 20 - hudTexture.width() / 2 + 2, height - hudTexture.height() + 2);
+            hotbarSlots[i].setPosition(width / 2 + i * 20 - 182 / 2 + 2, height - 22 + 2);
         }
     }
     
-    public Texture texture = Texture.load("cursor.png"), hudTexture = Texture.load("hotbar.png");
-    
+
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        context.drawTextureCentred(width / 2, height / 2, 10, 10, texture);
-        context.drawTexture(width / 2 - hudTexture.width() / 2, height - hudTexture.height(), hudTexture.width(), hudTexture.height(), hudTexture);
+        context.drawTextureCentred(width / 2, height / 2, 10, 10, "cursor.png");
+        context.drawTexture(width / 2 - 182 / 2, height - 22, 182, 22, "hotbar.png");
         context.drawText(String.valueOf(CraftEngineClient.INSTANCE.fpsCounter().fps()), 5, 5, 0.5f);
         context.drawText(positionToString(CraftEngineClient.INSTANCE.player().tickPosition()), 5, 10, 0.5f);
         context.drawText(CraftEngineClient.INSTANCE.player().camera().angle().toString(), 5, 15, 0.5f);
@@ -52,5 +51,4 @@ public class HudRenderer {
     public String positionToString(Vector3f position) {
         return this.decimalFormat.format(position.x) + ", " + this.decimalFormat.format(position.y) + ", " + this.decimalFormat.format(position.z);
     }
-    
 }

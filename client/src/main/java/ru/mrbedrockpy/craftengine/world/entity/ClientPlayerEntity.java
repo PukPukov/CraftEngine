@@ -112,7 +112,7 @@ public class ClientPlayerEntity extends LivingEntity {
             velocity.y *= 0.7f;
         }
         // изменение велосити игроком
-        changeVelocityByForce(direction.x, direction.y, this.speed());
+        changeVelocityByForce(direction.x, direction.y, this.speed() / 2);
         
         this.moveLimited(new Vector3d(velocity.x, velocity.y, velocity.z), this.isSneaking);
     }

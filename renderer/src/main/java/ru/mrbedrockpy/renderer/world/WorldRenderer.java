@@ -10,6 +10,7 @@ import ru.mrbedrockpy.renderer.api.IChunk;
 import ru.mrbedrockpy.renderer.api.IEntity;
 import ru.mrbedrockpy.renderer.api.IWorld;
 import ru.mrbedrockpy.renderer.graphics.*;
+import ru.mrbedrockpy.renderer.util.FileLoader;
 import ru.mrbedrockpy.renderer.world.raycast.BlockRaycastResult;
 
 import javax.imageio.ImageIO;
@@ -38,8 +39,8 @@ public class WorldRenderer {
     }
     
     private void loadTextures() throws IOException {
-        atlas.addTile("dirt", ImageIO.read(getClass().getClassLoader().getResourceAsStream("dirt.png")));
-        atlas.addTile("stone", ImageIO.read(getClass().getClassLoader().getResourceAsStream("stone.png")));
+        atlas.addTile("dirt", FileLoader.loadImage("dirt.png"));
+        atlas.addTile("stone", FileLoader.loadImage("stone.png"));
     }
 
     private final FrustumCuller culler = new FrustumCuller();

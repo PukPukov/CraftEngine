@@ -4,11 +4,18 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import org.joml.Vector2i;
 import ru.mrbedrockpy.renderer.api.IBlock;
+import ru.mrbedrockpy.renderer.util.ImageUtil;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.lwjgl.opengl.GL46C.*;
 
 public class TextureAtlas {
     // Максимальный размер тайла
@@ -18,36 +25,49 @@ public class TextureAtlas {
     private final Map<String, Rectangle> uvMap = new HashMap<>();
     private int currentX = 0;
     private int currentY = 0;
-    
+
     private final BufferedImage atlasImage;
-    
+    private int glTextureId;
+
     public TextureAtlas(int atlasSize) {
         this.atlasSize = atlasSize;
         this.atlasImage = new BufferedImage(tileSize * atlasSize, tileSize * atlasSize, BufferedImage.TYPE_INT_ARGB);
+        initGlTexture();
     }
-    
+
+    private void initGlTexture() {
+        glTextureId = glGenTextures();
+        glBindTexture(GL_TEXTURE_2D, glTextureId);
+        ByteBuffer buf = ImageUtil.toByteBuffer(atlasImage);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
+                atlasImage.getWidth(), atlasImage.getHeight(),
+                0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    }
+
     public void addTile(String name, BufferedImage tile) {
         if (currentY >= atlasSize) {
             throw new RuntimeException("TextureAtlas overflow");
         }
-        
+
         Graphics g = atlasImage.getGraphics();
         g.drawImage(tile, currentX * tileSize, currentY * tileSize, null);
         g.dispose();
-        
+
         uvMap.put(name, new Rectangle(currentX * tileSize, currentY * tileSize, tile.getTileWidth(), tile.getTileHeight()));
-        
+
         currentX++;
         if (currentX >= atlasSize) {
             currentX = 0;
             currentY++;
         }
     }
-    
+
     public BufferedImage buildAtlas() {
         return atlasImage;
     }
-    
+
     public Rectangle uv(String name) {
         return uvMap.get(name);
     }

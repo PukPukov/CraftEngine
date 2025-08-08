@@ -54,7 +54,7 @@ public class InventoryScreen {
     private static void render(DrawContext context, int mouseX, int mouseY, float delta) {
         ItemStack cursorStack = inventory.cursorStack();
         if (!cursorStack.isEmpty()) {
-            context.drawTexture(mouseX - 8, mouseY - 8, 16, 16, Texture.load(Registries.ITEMS.name(cursorStack.item()) + ".png"));
+            context.drawTexture(mouseX - 8, mouseY - 8, 16, 16, Registries.ITEMS.name(cursorStack.item()) + ".png");
         }
     }
     

@@ -57,6 +57,12 @@ public final class Screen {
             onRender.render(context, mouseX, mouseY, delta);
         }
     }
+
+    public void tick(){
+        for(AbstractWidget widget : widgets){
+            widget.tick();
+        }
+    }
     
     public void setInitCallback(Runnable onInit) {
         this.onInit = onInit;

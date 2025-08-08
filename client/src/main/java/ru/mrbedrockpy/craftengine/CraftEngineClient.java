@@ -49,7 +49,7 @@ public class CraftEngineClient {
     private @Getter final   FPSCounter fpsCounter = new FPSCounter();
     private @Getter @Setter ClientWorld clientWorld;
     private @Getter @Setter ClientPlayerEntity player;
-    private                 Screen currentScreen = null;
+    private @Getter         Screen currentScreen = null;
     private @Getter final   TickSystem tickSystem = new TickSystem(20);
 
     private CraftEngineClient() {}
