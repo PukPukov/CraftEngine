@@ -27,7 +27,7 @@ public class WorldRenderer {
     public WorldRenderer(ICamera camera) {
         this.camera = camera;
         shader = Shader.load("vertex.glsl", "fragment.glsl");
-        this.atlas = new TextureAtlas(16, 16);
+        this.atlas = new TextureAtlas(16);
         try {
             loadTextures();
         } catch (IOException e) {

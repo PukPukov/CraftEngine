@@ -17,4 +17,9 @@ public class Block implements IBlock {
     public AABB aabb(int x, int y, int z) {
         return new AABB(x, y, z, x + 1, y + 1, z + 1);
     }
+
+    @Override
+    public String toString() {
+        return "Block: {id:" + id + "}";
+    }
 }

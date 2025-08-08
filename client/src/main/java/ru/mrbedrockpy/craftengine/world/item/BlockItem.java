@@ -37,6 +37,7 @@ public class BlockItem extends Item{
             BlockRaycastResult blockRaycastResult = world.raycast(rayOrigin, rayDirection, 4.5f);
             if (blockRaycastResult != null && world.canPlaceBlockAt(blockRaycastResult.position().add(blockRaycastResult.direction.offset()))) {
                 Vector3i blockPos = blockRaycastResult.position().add(blockRaycastResult.direction.offset());
+                System.out.println(block);
                 world.setBlock(blockPos.x, blockPos.y, blockPos.z, block);
             }
         }

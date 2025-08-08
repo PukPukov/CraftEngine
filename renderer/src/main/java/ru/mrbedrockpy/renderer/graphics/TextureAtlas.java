@@ -11,17 +11,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TextureAtlas {
-    private final int tileSize;
+    // Максимальный размер тайла
+    private final int tileSize = 32;
     @Getter(AccessLevel.PUBLIC)
     private final int atlasSize;
-    private final Map<String, Vector2i> uvMap = new HashMap<>();
+    private final Map<String, Rectangle> uvMap = new HashMap<>();
     private int currentX = 0;
     private int currentY = 0;
     
     private final BufferedImage atlasImage;
     
-    public TextureAtlas(int tileSize, int atlasSize) {
-        this.tileSize = tileSize;
+    public TextureAtlas(int atlasSize) {
         this.atlasSize = atlasSize;
         this.atlasImage = new BufferedImage(tileSize * atlasSize, tileSize * atlasSize, BufferedImage.TYPE_INT_ARGB);
     }
@@ -35,7 +35,7 @@ public class TextureAtlas {
         g.drawImage(tile, currentX * tileSize, currentY * tileSize, null);
         g.dispose();
         
-        uvMap.put(name, new Vector2i(currentX, currentY));
+        uvMap.put(name, new Rectangle(currentX * tileSize, currentY * tileSize, tile.getTileWidth(), tile.getTileHeight()));
         
         currentX++;
         if (currentX >= atlasSize) {
@@ -48,28 +48,18 @@ public class TextureAtlas {
         return atlasImage;
     }
     
-    public Vector2i uv(String name) {
+    public Rectangle uv(String name) {
         return uvMap.get(name);
     }
 
-    public float[] normalizedUV(String name, IBlock.Direction direction) {
-        Vector2i uv = uv(name);
-        float tileCount = atlasSize;
-        float unit = 1.0f / tileCount;
-        
-        float baseX = uv.x * unit;
-        float baseY = 1.0f - (uv.y + 1) * unit;
-        
-        float[] faceUV = FaceData.FACE_UVS[direction.ordinal()];
-        float[] result = new float[12];
-        
-        for (int i = 0; i < 6; i++) {
-            float u = faceUV[i * 2];
-            float v = faceUV[i * 2 + 1];
-            result[i * 2]     = baseX + u * unit;
-            result[i * 2 + 1] = baseY + v * unit;
-        }
-        
-        return result;
+
+    public float[] normalizedUv(String name) {
+        Rectangle r = uv(name);
+        float atlasPix = tileSize * atlasSize;
+        float x0 = r.x, x1 = r.x + r.width;
+        float y0 = r.y, y1 = r.y + r.height;
+        float u0 = x0 / atlasPix, u1 = x1 / atlasPix;
+        float v0 = 1.0f - (y1 / atlasPix), v1 = 1.0f - (y0 / atlasPix);
+        return new float[]{u0,v0, u1,v0, u1,v1, u0,v1};
     }
 }

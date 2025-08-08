@@ -133,7 +133,6 @@ public class DrawContext {
     public void drawText(String text, int x, int y, float scale) {
         scale *= 0.3f;
 
-        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, fontRenderer.textureId());
 
         textShader.use();
