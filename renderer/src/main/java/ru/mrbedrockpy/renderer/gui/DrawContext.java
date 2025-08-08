@@ -144,7 +144,7 @@ public class DrawContext {
         float ascent = fontRenderer.ascent();
         float scaleFactor = fontRenderer.scale();
         float baseline = ascent * scaleFactor * scale;
-
+        float[] vertices = new float[text.length() * 24];
 
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
@@ -161,7 +161,7 @@ public class DrawContext {
             float u1 = g.x1() / 512.0f;
             float v1 = g.y1() / 512.0f;
 
-            float[] vertices = {
+            float[] vtx = {
                     x0, y0 + h, u0, v1,
                     x0, y0, u0, v0,
                     x0 + w, y0, u1, v0,
@@ -170,13 +170,12 @@ public class DrawContext {
                     x0 + w, y0, u1, v0,
                     x0 + w, y0 + h, u1, v1,
             };
-
-            glBindBuffer(GL_ARRAY_BUFFER, vboId);
-            glBufferSubData(GL_ARRAY_BUFFER, 0, vertices);
-            glDrawArrays(GL_TRIANGLES, 0, 6);
-
+            System.arraycopy(vtx, 0, vertices, i * 24, 24);
             cursorX += g.xadvance() * scale;
         }
+        glBindBuffer(GL_ARRAY_BUFFER, vboId);
+        glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
+        glDrawArrays(GL_TRIANGLES, 0, text.length() * 6);
 
         glBindVertexArray(0);
 
