@@ -17,7 +17,7 @@ public class ClientPlayerEntity extends LivingEntity {
     // CONSTANTS
     private static final float speedStandard = 0.08f;
     private static final float speedSneaking = 0.035f; // сделано не мультиплаерами т.к. приседание в воздухе не должно менять скорость
-    private static final float speedInAir = 0.02f;
+    private static final float speedInAir = 0.01f;
     private static final float sprintingMultiplier = 1.3f;
     
     private static final double standardEyeOffset = 1.8;
@@ -110,8 +110,8 @@ public class ClientPlayerEntity extends LivingEntity {
         velocity.z -= 0.08f; // гравитация
         velocity.mul(0.97f, 0.97f, 0.97f); // сопротивление воздуха
         if (onGround) { // трение об землю
-            velocity.x *= 0.7f;
-            velocity.y *= 0.7f;
+            velocity.x *= 0.546f;
+            velocity.y *= 0.546f;
         }
 
         velocity.add(direction);

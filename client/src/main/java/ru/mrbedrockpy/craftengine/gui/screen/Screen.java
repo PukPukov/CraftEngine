@@ -73,6 +73,6 @@ public final class Screen {
     }
     
     private int scale(int value) {
-        return (int) (value / (float) Window.width() * Window.scaledWidth(ConfigVars.GUI_SCALE));
+        return (int) (value / (float) Window.width() * Window.scaledWidth());
     }
 }

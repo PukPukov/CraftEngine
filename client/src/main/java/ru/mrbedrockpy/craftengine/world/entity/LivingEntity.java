@@ -113,25 +113,6 @@ public abstract class LivingEntity implements IEntity {
         coordinateSetter.accept(resultMove);
     }
     
-    // MOVE LIMITED.END
-    
-    protected void changeVelocityByForce(float x, float y, float force) {
-        float distance = x * x + y * y;
-        
-        if (distance < 0.01F)
-            return;
-        
-        distance = force / (float) Math.sqrt(distance);
-        x *= distance;
-        y *= distance;
-        
-        double sin = Math.sin(Math.toRadians(this.yaw));
-        double cos = Math.cos(Math.toRadians(this.yaw));
-        
-        velocity.x += (float) (x * cos - y * sin);
-        velocity.y += (float) (y * cos + x * sin);
-    }
-    
     public void setTickPosition(Vector3f tickPosition) {
         this.tickPosition.set(tickPosition);
         this.boundingBox = new AABB(
