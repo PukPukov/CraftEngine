@@ -33,19 +33,8 @@ public abstract class World implements IWorld {
         this.chunks = new Chunk[size][size];
         this.chunkGenerator = chunkGenerator;
         this.entities = new ArrayList<>();
-        generateWorld();
     }
-    
-    private void generateWorld() {
-        for (int chunkX = 0; chunkX < chunks.length; chunkX++) {
-            for (int chunkY = 0; chunkY < chunks.length; chunkY++) {
-                Chunk chunk = new Chunk(new Vector2i(chunkX, chunkY));
-                chunkGenerator.generate(chunk.position(), chunk);
-                this.chunks[chunkX][chunkY] = chunk;
-            }
-        }
-    }
-    
+
     public void tick() {
         for (int chunkX = 0; chunkX < 8; chunkX++) {
             for (int chunkY = 0; chunkY < 8; chunkY++) {
@@ -160,10 +149,12 @@ public abstract class World implements IWorld {
     @Override
     public @Nullable IChunk chunk(int x, int y) {
         try {
-            if(this.chunks[x][y] == null) {
+            IChunk chunk = this.chunks[x][y];
+            if(chunk == null) {
                 this.chunks[x][y] = new Chunk(new Vector2i(x, y));
+                chunkGenerator.generate(new Vector2i(x, y), this.chunks[x][y]);
             }
-            return chunks[x][y];
+            return chunk;
         } catch (IndexOutOfBoundsException e) {
             return null;
         }
@@ -309,5 +300,13 @@ public abstract class World implements IWorld {
     
     public void removeEntity(LivingEntity entity) {
         entities.remove(entity);
+    }
+
+    public int getTopZ(int x, int y){
+        for(int z = IChunk.HEIGHT; z >= 0; z--){
+            if(!this.block(x, y, z).solid()) continue;
+            return z;
+        }
+        return IChunk.HEIGHT;
     }
 }

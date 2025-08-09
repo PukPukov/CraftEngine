@@ -1,7 +1,7 @@
 package ru.mrbedrockpy.craftengine.world;
 
 import ru.mrbedrockpy.craftengine.world.entity.ClientPlayerEntity;
-import ru.mrbedrockpy.craftengine.world.generator.SimpleChunkGenerator;
+import ru.mrbedrockpy.craftengine.world.generator.PerlinChunkGenerator;
 import ru.mrbedrockpy.renderer.world.WorldRenderer;
 
 public class ClientWorld extends World {
@@ -10,7 +10,7 @@ public class ClientWorld extends World {
     private final ClientPlayerEntity player;
 
     public ClientWorld(int size, ClientPlayerEntity player, TickSystem ticker) {
-        super(size, new SimpleChunkGenerator());
+        super(size, new PerlinChunkGenerator(12345678L, 20, 30, 30));
         this.player = player;
         player.world(this);
         addEntity(player);
