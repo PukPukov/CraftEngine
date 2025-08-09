@@ -8,12 +8,14 @@ import ru.mrbedrockpy.craftengine.world.ClientWorld;
 import ru.mrbedrockpy.craftengine.world.inventory.PlayerInventory;
 import ru.mrbedrockpy.renderer.window.Input;
 
+import java.lang.Math;
+
 import static org.lwjgl.glfw.GLFW.*;
 
 public class ClientPlayerEntity extends LivingEntity {
     
     // CONSTANTS
-    private static final float speedStandard = 0.07f;
+    private static final float speedStandard = 0.08f;
     private static final float speedSneaking = 0.035f; // сделано не мультиплаерами т.к. приседание в воздухе не должно менять скорость
     private static final float speedInAir = 0.02f;
     private static final float sprintingMultiplier = 1.3f;
@@ -44,10 +46,6 @@ public class ClientPlayerEntity extends LivingEntity {
         Input.onRelease.put(GLFW_KEY_LEFT_SHIFT, () -> toggleSneak(false));
         Input.onRelease.put(GLFW_KEY_LEFT_CONTROL, () -> toggleSprint(false));
     }
-    
-    // TODO вытащить гуи отсюда, нахуй он тут?
-    // TODO зачем вообще всё это под Entity пихать? Я думаю у игрока должны быть свои тики, игрок != энтити
-    // TODO добавить спринт
     
     @Override
     public void update(double deltaTime, double partialTick, ClientWorld world) {
@@ -103,17 +101,20 @@ public class ClientPlayerEntity extends LivingEntity {
             }
             toggleSprint(true);
         }
-        
-        // изменение велосити окружающей средой
+
+        if(direction.x + direction.y + direction.z != 0){
+            direction.normalize();
+        }
+
+        direction.mul(speed());
         velocity.z -= 0.08f; // гравитация
         velocity.mul(0.97f, 0.97f, 0.97f); // сопротивление воздуха
         if (onGround) { // трение об землю
             velocity.x *= 0.7f;
             velocity.y *= 0.7f;
         }
-        // изменение велосити игроком
-        changeVelocityByForce(direction.x, direction.y, this.speed() / 2);
-        
+
+        velocity.add(direction);
         this.moveLimited(new Vector3d(velocity.x, velocity.y, velocity.z), this.isSneaking);
     }
     
@@ -132,11 +133,11 @@ public class ClientPlayerEntity extends LivingEntity {
         if (isSprinting) this.camera.sprint();
         else this.camera.walk();
     }
-    
+
     private float speed() {
         if (!this.onGround) return speedInAir;
         float currentSprintingMultiplier = this.isSprinting ? sprintingMultiplier : 1.0f;
-        return this.isSneaking ? (speedSneaking * currentSprintingMultiplier) : (speedStandard * currentSprintingMultiplier);
+        return this.isSneaking ? (speedSneaking) : (speedStandard * currentSprintingMultiplier);
     }
-    
+
 }
