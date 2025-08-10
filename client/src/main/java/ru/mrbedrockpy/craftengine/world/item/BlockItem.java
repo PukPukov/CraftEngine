@@ -29,10 +29,10 @@ public class BlockItem extends Item{
 
     @Override
     public void use(ClientPlayerEntity player) {
-        Vector3f rayOrigin = player.camera().position();
-        Vector3f rayDirection = player.camera().front();
-        World world = player.world();
-        PlayerInventory inventory = player.inventory();
+        Vector3f rayOrigin = player.getCamera().position();
+        Vector3f rayDirection = player.getCamera().front();
+        World world = player.getWorld();
+        PlayerInventory inventory = player.getInventory();
         if(inventory.getSelectedStack().item() instanceof BlockItem) {
             BlockRaycastResult blockRaycastResult = world.raycast(rayOrigin, rayDirection, 4.5f);
             if (blockRaycastResult != null && world.canPlaceBlockAt(blockRaycastResult.position().add(blockRaycastResult.direction.offset()))) {

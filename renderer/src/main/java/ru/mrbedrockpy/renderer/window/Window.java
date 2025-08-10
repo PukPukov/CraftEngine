@@ -24,11 +24,11 @@ public class Window {
 
     public static void initialize(WindowSettings settings) {
 
-        Window.width = settings.width();
-        Window.height = settings.height();
-        Window.title = settings.title();
-        Window.vsync = settings.vsync();
-        Window.fullscreen = settings.fullscreen();
+        Window.width = settings.getWidth();
+        Window.height = settings.getHeight();
+        Window.title = settings.getTitle();
+        Window.vsync = settings.isVsync();
+        Window.fullscreen = settings.isFullscreen();
 
         if (System.getProperty("os.name").toLowerCase().contains("linux")) glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
 
@@ -108,10 +108,10 @@ public class Window {
     }
 
     public static int scaledWidth() {
-        return Math.ceilDiv(width(), Math.max(RenderVars.GUI_SCALE, 1));
+        return Math.ceilDiv(getWidth(), Math.max(RenderVars.GUI_SCALE, 1));
     }
 
     public static int scaledHeight() {
-        return Math.ceilDiv(height(), Math.max(RenderVars.GUI_SCALE, 1));
+        return Math.ceilDiv(getHeight(), Math.max(RenderVars.GUI_SCALE, 1));
     }
 }

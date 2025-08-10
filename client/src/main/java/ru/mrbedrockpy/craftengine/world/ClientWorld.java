@@ -2,6 +2,7 @@ package ru.mrbedrockpy.craftengine.world;
 
 import ru.mrbedrockpy.craftengine.world.entity.ClientPlayerEntity;
 import ru.mrbedrockpy.craftengine.world.generator.PerlinChunkGenerator;
+import ru.mrbedrockpy.renderer.api.IChunk;
 import ru.mrbedrockpy.renderer.world.WorldRenderer;
 
 public class ClientWorld extends World {

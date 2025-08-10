@@ -139,10 +139,10 @@ public class DrawContext {
         uiShader.setUniform1b("useMask", true);
         uiShader.setUniform4f("uniformColor", 1.0f, 1.0f, 1.0f, 1.0f);
         float cursorX = x;
-        STBTTPackedchar.Buffer chars = fontRenderer.charData();
+        STBTTPackedchar.Buffer chars = fontRenderer.getCharData();
 
-        float ascent = fontRenderer.ascent();
-        float scaleFactor = fontRenderer.scale();
+        float ascent = fontRenderer.getAscent();
+        float scaleFactor = fontRenderer.getScale();
         float baseline = ascent * scaleFactor * scale;
         float[] vertices = new float[text.length() * 24];
 
@@ -213,6 +213,6 @@ public class DrawContext {
         glDeleteBuffers(vboId);
         glDeleteFramebuffers(fboId);
         uiShader.dispose();
-        fontRenderer.charData().free();
+        fontRenderer.getCharData().free();
     }
 }
