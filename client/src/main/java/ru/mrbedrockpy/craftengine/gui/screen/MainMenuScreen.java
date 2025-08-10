@@ -18,14 +18,14 @@ public class MainMenuScreen {
         return UI.create().button(
             "Play", Window.scaledWidth() / 2 - 50, Window.scaledHeight() / 2 - 50, 50, 50, button -> {
                 ClientPlayerEntity player = new ClientPlayerEntity(new Vector3f(0, 0, 0), null);
-                CraftEngineClient.INSTANCE.player(player);
-                ClientWorld world = new ClientWorld(100, CraftEngineClient.INSTANCE.player(), CraftEngineClient.INSTANCE.tickSystem());
+                CraftEngineClient.INSTANCE.setPlayer(player);
+                ClientWorld world = new ClientWorld(100, CraftEngineClient.INSTANCE.getPlayer(), CraftEngineClient.INSTANCE.getTickSystem());
                 player.setTickPosition(new Vector3f(0, 0, world.getTopZ(0, 0) + 1));
-                CraftEngineClient.INSTANCE.clientWorld(world);
+                CraftEngineClient.INSTANCE.setClientWorld(world);
                 CraftEngineClient.INSTANCE.setScreen(null);
-                player.inventory().slot(0, new ItemStack(Items.STONE_BLOCK_ITEM));
+                player.getInventory().slot(0, new ItemStack(Items.STONE_BLOCK_ITEM));
                 for (int i = 1; i < 9; i++) {
-                    player.inventory().slot(i, new ItemStack(Items.GOLDEN_APPLE));
+                    player.getInventory().slot(i, new ItemStack(Items.GOLDEN_APPLE));
                 }
                 CraftEngineClient.INSTANCE.hudRenderer = new HudRenderer(Window.scaledWidth(), Window.scaledHeight());
             }

@@ -53,8 +53,8 @@ public class UI {
                 int col = i % columns;
 
                 AbstractWidget widget = widgets.get(i);
-                int x = startX + col * (widget.width() + spacingX);
-                int y = startY + row * (widget.height() + spacingY);
+                int x = startX + col * (widget.getWidth() + spacingX);
+                int y = startY + row * (widget.getHeight() + spacingY);
 
                 widget.setPosition(x, y);
                 screen.addWidget(widget);
@@ -74,8 +74,8 @@ public class UI {
             for(int i = 0; i < columns; i++) {
                 for(int j = 0; j < rows; j++) {
                     AbstractWidget w = factory.apply(index);
-                    int x = startX + j * (w.width() + spacingX);
-                    int y = startY + i * (w.height() + spacingY);
+                    int x = startX + j * (w.getWidth() + spacingX);
+                    int y = startY + i * (w.getHeight() + spacingY);
                     w.setPosition(x, y);
                     screen.addWidget(w);
                     index++;

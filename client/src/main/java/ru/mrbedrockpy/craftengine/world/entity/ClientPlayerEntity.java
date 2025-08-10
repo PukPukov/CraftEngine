@@ -52,8 +52,8 @@ public class ClientPlayerEntity extends LivingEntity {
         super.update(deltaTime, partialTick, world);
         if (!Input.isGUIOpen()) {
             camera.rotate(new Vector2f(
-                (float) -Input.deltaY() * sensitivity,
-                (float) -Input.deltaX() * sensitivity
+                (float) -Input.getDeltaX() * sensitivity,
+                (float) -Input.getDeltaY() * sensitivity
             ));
         }
         long currentTime = System.nanoTime();

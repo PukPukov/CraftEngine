@@ -95,15 +95,15 @@ public class CraftEngineClient {
             Window.setShouldClose(true);
         }
         if (Input.jclicked(GLFW.GLFW_MOUSE_BUTTON_LEFT)) {
-            MouseClickEvent clickEvent = new MouseClickEvent(GLFW.GLFW_MOUSE_BUTTON_LEFT, Input.x(), Input.y());
+            MouseClickEvent clickEvent = new MouseClickEvent(GLFW.GLFW_MOUSE_BUTTON_LEFT, Input.getX(), Input.getY());
             eventManager.callEvent(clickEvent);
         }
         if (Input.jclicked(GLFW.GLFW_MOUSE_BUTTON_RIGHT)) {
-            MouseClickEvent clickEvent = new MouseClickEvent(GLFW.GLFW_MOUSE_BUTTON_RIGHT, Input.x(), Input.y());
+            MouseClickEvent clickEvent = new MouseClickEvent(GLFW.GLFW_MOUSE_BUTTON_RIGHT, Input.getX(), Input.getY());
             eventManager.callEvent(clickEvent);
         }
         if (Input.jpressed(GLFW.GLFW_KEY_TAB)) {
-            setScreen(InventoryScreen.create(player.inventory()));
+            setScreen(InventoryScreen.create(player.getInventory()));
         }
 
         if (player != null) {
@@ -120,10 +120,10 @@ public class CraftEngineClient {
     private void renderUI(){
         context.enableGL();
         if (clientWorld != null && player != null) {
-            hudRenderer.render(context, scale((int) Input.x()), scale((int) Input.y()), (float) tickSystem.partialTick());
+            hudRenderer.render(context, scale((int) Input.getX()), scale((int) Input.getY()), (float) tickSystem.partialTick());
         }
         if (currentScreen != null) {
-            currentScreen.render(context, scale((int) Input.x()), scale((int) Input.y()), (float) tickSystem.partialTick());
+            currentScreen.render(context, scale((int) Input.getX()), scale((int) Input.getY()), (float) tickSystem.partialTick());
         }
         context.disableGL();
     }
@@ -145,16 +145,16 @@ public class CraftEngineClient {
             return;
         }
 
-        Vector3f rayOrigin = player.camera().position();
-        Vector3f rayDirection = player.camera().front();
+        Vector3f rayOrigin = player.getCamera().position();
+        Vector3f rayDirection = player.getCamera().front();
 
-        if (event.button() == GLFW_MOUSE_BUTTON_LEFT) {
+        if (event.getButton() == GLFW_MOUSE_BUTTON_LEFT) {
             BlockRaycastResult blockRaycastResult = clientWorld.raycast(rayOrigin, rayDirection, 4.5f);
             if (blockRaycastResult != null) {
                 clientWorld.setBlock(blockRaycastResult.x, blockRaycastResult.y, blockRaycastResult.z, Blocks.AIR);
             }
-        } else if (event.button() == GLFW_MOUSE_BUTTON_RIGHT) {
-            ItemStack selected = player.inventory().getSelectedStack();
+        } else if (event.getButton() == GLFW_MOUSE_BUTTON_RIGHT) {
+            ItemStack selected = player.getInventory().getSelectedStack();
             if(selected != null){
                 selected.item().use(player);
             }
@@ -163,6 +163,6 @@ public class CraftEngineClient {
 
     // Я хз как адекватно сделать масштабирование, поэтому просто делаю так
     private int scale(int value) {
-        return (int) (value / (float) Window.width() * Window.scaledWidth());
+        return (int) (value / (float) Window.getWidth() * Window.scaledWidth());
     }
 }

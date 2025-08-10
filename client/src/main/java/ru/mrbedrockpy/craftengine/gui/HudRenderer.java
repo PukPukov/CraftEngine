@@ -25,7 +25,7 @@ public class HudRenderer {
         this.width = width;
         this.height = height;
         for (int i = 0; i < hotbarSlots.length; i++) {
-            hotbarSlots[i] = UI.slot(CraftEngineClient.INSTANCE.player().inventory(), i, InventoryScreen::slotClick);
+            hotbarSlots[i] = UI.slot(CraftEngineClient.INSTANCE.getPlayer().getInventory(), i, InventoryScreen::slotClick);
             hotbarSlots[i].setPosition(width / 2 + i * 20 - 182 / 2 + 2, height - 22 + 2);
         }
     }
@@ -34,10 +34,10 @@ public class HudRenderer {
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         context.drawTextureCentred(width / 2, height / 2, 10, 10, "cursor.png");
         context.drawTexture(width / 2 - 182 / 2, height - 22, 182, 22, "hotbar.png");
-        context.drawText(String.valueOf(CraftEngineClient.INSTANCE.fpsCounter().fps()), 5, 5, 0.5f);
-        context.drawText(positionToString(CraftEngineClient.INSTANCE.player().tickPosition()), 5, 10, 0.5f);
-        context.drawText(CraftEngineClient.INSTANCE.player().camera().angle().toString(), 5, 15, 0.5f);
-        ClientPlayerEntity player = CraftEngineClient.INSTANCE.player();
+        context.drawText(String.valueOf(CraftEngineClient.INSTANCE.getFpsCounter().getFps()), 5, 5, 0.5f);
+        context.drawText(positionToString(CraftEngineClient.INSTANCE.getPlayer().getTickPosition()), 5, 10, 0.5f);
+        context.drawText(CraftEngineClient.INSTANCE.getPlayer().getCamera().angle().toString(), 5, 15, 0.5f);
+        ClientPlayerEntity player = CraftEngineClient.INSTANCE.getPlayer();
         double dx = player.tickPosition().x - player.previousTickPosition.x;
         double dz = player.tickPosition().y - player.previousTickPosition.y;
         double speed = Math.sqrt(dx * dx + dz * dz) * 20;

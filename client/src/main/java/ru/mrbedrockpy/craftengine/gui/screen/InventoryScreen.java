@@ -21,15 +21,15 @@ public class InventoryScreen {
     }
     
     public static void slotClick(SlotWidget slot) {
-        ItemStack cursor = inventory.cursorStack();
+        ItemStack cursor = inventory.getCursorStack();
         ItemStack slotStack = slot.stack();
         
         if (cursor.isEmpty()) {
-            inventory.cursorStack(slotStack);
+            inventory.setCursorStack(slotStack);
             slot.stack(ItemStack.EMPTY);
         } else if (slotStack.isEmpty()) {
             slot.stack(cursor);
-            inventory.cursorStack(ItemStack.EMPTY);
+            inventory.setCursorStack(ItemStack.EMPTY);
             
         } else if (cursor.item().equals(slotStack.item())) {
             int max = cursor.item().maxStackSize();
@@ -40,19 +40,19 @@ public class InventoryScreen {
             cursor.decrement(toTransfer);
             
             if (cursor.isEmpty()) {
-                inventory.cursorStack(ItemStack.EMPTY);
+                inventory.setCursorStack(ItemStack.EMPTY);
             } else {
-                inventory.cursorStack(cursor);
+                inventory.setCursorStack(cursor);
             }
             
         } else {
             slot.stack(cursor);
-            inventory.cursorStack(slotStack);
+            inventory.setCursorStack(slotStack);
         }
     }
     
     private static void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        ItemStack cursorStack = inventory.cursorStack();
+        ItemStack cursorStack = inventory.getCursorStack();
         if (!cursorStack.isEmpty()) {
             context.drawTexture(mouseX - 8, mouseY - 8, 16, 16, Registries.ITEMS.name(cursorStack.item()) + ".png");
         }

@@ -12,10 +12,10 @@ public class ClientWorld extends World {
     public ClientWorld(int size, ClientPlayerEntity player, TickSystem ticker) {
         super(size, new PerlinChunkGenerator(12345678L, 20, 30, 30));
         this.player = player;
-        player.world(this);
+        player.setWorld(this);
         addEntity(player);
         ticker.addListener(this::tick);
-        this.worldRenderer = new WorldRenderer(player.camera());
+        this.worldRenderer = new WorldRenderer(player.getCamera());
     }
 
     public void render() {

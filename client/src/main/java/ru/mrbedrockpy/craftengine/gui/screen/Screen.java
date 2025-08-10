@@ -29,7 +29,7 @@ public final class Screen {
     
     public void addWidget(AbstractWidget widget) {
         widgets.add(widget);
-        widgets.sort(Comparator.comparingInt(AbstractWidget::zIndex));
+        widgets.sort(Comparator.comparingInt(AbstractWidget::getZIndex));
         widgets.indexOf(widget);
     }
     
@@ -40,8 +40,8 @@ public final class Screen {
     public void onMouseClick(MouseClickEvent event) {
         if (Input.isGUIOpen()) {
             for (AbstractWidget widget : widgets) {
-                if (widget.visible() && widget.isMouseOver(scale((int) event.x()), scale((int) event.y()))) {
-                    widget.onMouseClick(scale((int) event.x()), scale((int) event.y()), event.button());
+                if (widget.isVisible() && widget.isMouseOver(scale((int) event.getX()), scale((int) event.getY()))) {
+                    widget.onMouseClick(scale((int) event.getX()), scale((int) event.getY()), event.getButton());
                 }
             }
         }
@@ -49,7 +49,7 @@ public final class Screen {
     
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         for (AbstractWidget widget : widgets) {
-            if (widget.visible()) {
+            if (widget.isVisible()) {
                 widget.render(context, mouseX, mouseY, delta);
             }
         }
@@ -73,6 +73,6 @@ public final class Screen {
     }
     
     private int scale(int value) {
-        return (int) (value / (float) Window.width() * Window.scaledWidth());
+        return (int) (value / (float) Window.getWidth() * Window.scaledWidth());
     }
 }
