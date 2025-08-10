@@ -16,7 +16,7 @@ public interface IWorld {
     @Nullable IChunk chunk(Vector2i pos);
     @Nullable IChunk chunkByBlockPosition(int x, int z);
     int size();
-    IChunk[][] chunks();
+    IChunk[][] getChunks();
     BlockRaycastResult raycast(Vector3f originF, Vector3f directionF, float maxDistanceF);
     
 }

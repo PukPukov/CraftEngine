@@ -12,7 +12,7 @@ public interface IChunk {
 
     IBlock block(Vector3i pos);
     Vector2i worldPosition();
-    Vector2i position();
+    Vector2i getPosition();
     int WIDTH = 16;
     int HEIGHT = 100;
     void cleanup();

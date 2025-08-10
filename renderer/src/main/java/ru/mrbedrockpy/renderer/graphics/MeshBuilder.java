@@ -53,9 +53,9 @@ public class MeshBuilder {
             int[] o3 = data.aoOffsets[i][2];
 
             cornerAO[i] = calculateAO(
-                    world.block(x + o1[0], y + o1[1], z + o1[2]).solid(),
-                    world.block(x + o2[0], y + o2[1], z + o2[2]).solid(),
-                    world.block(x + o3[0], y + o3[1], z + o3[2]).solid()
+                    world.block(x + o1[0], y + o1[1], z + o1[2]).isSolid(),
+                    world.block(x + o2[0], y + o2[1], z + o2[2]).isSolid(),
+                    world.block(x + o3[0], y + o3[1], z + o3[2]).isSolid()
             );
         }
 

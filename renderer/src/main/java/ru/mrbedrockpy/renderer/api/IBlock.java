@@ -5,8 +5,8 @@ import ru.mrbedrockpy.renderer.phys.AABB;
 
 public interface IBlock {
     
-    String id();
-    boolean solid();
+    String getId();
+    boolean isSolid();
     AABB aabb(int x, int y, int z);
 
 

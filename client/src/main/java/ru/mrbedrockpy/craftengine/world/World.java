@@ -97,7 +97,7 @@ public abstract class World implements IWorld {
         IBlock.Direction lastFace = Block.Direction.NONE;
         
         IBlock block = block(blockPos.x, blockPos.y, blockPos.z);
-        if (block != null && block.solid()) {
+        if (block != null && block.isSolid()) {
             return new BlockRaycastResult(blockPos.x, blockPos.y, blockPos.z, block, lastFace);
         }
         
@@ -132,7 +132,7 @@ public abstract class World implements IWorld {
             }
             
             block = block(blockPos.x, blockPos.y, blockPos.z);
-            if (block != null && block.solid()) {
+            if (block != null && block.isSolid()) {
                 return new BlockRaycastResult(blockPos.x, blockPos.y, blockPos.z, block, lastFace);
             }
         }
@@ -304,7 +304,7 @@ public abstract class World implements IWorld {
 
     public int getTopZ(int x, int y){
         for(int z = IChunk.HEIGHT; z >= 0; z--){
-            if(!this.block(x, y, z).solid()) continue;
+            if(!this.block(x, y, z).isSolid()) continue;
             return z;
         }
         return IChunk.HEIGHT;

@@ -56,7 +56,7 @@ public class WorldRenderer {
         texture.use();
         for (IChunk chunk : chunksAround(player.chunkPosition(), RenderVars.RENDER_DISTANCE, world)) {
             if (chunk == null) continue;
-            if (distanceByAxis(player.chunkPosition(), chunk.position()) > RenderVars.RENDER_DISTANCE || !culler.isBoxVisible(
+            if (distanceByAxis(player.chunkPosition(), chunk.getPosition()) > RenderVars.RENDER_DISTANCE || !culler.isBoxVisible(
                 chunk.worldPosition().x, chunk.worldPosition().y, 0,
                 chunk.worldPosition().x + IChunk.WIDTH,
                 chunk.worldPosition().y + IChunk.WIDTH,

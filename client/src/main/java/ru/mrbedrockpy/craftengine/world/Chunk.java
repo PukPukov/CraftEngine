@@ -80,7 +80,7 @@ public class Chunk implements IChunk {
                 for (int y = 0; y < WIDTH; y++) {
                     for (int z = 0; z < HEIGHT; z++) {
                         IBlock block = block(x, y, z);
-                        if (block == Blocks.AIR || !block.solid()) {
+                        if (block == Blocks.AIR || !block.isSolid()) {
                             continue;
                         }
                         
@@ -96,7 +96,7 @@ public class Chunk implements IChunk {
                             
                             IBlock neighborBlock = world.block(neighborX, neighborY, neighborZ);
                             
-                            if (neighborBlock == Blocks.AIR || !neighborBlock.solid()) {
+                            if (neighborBlock == Blocks.AIR || !neighborBlock.isSolid()) {
                                 builder.addFace(worldX, worldY, z, dir, block, world);
                             }
                         }
