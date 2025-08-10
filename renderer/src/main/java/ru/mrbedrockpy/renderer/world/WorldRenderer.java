@@ -46,20 +46,20 @@ public class WorldRenderer {
     private final FrustumCuller culler = new FrustumCuller();
     
     public void render(IWorld world, IEntity player) {
-        Matrix4f projView = new Matrix4f(camera.projectionMatrix())
-            .mul(camera.viewMatrix());
+        Matrix4f projView = new Matrix4f(camera.getProjectionMatrix())
+            .mul(camera.getViewMatrix());
         culler.update(projView);
         shader.use();
         shader.setUniformMatrix4f("model", new Matrix4f());
-        shader.setUniformMatrix4f("view", camera.viewMatrix());
-        shader.setUniformMatrix4f("projection", camera.projectionMatrix());
+        shader.setUniformMatrix4f("view", camera.getViewMatrix());
+        shader.setUniformMatrix4f("projection", camera.getProjectionMatrix());
         texture.use();
-        for (IChunk chunk : chunksAround(player.chunkPosition(), RenderVars.RENDER_DISTANCE, world)) {
+        for (IChunk chunk : chunksAround(player.getChunkPosition(), RenderVars.RENDER_DISTANCE, world)) {
             if (chunk == null) continue;
-            if (distanceByAxis(player.chunkPosition(), chunk.position()) > RenderVars.RENDER_DISTANCE || !culler.isBoxVisible(
-                chunk.worldPosition().x, chunk.worldPosition().y, 0,
-                chunk.worldPosition().x + IChunk.WIDTH,
-                chunk.worldPosition().y + IChunk.WIDTH,
+            if (distanceByAxis(player.getChunkPosition(), chunk.getPosition()) > RenderVars.RENDER_DISTANCE || !culler.isBoxVisible(
+                chunk.getWorldPosition().x, chunk.getWorldPosition().y, 0,
+                chunk.getWorldPosition().x + IChunk.WIDTH,
+                chunk.getWorldPosition().y + IChunk.WIDTH,
                 IChunk.HEIGHT
             )) {
                 continue;
@@ -73,8 +73,8 @@ public class WorldRenderer {
     }
     
     public void updateSelectedBlock(IWorld world, IEntity player) {
-        Vector3f origin = new Vector3f(camera.position());
-        Vector3f direction = camera.front();
+        Vector3f origin = new Vector3f(camera.getPosition());
+        Vector3f direction = camera.getFront();
         
         BlockRaycastResult blockRaycastResult = world.raycast(origin, direction, 4.5f);
         if (blockRaycastResult != null) {

@@ -26,8 +26,8 @@ public abstract class LivingEntity implements IEntity {
     protected Vector3f size = new Vector3f(1, 1, 1);
     protected int pitch;
     protected int yaw;
-    @Setter
     @Getter
+    @Setter
     protected World world;
     
     protected boolean onGround = false;
@@ -41,8 +41,9 @@ public abstract class LivingEntity implements IEntity {
         setTickPosition(tickPosition);
     }
     
-    public void update(double deltaTime, double partialTick, ClientWorld world){
+    public void update(double deltaTime, double partialTick, ClientWorld world) {
     }
+
     public abstract void render(Camera camera);
     
     @Override
@@ -129,25 +130,13 @@ public abstract class LivingEntity implements IEntity {
         }
     }
     
-    public int blockX() {
-        return (int) tickPosition.x;
-    }
-    
-    public int blockY() {
-        return (int) tickPosition.y;
-    }
-    
-    public int blockZ() {
-        return (int) tickPosition.z;
-    }
-    
     @Override
-    public Vector2i chunkPosition() {
+    public Vector2i getChunkPosition() {
         return new Vector2i((int) (tickPosition.x / Chunk.WIDTH), (int) (tickPosition.y / Chunk.WIDTH));
     }
 
     @Override
-    public AABB boundingBox() {
+    public AABB getBoundingBox() {
         return boundingBox;
     }
 }

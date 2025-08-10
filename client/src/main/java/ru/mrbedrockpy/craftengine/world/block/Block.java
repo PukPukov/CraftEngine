@@ -6,15 +6,16 @@ import lombok.RequiredArgsConstructor;
 import ru.mrbedrockpy.renderer.api.IBlock;
 import ru.mrbedrockpy.renderer.phys.AABB;
 
-@RequiredArgsConstructor
+
 @Getter
+@RequiredArgsConstructor
 public class Block implements IBlock {
     
     private final String id;
     private final boolean solid;
 
     @Override
-    public AABB aabb(int x, int y, int z) {
+    public AABB getAABB(int x, int y, int z) {
         return new AABB(x, y, z, x + 1, y + 1, z + 1);
     }
 

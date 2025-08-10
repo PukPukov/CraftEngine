@@ -36,10 +36,10 @@ public class HudRenderer {
         context.drawTexture(width / 2 - 182 / 2, height - 22, 182, 22, "hotbar.png");
         context.drawText(String.valueOf(CraftEngineClient.INSTANCE.getFpsCounter().getFps()), 5, 5, 0.5f);
         context.drawText(positionToString(CraftEngineClient.INSTANCE.getPlayer().getTickPosition()), 5, 10, 0.5f);
-        context.drawText(CraftEngineClient.INSTANCE.getPlayer().getCamera().angle().toString(), 5, 15, 0.5f);
+        context.drawText(CraftEngineClient.INSTANCE.getPlayer().getCamera().getAngle().toString(), 5, 15, 0.5f);
         ClientPlayerEntity player = CraftEngineClient.INSTANCE.getPlayer();
-        double dx = player.tickPosition().x - player.previousTickPosition.x;
-        double dz = player.tickPosition().y - player.previousTickPosition.y;
+        double dx = player.getTickPosition().x - player.previousTickPosition.x;
+        double dz = player.getTickPosition().y - player.previousTickPosition.y;
         double speed = Math.sqrt(dx * dx + dz * dz) * 20;
         String speedText = String.format("Speed: %.2f b/s", speed);
         context.drawText(speedText, 5, 20, 0.5f);

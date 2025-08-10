@@ -37,7 +37,7 @@ public class Chunk implements IChunk {
     }
     
     @Override
-    public IBlock block(int x, int y, int z) {
+    public IBlock getBlock(int x, int y, int z) {
         try {
             return Registries.BLOCKS.get(blocks[x][y][z]);
         } catch (IndexOutOfBoundsException e) {
@@ -46,14 +46,14 @@ public class Chunk implements IChunk {
     }
     
     @Override
-    public IBlock block(Vector3i pos) {
-        return block(pos.x, pos.y, pos.z);
+    public IBlock getBlock(Vector3i pos) {
+        return getBlock(pos.x, pos.y, pos.z);
     }
     
     @Override
     public boolean setBlock(int x, int y, int z, IBlock block) {
         try {
-            short newId = (short) Registries.BLOCKS.id(block);
+            short newId = (short) Registries.BLOCKS.getId(block);
             if (blocks[x][y][z] != newId) {
                 blocks[x][y][z] = newId;
                 markDirty();
@@ -79,8 +79,8 @@ public class Chunk implements IChunk {
             for (int x = 0; x < WIDTH; x++) {
                 for (int y = 0; y < WIDTH; y++) {
                     for (int z = 0; z < HEIGHT; z++) {
-                        IBlock block = block(x, y, z);
-                        if (block == Blocks.AIR || !block.solid()) {
+                        IBlock block = getBlock(x, y, z);
+                        if (block == Blocks.AIR || !block.isSolid()) {
                             continue;
                         }
                         
@@ -96,7 +96,7 @@ public class Chunk implements IChunk {
                             
                             IBlock neighborBlock = world.block(neighborX, neighborY, neighborZ);
                             
-                            if (neighborBlock == Blocks.AIR || !neighborBlock.solid()) {
+                            if (neighborBlock == Blocks.AIR || !neighborBlock.isSolid()) {
                                 builder.addFace(worldX, worldY, z, dir, block, world);
                             }
                         }
@@ -126,7 +126,7 @@ public class Chunk implements IChunk {
     }
     
     @Override
-    public Vector2i worldPosition() {
+    public Vector2i getWorldPosition() {
         return new Vector2i(position.x * WIDTH, position.y * WIDTH);
     }
 

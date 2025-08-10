@@ -5,9 +5,9 @@ import ru.mrbedrockpy.renderer.phys.AABB;
 
 public interface IBlock {
     
-    String id();
-    boolean solid();
-    AABB aabb(int x, int y, int z);
+    String getId();
+    boolean isSolid();
+    AABB getAABB(int x, int y, int z);
 
 
     enum Direction {

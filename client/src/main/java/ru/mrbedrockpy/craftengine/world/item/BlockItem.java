@@ -29,8 +29,8 @@ public class BlockItem extends Item{
 
     @Override
     public void use(ClientPlayerEntity player) {
-        Vector3f rayOrigin = player.getCamera().position();
-        Vector3f rayDirection = player.getCamera().front();
+        Vector3f rayOrigin = player.getCamera().getPosition();
+        Vector3f rayDirection = player.getCamera().getFront();
         World world = player.getWorld();
         PlayerInventory inventory = player.getInventory();
         if(inventory.getSelectedStack().item() instanceof BlockItem) {

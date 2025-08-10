@@ -145,8 +145,8 @@ public class CraftEngineClient {
             return;
         }
 
-        Vector3f rayOrigin = player.getCamera().position();
-        Vector3f rayDirection = player.getCamera().front();
+        Vector3f rayOrigin = player.getCamera().getPosition();
+        Vector3f rayDirection = player.getCamera().getFront();
 
         if (event.getButton() == GLFW_MOUSE_BUTTON_LEFT) {
             BlockRaycastResult blockRaycastResult = clientWorld.raycast(rayOrigin, rayDirection, 4.5f);
