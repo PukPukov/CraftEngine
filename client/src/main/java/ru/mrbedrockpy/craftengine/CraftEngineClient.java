@@ -49,7 +49,7 @@ public class CraftEngineClient {
     private @Getter final   FPSCounter fpsCounter = new FPSCounter();
     private @Getter @Setter ClientWorld clientWorld;
     private @Getter @Setter ClientPlayerEntity player;
-    private                 Screen currentScreen = null;
+    private @Getter         Screen currentScreen = null;
     private @Getter final   TickSystem tickSystem = new TickSystem(20);
 
     private CraftEngineClient() {}
@@ -79,7 +79,7 @@ public class CraftEngineClient {
         ConfigVars.update();
         Window.initialize(ConfigVars.WINDOW_SETTINGS);
         Input.initialize();
-        context = new DrawContext(Window.scaledWidth(ConfigVars.GUI_SCALE), Window.scaledHeight(ConfigVars.GUI_SCALE));
+        context = new DrawContext(Window.scaledWidth(), Window.scaledHeight());
         eventManager.addListener(MouseClickEvent.class, this::onMouseClick);
         Blocks.register();
         Items.register();
@@ -163,6 +163,6 @@ public class CraftEngineClient {
 
     // Я хз как адекватно сделать масштабирование, поэтому просто делаю так
     private int scale(int value) {
-        return (int) (value / (float) Window.width() * Window.scaledWidth(ConfigVars.GUI_SCALE));
+        return (int) (value / (float) Window.width() * Window.scaledWidth());
     }
 }

@@ -106,6 +106,13 @@ public class Shader {
             System.err.println("Uniform not found: " + name);
     }
 
+    public void setUniform1i(String name, int i) {
+        int location = glGetUniformLocation(id, name);
+        if (location != -1)
+            glUniform1i(location, i);
+        else
+            System.err.println("Uniform not found: " + name);
+    }
 
     public void dispose() {
         glDeleteProgram(id);

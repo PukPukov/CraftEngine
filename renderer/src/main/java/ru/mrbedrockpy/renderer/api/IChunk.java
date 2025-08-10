@@ -14,7 +14,7 @@ public interface IChunk {
     Vector2i worldPosition();
     Vector2i position();
     int WIDTH = 16;
-    int HEIGHT = 16;
+    int HEIGHT = 100;
     void cleanup();
     Mesh chunkMesh(IWorld world, TextureAtlas atlas);
     void tick();

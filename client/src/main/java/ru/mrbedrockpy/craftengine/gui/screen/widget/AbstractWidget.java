@@ -35,4 +35,7 @@ public abstract class AbstractWidget {
         this.x = x - width / 2;
         this.y = y - height / 2;
     }
+
+    public void tick() {
+    }
 }

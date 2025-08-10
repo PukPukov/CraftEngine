@@ -57,6 +57,12 @@ public final class Screen {
             onRender.render(context, mouseX, mouseY, delta);
         }
     }
+
+    public void tick(){
+        for(AbstractWidget widget : widgets){
+            widget.tick();
+        }
+    }
     
     public void setInitCallback(Runnable onInit) {
         this.onInit = onInit;
@@ -67,6 +73,6 @@ public final class Screen {
     }
     
     private int scale(int value) {
-        return (int) (value / (float) Window.width() * Window.scaledWidth(ConfigVars.GUI_SCALE));
+        return (int) (value / (float) Window.width() * Window.scaledWidth());
     }
 }

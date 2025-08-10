@@ -7,11 +7,16 @@ import org.lwjgl.stb.STBTTFontinfo;
 import org.lwjgl.stb.STBTTPackContext;
 import org.lwjgl.stb.STBTTPackedchar;
 import org.lwjgl.system.MemoryStack;
+import ru.mrbedrockpy.renderer.graphics.FreeTextureAtlas;
+import ru.mrbedrockpy.renderer.gui.DrawContext;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.lwjgl.opengl.GL46C.*;
 import static org.lwjgl.stb.STBTruetype.*;
@@ -21,39 +26,38 @@ public class FontRenderer {
     private static final int BITMAP_W = 512;
     private static final int BITMAP_H = 512;
     private static final int FONT_SIZE = 32;
-    
+
     private int textureId;
     private final STBTTPackedchar.Buffer charData = STBTTPackedchar.malloc(96);
-    
-    private ByteBuffer fontBuffer;
     private STBTTFontinfo fontInfo;
     private float scale;
     private int ascent;
-    
+
+    /**
+     * Инициализация шрифта и создание GPU-текстуры.
+     * @param resourcePath путь к TTF-файлу в ресурсах
+     */
     public void init(String resourcePath) throws IOException {
+        // 1) Загружаем TTF в ByteBuffer
+        ByteBuffer fontBuffer;
         try (InputStream is = getClass().getClassLoader().getResourceAsStream(resourcePath)) {
-            if (is == null) {
-                throw new IOException("Font not found: " + resourcePath);
-            }
-            
+            if (is == null) throw new IOException("Font not found: " + resourcePath);
             byte[] bytes = is.readAllBytes();
             fontBuffer = BufferUtils.createByteBuffer(bytes.length);
             fontBuffer.put(bytes).flip();
         }
-        
+
         fontInfo = STBTTFontinfo.create();
-        if (!stbtt_InitFont(fontInfo, fontBuffer)) {
-            throw new IllegalStateException("Could not init font info");
-        }
-        
+        if (!stbtt_InitFont(fontInfo, fontBuffer))
+            throw new IllegalStateException("Failed to init font info");
+
         scale = stbtt_ScaleForPixelHeight(fontInfo, FONT_SIZE);
-        
         try (MemoryStack stack = MemoryStack.stackPush()) {
             IntBuffer pAscent = stack.mallocInt(1);
             stbtt_GetFontVMetrics(fontInfo, pAscent, null, null);
-            ascent = pAscent.get(0);
+            ascent = (int) (pAscent.get(0) * scale);
         }
-        
+
         ByteBuffer bitmap = BufferUtils.createByteBuffer(BITMAP_W * BITMAP_H);
         try (MemoryStack stack = MemoryStack.stackPush()) {
             STBTTPackContext pack = STBTTPackContext.malloc(stack);
@@ -61,7 +65,7 @@ public class FontRenderer {
             stbtt_PackFontRange(pack, fontBuffer, 0, FONT_SIZE, 32, charData);
             stbtt_PackEnd(pack);
         }
-        
+
         textureId = glGenTextures();
         glBindTexture(GL_TEXTURE_2D, textureId);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -72,11 +76,14 @@ public class FontRenderer {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glBindTexture(GL_TEXTURE_2D, 0);
     }
-    
-    public Vector2i size(String text) {
+
+    /**
+     * Рассчитывает размер строки в пикселях.
+     */
+    public Vector2i getTextSize(String text) {
         int width = 0;
         int maxHeight = 0;
-        
+
         try (MemoryStack stack = MemoryStack.stackPush()) {
             IntBuffer x0 = stack.mallocInt(1);
             IntBuffer y0 = stack.mallocInt(1);
@@ -84,23 +91,31 @@ public class FontRenderer {
             IntBuffer y1 = stack.mallocInt(1);
             IntBuffer advance = stack.mallocInt(1);
             IntBuffer lsb = stack.mallocInt(1);
-            
+
             for (int i = 0; i < text.length(); i++) {
                 char c = text.charAt(i);
-                if (c < 32 || c >= 128) continue;
-                
+
                 stbtt_GetCodepointHMetrics(fontInfo, c, advance, lsb);
                 width += (int) (advance.get(0) * scale);
-                
+
                 stbtt_GetCodepointBitmapBox(fontInfo, c, scale, scale, x0, y0, x1, y1);
                 int height = y1.get(0) - y0.get(0);
                 maxHeight = Math.max(maxHeight, height);
             }
         }
-        
+
         return new Vector2i(Math.ceilDiv(width, 5), Math.ceilDiv(maxHeight, 5));
     }
-    
+
+
+    public void use(){
+        glBindTexture(GL_TEXTURE_2D, textureId);
+    }
+
+    public void unbind(){
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
     public void dispose() {
         glDeleteTextures(textureId);
         charData.free();

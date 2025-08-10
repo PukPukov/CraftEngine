@@ -54,7 +54,8 @@ public class SlotWidget extends AbstractWidget {
         
         ItemStack s = stack();
         if (s != null && !s.isEmpty()) {
-            ctx.drawTexture(x + 1, y + 1, 16, 16, Texture.load(Registries.ITEMS.name(s.item()) + ".png"));
+            String path = Registries.ITEMS.name(s.item()) + ".png";
+            ctx.drawTexture(x + 1, y + 1, 16, 16, path);
         }
     }
     
@@ -62,5 +63,5 @@ public class SlotWidget extends AbstractWidget {
     public void onMouseClick(int mouseX, int mouseY, int button) {
         if (visible && isMouseOver(mouseX, mouseY)) onClick.accept(this);
     }
-    
+
 }

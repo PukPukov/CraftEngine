@@ -15,6 +15,7 @@ public class ConfigVars {
         RENDER_DISTANCE = CraftEngineConfiguration.MAIN_CONFIG.getInt("render.distance", 8);
         FOV_CHANGE_MULTIPLIER = CraftEngineConfiguration.MAIN_CONFIG.getFloat("fov.dinamic_multiplier", 1.0f);
         RenderVars.RENDER_DISTANCE = RENDER_DISTANCE;
+        RenderVars.GUI_SCALE = GUI_SCALE;
     }
     
 }

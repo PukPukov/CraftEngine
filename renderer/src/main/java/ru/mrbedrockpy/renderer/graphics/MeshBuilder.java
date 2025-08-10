@@ -59,35 +59,28 @@ public class MeshBuilder {
             );
         }
 
-        Vector2i tileUV = atlas.uv(RenderInit.BLOCKS.name(block));
-        float tileCount = atlas.atlasSize();
-        float unit = 1.0f / tileCount;
-        float baseX = tileUV.x * unit;
-        float baseY = 1.0f - (tileUV.y + 1) * unit;
+        float[] normalizedUvs = atlas.normalizedUv(RenderInit.BLOCKS.name(block));
 
         for (int i = 0; i < 4; i++) {
-            uvs[i][0] = baseX + uvs[i][0] * unit;
-            uvs[i][1] = baseY + uvs[i][1] * unit;
+            uvs[i][0] = normalizedUvs[i * 2];
+            uvs[i][1] = normalizedUvs[i * 2 + 1];
         }
 
         // Это не OpenGL индексы — просто порядок вершин, передаваемых в v()
-        int[][] indices;
+        int[] indices;
         if (cornerAO[0] + cornerAO[2] > cornerAO[1] + cornerAO[3]) {
-            indices = new int[][]{
-                    {0, 1, 3},
-                    {1, 2, 3}
+            indices = new int[]{
+                    0, 1, 3,
+                    1, 2, 3
             };
         } else {
-            indices = new int[][]{
-                    {0, 1, 2},
-                    {0, 2, 3}
+            indices = new int[]{
+                    0, 1, 2,
+                    0, 2, 3
             };
         }
-
-        for (int[] tri : indices) {
-            for (int idx : tri) {
-                v(corners[idx], uvs[idx], cornerAO[idx]);
-            }
+        for (int idx : indices) {
+            v(corners[idx], uvs[idx], cornerAO[idx]);
         }
     }
 

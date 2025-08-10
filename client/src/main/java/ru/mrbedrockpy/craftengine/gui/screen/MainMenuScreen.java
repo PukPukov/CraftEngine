@@ -16,17 +16,18 @@ public class MainMenuScreen {
     
     public static Screen create() {
         return UI.create().button(
-            "Play", Window.scaledWidth(ConfigVars.GUI_SCALE) / 2 - 50, Window.scaledHeight(ConfigVars.GUI_SCALE) / 2 - 50, 50, 50, button -> {
-                ClientPlayerEntity player = new ClientPlayerEntity(new Vector3f(0, 0, 18), null);
+            "Play", Window.scaledWidth() / 2 - 50, Window.scaledHeight() / 2 - 50, 50, 50, button -> {
+                ClientPlayerEntity player = new ClientPlayerEntity(new Vector3f(0, 0, 0), null);
                 CraftEngineClient.INSTANCE.player(player);
                 ClientWorld world = new ClientWorld(100, CraftEngineClient.INSTANCE.player(), CraftEngineClient.INSTANCE.tickSystem());
+                player.setTickPosition(new Vector3f(0, 0, world.getTopZ(0, 0) + 1));
                 CraftEngineClient.INSTANCE.clientWorld(world);
                 CraftEngineClient.INSTANCE.setScreen(null);
-                player.inventory().slot(0, new ItemStack(Items.DIRT_BLOCK_ITEM));
+                player.inventory().slot(0, new ItemStack(Items.STONE_BLOCK_ITEM));
                 for (int i = 1; i < 9; i++) {
                     player.inventory().slot(i, new ItemStack(Items.GOLDEN_APPLE));
                 }
-                CraftEngineClient.INSTANCE.hudRenderer = new HudRenderer(Window.scaledWidth(ConfigVars.GUI_SCALE), Window.scaledHeight(ConfigVars.GUI_SCALE));
+                CraftEngineClient.INSTANCE.hudRenderer = new HudRenderer(Window.scaledWidth(), Window.scaledHeight());
             }
         ).b();
     }

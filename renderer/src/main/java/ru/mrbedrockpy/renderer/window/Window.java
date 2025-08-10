@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
+import ru.mrbedrockpy.renderer.RenderVars;
 import ru.mrbedrockpy.renderer.window.WindowSettings;
 
 import java.nio.IntBuffer;
@@ -106,11 +107,11 @@ public class Window {
         glfwSwapInterval(flag ? 1 : 0);
     }
 
-    public static int scaledWidth(int scale) {
-        return Math.ceilDiv(width(), Math.max(scale, 1));
+    public static int scaledWidth() {
+        return Math.ceilDiv(width(), Math.max(RenderVars.GUI_SCALE, 1));
     }
 
-    public static int scaledHeight(int scale) {
-        return Math.ceilDiv(height(), Math.max(scale, 1));
+    public static int scaledHeight() {
+        return Math.ceilDiv(height(), Math.max(RenderVars.GUI_SCALE, 1));
     }
 }
