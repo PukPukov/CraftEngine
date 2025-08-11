@@ -26,6 +26,7 @@ dependencies {
     api "org.lwjgl:lwjgl-glfw"
     api "org.lwjgl:lwjgl-opengl"
     implementation "org.lwjgl:lwjgl-stb"
+    api "com.google.code.gson:gson:2.10.1"
 
     api "org.joml:joml:${jomlVersion}"
 

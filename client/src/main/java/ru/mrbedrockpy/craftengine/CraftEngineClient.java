@@ -12,9 +12,12 @@ import ru.mrbedrockpy.craftengine.config.JsonConfig;
 import ru.mrbedrockpy.craftengine.event.EventManager;
 import ru.mrbedrockpy.craftengine.event.MouseClickEvent;
 import ru.mrbedrockpy.craftengine.gui.screen.InventoryScreen;
+import ru.mrbedrockpy.craftengine.resource.CompositeResourceManager;
+import ru.mrbedrockpy.craftengine.resource.FileResourceSource;
 import ru.mrbedrockpy.craftengine.world.item.ItemStack;
 import ru.mrbedrockpy.craftengine.world.item.Items;
 import ru.mrbedrockpy.renderer.RenderInit;
+import ru.mrbedrockpy.renderer.api.ResourceSource;
 import ru.mrbedrockpy.renderer.gui.DrawContext;
 import ru.mrbedrockpy.craftengine.gui.HudRenderer;
 import ru.mrbedrockpy.craftengine.gui.screen.MainMenuScreen;
@@ -30,6 +33,9 @@ import ru.mrbedrockpy.renderer.window.Window;
 import ru.mrbedrockpy.renderer.window.WindowSettings;
 import ru.mrbedrockpy.renderer.world.raycast.BlockRaycastResult;
 
+import java.io.InputStream;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -44,7 +50,7 @@ public class CraftEngineClient {
 
     public final EventManager eventManager = new EventManager();
     public       HudRenderer hudRenderer;
-
+    public static final CompositeResourceManager RESOURCE_MANAGER = new CompositeResourceManager();
     private                 DrawContext context;
     private @Getter final   FPSCounter fpsCounter = new FPSCounter();
     private @Getter @Setter ClientWorld clientWorld;
@@ -76,14 +82,16 @@ public class CraftEngineClient {
 
     public void initialize() {
         CraftEngineConfiguration.register();
-        ConfigVars.update();
-        Window.initialize(ConfigVars.WINDOW_SETTINGS);
+        Window.initialize(ConfigVars.INSTANCE.getObject("window.settings", WindowSettings.class));
         Input.initialize();
         context = new DrawContext(Window.scaledWidth(), Window.scaledHeight());
         eventManager.addListener(MouseClickEvent.class, this::onMouseClick);
         Blocks.register();
         Items.register();
         Registries.freeze();
+        RESOURCE_MANAGER.push(new FileResourceSource(Paths.get("")));
+        RESOURCE_MANAGER.load();
+        RenderInit.RESOURCE_MANAGER = RESOURCE_MANAGER;
         RenderInit.BLOCKS = Registries.BLOCKS;
         setScreen(MainMenuScreen.create());
     }
@@ -95,12 +103,52 @@ public class CraftEngineClient {
             Window.setShouldClose(true);
         }
         if (Input.jclicked(GLFW.GLFW_MOUSE_BUTTON_LEFT)) {
-            MouseClickEvent clickEvent = new MouseClickEvent(GLFW.GLFW_MOUSE_BUTTON_LEFT, Input.getX(), Input.getY());
-            eventManager.callEvent(clickEvent);
+            MouseClickEvent event = new MouseClickEvent(GLFW.GLFW_MOUSE_BUTTON_LEFT, Input.getX(), Input.getY());
+            if (currentScreen != null) {
+                currentScreen.onMouseClick(event);
+                return;
+            }
+
+            Vector3f rayOrigin = player.getCamera().getPosition();
+            Vector3f rayDirection = player.getCamera().getFront();
+
+            if (event.getButton() == GLFW_MOUSE_BUTTON_LEFT) {
+                BlockRaycastResult blockRaycastResult = clientWorld.raycast(rayOrigin, rayDirection, 4.5f);
+                if (blockRaycastResult != null) {
+                    clientWorld.setBlock(blockRaycastResult.x, blockRaycastResult.y, blockRaycastResult.z, Blocks.AIR);
+                }
+            } else if (event.getButton() == GLFW_MOUSE_BUTTON_RIGHT) {
+                ItemStack selected = player.getInventory().getSelectedStack();
+                if(selected != null){
+                    selected.item().use(player);
+                }
+            }
+
+            eventManager.callEvent(event);
         }
         if (Input.jclicked(GLFW.GLFW_MOUSE_BUTTON_RIGHT)) {
-            MouseClickEvent clickEvent = new MouseClickEvent(GLFW.GLFW_MOUSE_BUTTON_RIGHT, Input.getX(), Input.getY());
-            eventManager.callEvent(clickEvent);
+            MouseClickEvent event = new MouseClickEvent(GLFW.GLFW_MOUSE_BUTTON_RIGHT, Input.getX(), Input.getY());
+            if (currentScreen != null) {
+                currentScreen.onMouseClick(event);
+                return;
+            }
+
+            Vector3f rayOrigin = player.getCamera().getPosition();
+            Vector3f rayDirection = player.getCamera().getFront();
+
+            if (event.getButton() == GLFW_MOUSE_BUTTON_LEFT) {
+                BlockRaycastResult blockRaycastResult = clientWorld.raycast(rayOrigin, rayDirection, 4.5f);
+                if (blockRaycastResult != null) {
+                    clientWorld.setBlock(blockRaycastResult.x, blockRaycastResult.y, blockRaycastResult.z, Blocks.AIR);
+                }
+            } else if (event.getButton() == GLFW_MOUSE_BUTTON_RIGHT) {
+                ItemStack selected = player.getInventory().getSelectedStack();
+                if(selected != null){
+                    selected.item().use(player);
+                }
+            }
+
+            eventManager.callEvent(event);
         }
         if (Input.jpressed(GLFW.GLFW_KEY_TAB)) {
             setScreen(InventoryScreen.create(player.getInventory()));

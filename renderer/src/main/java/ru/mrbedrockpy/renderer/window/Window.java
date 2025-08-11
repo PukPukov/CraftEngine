@@ -4,7 +4,7 @@ import lombok.Getter;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
-import ru.mrbedrockpy.renderer.RenderVars;
+import ru.mrbedrockpy.renderer.RenderInit;
 import ru.mrbedrockpy.renderer.window.WindowSettings;
 
 import java.nio.IntBuffer;
@@ -108,10 +108,10 @@ public class Window {
     }
 
     public static int scaledWidth() {
-        return Math.ceilDiv(getWidth(), Math.max(RenderVars.GUI_SCALE, 1));
+        return Math.ceilDiv(getWidth(), Math.max(RenderInit.CONFIG.getInt("gui.scale"), 1));
     }
 
     public static int scaledHeight() {
-        return Math.ceilDiv(getHeight(), Math.max(RenderVars.GUI_SCALE, 1));
+        return Math.ceilDiv(getHeight(), Math.max(RenderInit.CONFIG.getInt("gui.scale"), 1));
     }
 }

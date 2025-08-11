@@ -49,9 +49,10 @@ public class ClientPlayerEntity extends LivingEntity {
     public void update(double deltaTime, double partialTick, ClientWorld world) {
         super.update(deltaTime, partialTick, world);
         if (!Input.isGUIOpen()) {
+            // Как блять они стали наоборот работать?
             camera.rotate(new Vector2f(
-                (float) -Input.getDeltaX() * sensitivity,
-                (float) -Input.getDeltaY() * sensitivity
+                (float) -Input.getDeltaY() * sensitivity,
+                (float) -Input.getDeltaX() * sensitivity
             ));
         }
         long currentTime = System.nanoTime();

@@ -4,7 +4,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
-import ru.mrbedrockpy.renderer.RenderVars;
+import ru.mrbedrockpy.renderer.RenderInit;
 import ru.mrbedrockpy.renderer.api.ICamera;
 import ru.mrbedrockpy.renderer.api.IChunk;
 import ru.mrbedrockpy.renderer.api.IEntity;
@@ -54,9 +54,9 @@ public class WorldRenderer {
         shader.setUniformMatrix4f("view", camera.getViewMatrix());
         shader.setUniformMatrix4f("projection", camera.getProjectionMatrix());
         texture.use();
-        for (IChunk chunk : chunksAround(player.getChunkPosition(), RenderVars.RENDER_DISTANCE, world)) {
+        for (IChunk chunk : chunksAround(player.getChunkPosition(), RenderInit.CONFIG.getInt("render.distance"), world)) {
             if (chunk == null) continue;
-            if (distanceByAxis(player.getChunkPosition(), chunk.getPosition()) > RenderVars.RENDER_DISTANCE || !culler.isBoxVisible(
+            if (distanceByAxis(player.getChunkPosition(), chunk.getPosition()) > RenderInit.CONFIG.getInt("render.distance") || !culler.isBoxVisible(
                 chunk.getWorldPosition().x, chunk.getWorldPosition().y, 0,
                 chunk.getWorldPosition().x + IChunk.WIDTH,
                 chunk.getWorldPosition().y + IChunk.WIDTH,

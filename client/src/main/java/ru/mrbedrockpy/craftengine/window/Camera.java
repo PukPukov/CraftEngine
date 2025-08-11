@@ -11,8 +11,8 @@ import ru.mrbedrockpy.renderer.api.ICamera;
 public class Camera implements ICamera {
     
     // CONSTANTS
-    private static final float standardFovDegrees = CraftEngineConfiguration.MAIN_CONFIG.getFloat("fov", 70.0f);
-    private static final float sprintFovDegrees = standardFovDegrees + 10 * ConfigVars.FOV_CHANGE_MULTIPLIER;
+    private static final float standardFovDegrees = ConfigVars.INSTANCE.getFloat("fov");
+    private static final float sprintFovDegrees = standardFovDegrees + 10 * ConfigVars.INSTANCE.getFloat("fov.dynamic_multiplier");
     private static final float aspectRatio = 16f / 9f;
     private static final float zNear = 0.1f;
     private static final float zFar = 1000f;
@@ -36,7 +36,7 @@ public class Camera implements ICamera {
         Util.genericLerp(
             previousTime, currentTime,
             this.actualFovRadians, this.targetFovRadians, this::changeFov,
-            fovChangeStepRadians * ConfigVars.FOV_CHANGE_MULTIPLIER,
+            fovChangeStepRadians * ConfigVars.INSTANCE.getFloat("fov.dynamic_multiplier"),
             this.fovChangePhase, (phase) -> this.fovChangePhase = phase
         );
         updateProjectionMatrix();

@@ -16,7 +16,6 @@ dependencies {
     compileOnly lombok
     annotationProcessor lombok
     implementation project(':renderer')
-    implementation("com.google.code.gson:gson:2.10.1")
 }
 
 jar {
