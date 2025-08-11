@@ -8,13 +8,15 @@ import ru.mrbedrockpy.renderer.graphics.TextureAtlas;
 import java.util.List;
 
 public interface IChunk {
-    IBlock block(int x, int y, int z);
 
-    IBlock block(Vector3i pos);
-    Vector2i worldPosition();
-    Vector2i getPosition();
     int WIDTH = 16;
     int HEIGHT = 100;
+
+    IBlock getBlock(int x, int y, int z);
+
+    IBlock getBlock(Vector3i pos);
+    Vector2i getWorldPosition();
+    Vector2i getPosition();
     void cleanup();
     Mesh chunkMesh(IWorld world, TextureAtlas atlas);
     void tick();

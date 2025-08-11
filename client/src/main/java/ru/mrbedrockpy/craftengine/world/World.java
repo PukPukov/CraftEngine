@@ -42,7 +42,7 @@ public abstract class World implements IWorld {
                 if (chunk == null) throw new IllegalStateException();
                 List<IEntity> entitiesInChunk = new ArrayList<>();
                 for (IEntity entity: entities) {
-                    if(chunk == chunkByBlockPosition(Math.round(entity.tickPosition().x), Math.round(entity.tickPosition().y))){
+                    if(chunk == chunkByBlockPosition(Math.round(entity.getTickPosition().x), Math.round(entity.getTickPosition().y))){
                         entitiesInChunk.add(entity);
                     }
                 }
@@ -179,7 +179,7 @@ public abstract class World implements IWorld {
         if (chunk == null) {
             return Blocks.AIR; // Outside of the world's horizontal bounds
         }
-        return chunk.block(
+        return chunk.getBlock(
             Math.floorMod(x, Chunk.WIDTH),
             Math.floorMod(y, Chunk.WIDTH),
             z
@@ -254,7 +254,7 @@ public abstract class World implements IWorld {
                     IBlock block = block(x, y, z);
                     if (block != Blocks.AIR) {
                         
-                        AABB aabb = block.aabb(x, y, z);
+                        AABB aabb = block.getAABB(x, y, z);
                         if (aabb != null) {
                             boundingBoxList.add(aabb);
                         }
@@ -268,7 +268,7 @@ public abstract class World implements IWorld {
     public List<AABB> allEntityAABBs() {
         List<AABB> result = new ArrayList<>();
         for (IEntity entity : this.entities) {
-            result.add(entity.boundingBox());
+            result.add(entity.getBoundingBox());
         }
         return result;
     }

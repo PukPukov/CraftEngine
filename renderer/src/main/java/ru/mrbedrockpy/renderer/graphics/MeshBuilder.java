@@ -59,7 +59,7 @@ public class MeshBuilder {
             );
         }
 
-        float[] normalizedUvs = atlas.normalizedUv(RenderInit.BLOCKS.name(block));
+        float[] normalizedUvs = atlas.normalizedUv(RenderInit.BLOCKS.getName(block));
 
         for (int i = 0; i < 4; i++) {
             uvs[i][0] = normalizedUvs[i * 2];

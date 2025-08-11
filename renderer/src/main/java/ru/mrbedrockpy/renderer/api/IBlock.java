@@ -7,7 +7,7 @@ public interface IBlock {
     
     String getId();
     boolean isSolid();
-    AABB aabb(int x, int y, int z);
+    AABB getAABB(int x, int y, int z);
 
 
     enum Direction {

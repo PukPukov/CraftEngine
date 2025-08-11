@@ -60,13 +60,13 @@ public class Camera implements ICamera {
         this.updateProjectionMatrix();
     }
     
-    public void position(Vector3f position) {
+    public void setPosition(Vector3f position) {
         this.position.set(position);
         updateViewMatrix();
     }
     
     @Override
-    public Vector3f position() {
+    public Vector3f getPosition() {
         return new Vector3f(position);
     }
     
@@ -75,12 +75,12 @@ public class Camera implements ICamera {
         updateViewMatrix();
     }
     
-    public void angle(Vector2f angle) {
+    public void setAngle(Vector2f angle) {
         this.angle.set(angle);
         updateViewMatrix();
     }
     
-    public Vector2f angle() {
+    public Vector2f getAngle() {
         return new Vector2f(angle);
     }
     
@@ -99,12 +99,12 @@ public class Camera implements ICamera {
     }
     
     @Override
-    public Matrix4f viewMatrix() {
+    public Matrix4f getViewMatrix() {
         return new Matrix4f(viewMatrix);
     }
     
     @Override
-    public Matrix4f projectionMatrix() {
+    public Matrix4f getProjectionMatrix() {
         return new Matrix4f(projectionMatrix);
     }
     
@@ -133,7 +133,7 @@ public class Camera implements ICamera {
     }
     
     @Override
-    public Vector3f front() {
+    public Vector3f getFront() {
         float yaw = (float) Math.toRadians(angle.y);
         float pitch = (float) Math.toRadians(angle.x);
         
@@ -146,7 +146,7 @@ public class Camera implements ICamera {
     }
     
     @Override
-    public Vector3f flatFront() {
+    public Vector3f getFlatFront() {
         float yaw = (float) Math.toRadians(angle.y);
         
         Vector3f front = new Vector3f();
@@ -156,5 +156,4 @@ public class Camera implements ICamera {
         
         return front.normalize();
     }
-    
 }

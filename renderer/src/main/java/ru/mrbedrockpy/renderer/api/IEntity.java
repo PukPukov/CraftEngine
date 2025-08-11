@@ -6,9 +6,9 @@ import ru.mrbedrockpy.renderer.phys.AABB;
 
 public interface IEntity {
     
-    Vector2i chunkPosition();
-    Vector3f tickPosition();
+    Vector2i getChunkPosition();
+    Vector3f getTickPosition();
     void tick();
-    AABB boundingBox();
+    AABB getBoundingBox();
     
 }

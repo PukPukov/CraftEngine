@@ -4,9 +4,9 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 public interface ICamera {
-    Matrix4f viewMatrix();
-    Matrix4f projectionMatrix();
-    Vector3f position();
-    Vector3f front();
-    Vector3f flatFront();
+    Matrix4f getViewMatrix();
+    Matrix4f getProjectionMatrix();
+    Vector3f getPosition();
+    Vector3f getFront();
+    Vector3f getFlatFront();
 }

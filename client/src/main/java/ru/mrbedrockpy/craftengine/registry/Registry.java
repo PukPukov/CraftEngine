@@ -30,7 +30,7 @@ public class Registry<T> implements IRegistryProvider<T> {
     }
 
     @Override
-    public int id(T value) {
+    public int getId(T value) {
         return objectToId.getOrDefault(value, -1);
     }
 
@@ -42,7 +42,7 @@ public class Registry<T> implements IRegistryProvider<T> {
     }
 
     @Override
-    public String name(T value) {
+    public String getName(T value) {
         return objectToName.get(value);
     }
 

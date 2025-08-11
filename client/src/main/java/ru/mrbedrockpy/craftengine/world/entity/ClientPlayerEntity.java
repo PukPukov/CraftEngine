@@ -8,8 +8,6 @@ import ru.mrbedrockpy.craftengine.world.ClientWorld;
 import ru.mrbedrockpy.craftengine.world.inventory.PlayerInventory;
 import ru.mrbedrockpy.renderer.window.Input;
 
-import java.lang.Math;
-
 import static org.lwjgl.glfw.GLFW.*;
 
 public class ClientPlayerEntity extends LivingEntity {
@@ -40,7 +38,7 @@ public class ClientPlayerEntity extends LivingEntity {
     
     public ClientPlayerEntity(Vector3f position, ClientWorld world) {
         super(position, new Vector3f(0.6f, 0.6f, 1.8f), world);
-        this.camera.position(position.add(0, 0, (float) currentEyeOffset));
+        this.camera.setPosition(position.add(0, 0, (float) currentEyeOffset));
         
         Input.onPress.put(GLFW_KEY_LEFT_SHIFT, () -> toggleSneak(true));
         Input.onRelease.put(GLFW_KEY_LEFT_SHIFT, () -> toggleSneak(false));
@@ -67,11 +65,11 @@ public class ClientPlayerEntity extends LivingEntity {
         this.previousFrameTimeNanos = currentTime;
         
         Vector3f position = partialTick < 0.03 ? this.previousTickPosition : new Vector3f(this.previousTickPosition).lerp(this.tickPosition, (float) partialTick);
-        camera.position(new Vector3f(position).add(0, 0, (float) currentEyeOffset));
+        camera.setPosition(new Vector3f(position).add(0, 0, (float) currentEyeOffset));
     }
     
     @Override
-    public Vector3f tickPosition() {
+    public Vector3f getTickPosition() {
         return tickPosition;
     }
     
@@ -79,7 +77,7 @@ public class ClientPlayerEntity extends LivingEntity {
     public void tick() {
         super.tick();
         Vector3f direction = new Vector3f();
-        Vector3f front = camera.flatFront();
+        Vector3f front = camera.getFlatFront();
         Vector3f right = new Vector3f();
         front.cross(new Vector3f(0, 0, 1), right).normalize(); // установка right
         
