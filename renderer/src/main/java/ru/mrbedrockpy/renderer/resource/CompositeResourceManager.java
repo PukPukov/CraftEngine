@@ -1,4 +1,4 @@
-package ru.mrbedrockpy.craftengine.resource;
+package ru.mrbedrockpy.renderer.resource;
 
 import com.google.gson.JsonObject;
 import ru.mrbedrockpy.renderer.api.IResourceManager;
@@ -6,21 +6,17 @@ import ru.mrbedrockpy.renderer.api.ResourceHandle;
 import ru.mrbedrockpy.renderer.api.ResourceSource;
 
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.function.Predicate;
 
 import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.function.Predicate;
 
 public class CompositeResourceManager implements IResourceManager {
     private final List<ResourceSource> sourceList = new ArrayList<>();
-    private final ModelLoader modelLoader = new ModelLoader(this);
+    private final ModelManager modelLoader = new ModelManager(this);
 
     @Override
     public synchronized InputStream open(String path) {

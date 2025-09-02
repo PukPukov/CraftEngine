@@ -1,4 +1,4 @@
-package ru.mrbedrockpy.craftengine.resource;
+package ru.mrbedrockpy.renderer.resource;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -10,13 +10,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ModelLoader {
+public class ModelManager {
     private final IResourceManager resourceManager;
     @Getter
     private final Map<String, JsonObject> models = new HashMap<>();
     private final Gson gson = new Gson();
 
-    public ModelLoader(IResourceManager resourceManager) {
+    public ModelManager(IResourceManager resourceManager) {
         this.resourceManager = resourceManager;
     }
 

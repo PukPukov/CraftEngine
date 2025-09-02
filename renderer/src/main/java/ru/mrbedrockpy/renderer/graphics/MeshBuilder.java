@@ -20,53 +20,6 @@ public class MeshBuilder {
 
     private static final int DIRS = IBlock.Direction.values().length - 1;
 
-    private static final int[][][][] AO_OFFSETS = {
-        // UP
-        {
-            { { 0,-1, 1}, {-1, 0, 1}, {-1,-1, 1} },
-            { { 0,-1, 1}, { 1, 0, 1}, { 1,-1, 1} },
-            { { 0, 1, 1}, { 1, 0, 1}, { 1, 1, 1} },
-            { { 0, 1, 1}, {-1, 0, 1}, {-1, 1, 1} }
-        },
-        // DOWN
-        {
-            { { 0, 1,-1}, {-1, 0,-1}, {-1, 1,-1} },
-            { { 0, 1,-1}, { 1, 0,-1}, { 1, 1,-1} },
-            { { 0,-1,-1}, { 1, 0,-1}, { 1,-1,-1} },
-            { { 0,-1,-1}, {-1, 0,-1}, {-1,-1,-1} }
-        },
-        // NORTH
-        {
-            { { 0,-1,-1}, {-1,-1, 0}, {-1,-1,-1} },
-            { { 0,-1,-1}, { 1,-1, 0}, { 1,-1,-1} },
-            { { 0,-1, 1}, { 1,-1, 0}, { 1,-1, 1} },
-            { { 0,-1, 1}, {-1,-1, 0}, {-1,-1, 1} }
-        },
-        // SOUTH
-        {
-            { { 0, 1,-1}, { 1, 1, 0}, { 1, 1,-1} },
-            { { 0, 1,-1}, {-1, 1, 0}, {-1, 1,-1} },
-            { { 0, 1, 1}, {-1, 1, 0}, {-1, 1, 1} },
-            { { 0, 1, 1}, { 1, 1, 0}, { 1, 1, 1} }
-        },
-        // WEST
-        {
-            { {-1, 0,-1}, {-1, 1, 0}, {-1, 1,-1} },
-            { {-1, 0,-1}, {-1,-1, 0}, {-1,-1,-1} },
-            { {-1, 0, 1}, {-1,-1, 0}, {-1,-1, 1} },
-            { {-1, 0, 1}, {-1, 1, 0}, {-1, 1, 1} }
-        },
-        // EAST
-        {
-            { { 1, 0,-1}, { 1,-1, 0}, { 1,-1,-1} },
-            { { 1, 0,-1}, { 1, 1, 0}, { 1, 1,-1} },
-            { { 1, 0, 1}, { 1, 1, 0}, { 1, 1, 1} },
-            { { 1, 0, 1}, { 1,-1, 0}, { 1,-1, 1} }
-        }
-    };
-
-    // Кэш: модельное имя -> [dir][4][3]
-
     public MeshBuilder(TextureAtlas atlas) {
         this.atlas = atlas;
     }
@@ -82,8 +35,7 @@ public class MeshBuilder {
         float[][][] modelCorners = getCornersForModel(modelName);
 
         int d = dir.ordinal();
-        float[][]   c  = modelCorners[d];
-        int[][][] ao = AO_OFFSETS[d];
+        float[][] c = modelCorners[d];
 
         float[][] corners = new float[4][3];
         for (int i = 0; i < 4; i++) {
@@ -92,37 +44,50 @@ public class MeshBuilder {
             corners[i][2] = z + c[i][2];
         }
 
-        float[] normalizedUvs = atlas.normalizedUv(RenderInit.BLOCKS.getName(block));
+        float[] nuv = atlas.normalizedUv(RenderInit.BLOCKS.getName(block));
         float[][] uvs = new float[][]{
-            { normalizedUvs[0], normalizedUvs[1] },
-            { normalizedUvs[2], normalizedUvs[3] },
-            { normalizedUvs[4], normalizedUvs[5] },
-            { normalizedUvs[6], normalizedUvs[7] }
+            { nuv[0], nuv[1] },
+            { nuv[2], nuv[3] },
+            { nuv[4], nuv[5] },
+            { nuv[6], nuv[7] }
         };
+
+        int[] nrm     = normalOf(dir);   // (nx,ny,nz) ∈ {-1,0,1}
+        int[][] basis = basisUV(dir);    // basis[0]=u, basis[1]=v (каждый ∈ {-1,0,1}^3)
 
         float[] cornerAO = new float[4];
         for (int i = 0; i < 4; i++) {
-            int[] o1 = ao[i][0], o2 = ao[i][1], o3 = ao[i][2];
+            int[] s = cornerSigns(i);       // su, sv ∈ {-1,+1}
+            int su = s[0], sv = s[1];
+
+            int o1x = nrm[0] + sv * basis[1][0]; // n + sv*v
+            int o1y = nrm[1] + sv * basis[1][1];
+            int o1z = nrm[2] + sv * basis[1][2];
+
+            int o2x = nrm[0] + su * basis[0][0]; // n + su*u
+            int o2y = nrm[1] + su * basis[0][1];
+            int o2z = nrm[2] + su * basis[0][2];
+
+            int o3x = nrm[0] + su * basis[0][0] + sv * basis[1][0]; // n + su*u + sv*v
+            int o3y = nrm[1] + su * basis[0][1] + sv * basis[1][1];
+            int o3z = nrm[2] + su * basis[0][2] + sv * basis[1][2];
+
             cornerAO[i] = calculateAO(
-                world.block(x + o1[0], y + o1[1], z + o1[2]).isSolid(),
-                world.block(x + o2[0], y + o2[1], z + o2[2]).isSolid(),
-                world.block(x + o3[0], y + o3[1], z + o3[2]).isSolid()
+                world.block(x + o1x, y + o1y, z + o1z).isSolid(),
+                world.block(x + o2x, y + o2y, z + o2z).isSolid(),
+                world.block(x + o3x, y + o3y, z + o3z).isSolid()
             );
         }
 
         int[] idx = (cornerAO[0] + cornerAO[2] > cornerAO[1] + cornerAO[3])
-                ? new int[]{0,1,3, 1,2,3}
-                : new int[]{0,1,2, 0,2,3};
+                ? new int[]{0, 1, 3, 1, 2, 3}
+                : new int[]{0, 1, 2, 0, 2, 3};
 
         for (int i : idx) v(corners[i], uvs[i], cornerAO[i]);
     }
 
     private float[][][] getCornersForModel(String modelName) {
         float[][][] out = new float[DIRS][4][3];
-
-//        for (IBlock.Direction d : IBlock.Direction.values()) {
-//            out[d.ordinal()] = defaultFaceCorners(d);
-//        }
 
         JsonObject model = RenderInit.RESOURCE_MANAGER.getModel("cube_all");
         if (model == null) return out;
@@ -145,7 +110,7 @@ public class MeshBuilder {
             if (!face.has("vertices") || !face.get("vertices").isJsonArray()) continue;
 
             float[][] parsed = parseVerts(face.getAsJsonArray("vertices"));
-            if (parsed != null) out[d.ordinal()] = parsed;
+            out[d.ordinal()] = parsed;
         }
 
         return out;
@@ -181,15 +146,35 @@ public class MeshBuilder {
         }
         return v;
     }
-    private static int[][] defaultFaceCorners(IBlock.Direction d) {
+
+    private static int[] normalOf(IBlock.Direction d) {
         return switch (d) {
-            case UP -> new int[][]{{0, 0, 1}, {1, 0, 1}, {1, 1, 1}, {0, 1, 1}};
-            case DOWN -> new int[][]{{0, 1, 0}, {1, 1, 0}, {1, 0, 0}, {0, 0, 0}};
-            case NORTH -> new int[][]{{0, 0, 0}, {1, 0, 0}, {1, 0, 1}, {0, 0, 1}};
-            case SOUTH -> new int[][]{{1, 1, 0}, {0, 1, 0}, {0, 1, 1}, {1, 1, 1}};
-            case WEST -> new int[][]{{0, 1, 0}, {0, 0, 0}, {0, 0, 1}, {0, 1, 1}};
-            case EAST -> new int[][]{{1, 0, 0}, {1, 1, 0}, {1, 1, 1}, {1, 0, 1}};
-            case NONE -> null;
+            case UP    -> new int[]{ 0, 0, 1};
+            case DOWN  -> new int[]{ 0, 0,-1};
+            case NORTH -> new int[]{ 0,-1, 0};
+            case SOUTH -> new int[]{ 0, 1, 0};
+            case WEST  -> new int[]{-1, 0, 0};
+            case EAST  -> new int[]{ 1, 0, 0};
+            default    -> new int[]{ 0, 0, 0};
+        };
+    }
+
+    private static int[][] basisUV(IBlock.Direction d) {
+        return switch (d) {
+            case UP, DOWN      -> new int[][]{ {1,0,0}, {0,1,0} };
+            case NORTH, SOUTH  -> new int[][]{ {1,0,0}, {0,0,1} };
+            case WEST, EAST    -> new int[][]{ {0,1,0}, {0,0,1} };
+            default            -> new int[][]{ {1,0,0}, {0,1,0} };
+        };
+    }
+
+    private static int[] cornerSigns(int cornerIndex) {
+        return switch (cornerIndex) {
+            case 0 -> new int[]{-1, -1};
+            case 1 -> new int[]{+1, -1};
+            case 2 -> new int[]{+1, +1};
+            case 3 -> new int[]{-1, +1};
+            default -> new int[]{-1, -1};
         };
     }
 }
