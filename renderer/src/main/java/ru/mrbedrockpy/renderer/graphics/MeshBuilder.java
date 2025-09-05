@@ -1,16 +1,12 @@
 package ru.mrbedrockpy.renderer.graphics;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import org.joml.Vector2i;
-import org.joml.Vector3i;
 import ru.mrbedrockpy.renderer.RenderInit;
 import ru.mrbedrockpy.renderer.api.IBlock;
 import ru.mrbedrockpy.renderer.api.IWorld;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class MeshBuilder {
     private final List<Float> vertices = new ArrayList<>();
@@ -122,14 +118,14 @@ public class MeshBuilder {
         aoValues.add(ao);
     }
 
-    public Mesh.MeshData buildData() {
+    public Mesh.Data buildData() {
         float[] vArr = new float[vertices.size()];
         float[] tArr = new float[texCoords.size()];
         float[] aArr = new float[aoValues.size()];
         for (int i = 0; i < vArr.length; i++) vArr[i] = vertices.get(i);
         for (int i = 0; i < tArr.length; i++) tArr[i] = texCoords.get(i);
         for (int i = 0; i < aArr.length; i++) aArr[i] = aoValues.get(i);
-        return new Mesh.MeshData(vArr, tArr, aArr);
+        return new Mesh.Data(vArr, tArr, aArr);
     }
 
     private static String modelNameFor(IBlock block) {

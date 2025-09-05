@@ -12,6 +12,7 @@ import ru.mrbedrockpy.renderer.api.IWorld;
 import ru.mrbedrockpy.renderer.graphics.Mesh;
 import ru.mrbedrockpy.renderer.graphics.MeshBuilder;
 import ru.mrbedrockpy.renderer.graphics.TextureAtlas;
+import ru.mrbedrockpy.renderer.util.graphics.MeshUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -103,8 +104,8 @@ public class Chunk implements IChunk {
                     }
                 }
             }
-            Mesh.MeshData data = builder.buildData();
-            mesh = Mesh.mergeMeshes(List.of(data));
+            Mesh.Data data = builder.buildData();
+            mesh = MeshUtil.merge(List.of(data));
             dirty = false;
         }
         return mesh;
