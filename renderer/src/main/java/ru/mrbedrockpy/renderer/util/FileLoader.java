@@ -26,11 +26,11 @@ public class FileLoader {
         return InputStream.nullInputStream();
     }
 
-    public static String loadString(String fileName){
-        try(InputStream is = loadStream(fileName)) {
+    public static String loadString(String fileName) {
+        try (InputStream is = loadStream(fileName)) {
             byte[] bytes = is.readAllBytes();
             return new String(bytes, StandardCharsets.UTF_8);
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return "";

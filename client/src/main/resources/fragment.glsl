@@ -9,5 +9,6 @@ uniform sampler2D tex;
 
 void main() {
     color = texture(tex, texCoord);
-    color.rgb *= vertexAO;
+    float ao = (vertexAO == 0.0) ? 1.0 : vertexAO;
+    color.rgb *= ao;
 }

@@ -8,6 +8,7 @@ import org.lwjgl.stb.STBTTPackedchar;
 import ru.mrbedrockpy.renderer.font.FontRenderer;
 import ru.mrbedrockpy.renderer.graphics.*;
 import ru.mrbedrockpy.renderer.util.FileLoader;
+import ru.mrbedrockpy.renderer.util.graphics.ShaderUtil;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -33,7 +34,7 @@ public class DrawContext {
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
 
-        uiShader   = Shader.load("ui_vertex.glsl", "ui_fragment.glsl");
+        uiShader   = ShaderUtil.load("ui_vertex.glsl", "ui_fragment.glsl");
 
         matrices.set(new Matrix4f().ortho(0.0f, screenWidth, screenHeight, 0.0f, -1.0f, 1.0f));
 

@@ -11,6 +11,8 @@ import ru.mrbedrockpy.renderer.api.IEntity;
 import ru.mrbedrockpy.renderer.api.IWorld;
 import ru.mrbedrockpy.renderer.graphics.*;
 import ru.mrbedrockpy.renderer.util.FileLoader;
+import ru.mrbedrockpy.renderer.util.graphics.ShaderUtil;
+import ru.mrbedrockpy.renderer.util.graphics.TextureUtil;
 import ru.mrbedrockpy.renderer.world.raycast.BlockRaycastResult;
 
 import javax.imageio.ImageIO;
@@ -19,23 +21,20 @@ import java.io.IOException;
 
 public class WorldRenderer {
     private final ICamera camera;
-    private Vector3i selectedBlock;
     private Shader shader;
     private final TextureAtlas atlas;
-    private final BufferedImage builtAtlas;
     private final Texture texture;
     
     public WorldRenderer(ICamera camera) {
         this.camera = camera;
-        shader = Shader.load("vertex.glsl", "fragment.glsl");
+        shader = ShaderUtil.load("vertex.glsl", "fragment.glsl");
         this.atlas = new TextureAtlas(16);
         try {
             loadTextures();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        builtAtlas = atlas.buildAtlas();
-        texture = Texture.fromBufferedImage(builtAtlas);
+        texture = atlas.buildAtlas();
     }
     
     private void loadTextures() throws IOException {
@@ -66,25 +65,9 @@ public class WorldRenderer {
             }
             Mesh mesh = chunk.chunkMesh(world, atlas);
             mesh.render();
-//                mesh.cleanup();
         }
         shader.unbind();
         texture.unbind();
-    }
-    
-    public void updateSelectedBlock(IWorld world, IEntity player) {
-        Vector3f origin = new Vector3f(camera.getPosition());
-        Vector3f direction = camera.getFront();
-        
-        BlockRaycastResult blockRaycastResult = world.raycast(origin, direction, 4.5f);
-        if (blockRaycastResult != null) {
-            selectedBlock = new Vector3i(blockRaycastResult.x, blockRaycastResult.y, blockRaycastResult.z);
-        } else {
-            selectedBlock = null;
-        }
-    }
-    
-    public void cleanup() {
     }
 
     private int distanceByAxis(Vector2i pos1, Vector2i pos2) {

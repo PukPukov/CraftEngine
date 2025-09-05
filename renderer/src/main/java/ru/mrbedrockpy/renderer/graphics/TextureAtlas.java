@@ -5,6 +5,7 @@ import lombok.Getter;
 import org.joml.Vector2i;
 import ru.mrbedrockpy.renderer.api.IBlock;
 import ru.mrbedrockpy.renderer.util.ImageUtil;
+import ru.mrbedrockpy.renderer.util.graphics.TextureUtil;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -18,7 +19,6 @@ import java.util.Map;
 import static org.lwjgl.opengl.GL46C.*;
 
 public class TextureAtlas {
-    // Максимальный размер тайла
     private final int tileSize = 32;
     @Getter(AccessLevel.PUBLIC)
     private final int atlasSize;
@@ -27,23 +27,11 @@ public class TextureAtlas {
     private int currentY = 0;
 
     private final BufferedImage atlasImage;
-    private int glTextureId;
 
     public TextureAtlas(int atlasSize) {
         this.atlasSize = atlasSize;
         this.atlasImage = new BufferedImage(tileSize * atlasSize, tileSize * atlasSize, BufferedImage.TYPE_INT_ARGB);
-        initGlTexture();
-    }
 
-    private void initGlTexture() {
-        glTextureId = glGenTextures();
-        glBindTexture(GL_TEXTURE_2D, glTextureId);
-        ByteBuffer buf = ImageUtil.toByteBuffer(atlasImage);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
-                atlasImage.getWidth(), atlasImage.getHeight(),
-                0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     }
 
     public void addTile(String name, BufferedImage tile) {
@@ -64,8 +52,8 @@ public class TextureAtlas {
         }
     }
 
-    public BufferedImage buildAtlas() {
-        return atlasImage;
+    public Texture buildAtlas() {
+        return TextureUtil.fromBufferedImage(atlasImage);
     }
 
     public Rectangle uv(String name) {
@@ -79,7 +67,7 @@ public class TextureAtlas {
         float x0 = r.x, x1 = r.x + r.width;
         float y0 = r.y, y1 = r.y + r.height;
         float u0 = x0 / atlasPix, u1 = x1 / atlasPix;
-        float v0 = 1.0f - (y1 / atlasPix), v1 = 1.0f - (y0 / atlasPix);
+        float v0 = y1 / atlasPix, v1 = y0 / atlasPix;
         return new float[]{u0,v0, u1,v0, u1,v1, u0,v1};
     }
 }
