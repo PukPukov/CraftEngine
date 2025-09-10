@@ -1,47 +1,27 @@
 package ru.mrbedrockpy.renderer.util.graphics;
 
+import com.google.gson.JsonArray;
 import ru.mrbedrockpy.renderer.graphics.Mesh;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MeshUtil {
-    public static Mesh merge(List<Mesh.Data> meshDataList) {
-        List<Float> combinedPositions = new ArrayList<>();
-        List<Float> combinedUVs = new ArrayList<>();
-        List<Float> combinedAOs = new ArrayList<>();
 
-        for (Mesh.Data data : meshDataList) {
-            float[] vertices = data.vertices();
-            float[] uvs = data.uvs();
-            float[] aos = data.aos();
-
-            for (int i = 0; i < vertices.length; i += 3) {
-                combinedPositions.add(vertices[i]);
-                combinedPositions.add(vertices[i + 1]);
-                combinedPositions.add(vertices[i + 2]);
-            }
-
-            for (int i = 0; i < uvs.length; i += 2) {
-                combinedUVs.add(uvs[i]);
-                combinedUVs.add(uvs[i + 1]);
-            }
-
-            for (float ao : aos) {
-                combinedAOs.add(ao);
-            }
-        }
-
-
-        float[] finalVertices = new float[combinedPositions.size()];
-        float[] finalUVs = new float[combinedUVs.size()];
-        float[] finalAOs = new float[combinedAOs.size()];
-
-        for (int i = 0; i < finalVertices.length; i++) finalVertices[i] = combinedPositions.get(i);
-        for (int i = 0; i < finalUVs.length; i++) finalUVs[i] = combinedUVs.get(i);
-        for (int i = 0; i < finalAOs.length; i++) finalAOs[i] = combinedAOs.get(i);
-
-        return new Mesh().vertices(finalVertices).uvs(finalUVs).aos(finalAOs);
+    public static float calculateAO(boolean side1, boolean side2, boolean corner) {
+        if (side1 && side2) return 0.5f;
+        int occlusion = (side1 ? 1 : 0) + (side2 ? 1 : 0) + (corner ? 1 : 0);
+        return switch (occlusion) { case 0 -> 1.0f; case 1 -> 0.8f; case 2 -> 0.65f; default -> 0.5f; };
     }
 
+    public static float[][] parseVerts(JsonArray arr) {
+        float[][] v = new float[4][3];
+        for (int i = 0; i < Math.min(4, arr.size()); i++) {
+            JsonArray p = arr.get(i).getAsJsonArray();
+            v[i][0] = p.get(0).getAsFloat();
+            v[i][1] = p.get(1).getAsFloat();
+            v[i][2] = p.get(2).getAsFloat();
+        }
+        return v;
+    }
 }

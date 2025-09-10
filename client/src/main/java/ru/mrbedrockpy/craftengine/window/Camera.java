@@ -1,14 +1,14 @@
 package ru.mrbedrockpy.craftengine.window;
 
+import lombok.Getter;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import ru.mrbedrockpy.craftengine.Util;
 import ru.mrbedrockpy.craftengine.config.ConfigVars;
 import ru.mrbedrockpy.craftengine.config.CraftEngineConfiguration;
-import ru.mrbedrockpy.renderer.api.ICamera;
 
-public class Camera implements ICamera {
+public class Camera {
     
     // CONSTANTS
     private static final float standardFovDegrees = ConfigVars.INSTANCE.getFloat("fov");
@@ -24,6 +24,7 @@ public class Camera implements ICamera {
     private double actualFovRadians = targetFovRadians;
     private final Matrix4f viewMatrix = new Matrix4f();
     private final Matrix4f projectionMatrix = new Matrix4f();
+    @Getter
     private final Vector3f position = new Vector3f(0, 0, 0);
     private final Vector2f angle = new Vector2f(0, 0); // pitch (x), yaw (y)
     
@@ -65,11 +66,6 @@ public class Camera implements ICamera {
         updateViewMatrix();
     }
     
-    @Override
-    public Vector3f getPosition() {
-        return new Vector3f(position);
-    }
-    
     public void move(Vector3f delta) {
         position.add(delta);
         updateViewMatrix();
@@ -98,12 +94,10 @@ public class Camera implements ICamera {
         else if (angle.y < -180f) angle.y += 360f;
     }
     
-    @Override
     public Matrix4f getViewMatrix() {
         return new Matrix4f(viewMatrix);
     }
     
-    @Override
     public Matrix4f getProjectionMatrix() {
         return new Matrix4f(projectionMatrix);
     }
@@ -132,7 +126,6 @@ public class Camera implements ICamera {
         viewMatrix.lookAt(eyePosition, center, up);
     }
     
-    @Override
     public Vector3f getFront() {
         float yaw = (float) Math.toRadians(angle.y);
         float pitch = (float) Math.toRadians(angle.x);
@@ -145,7 +138,6 @@ public class Camera implements ICamera {
         return front.normalize();
     }
     
-    @Override
     public Vector3f getFlatFront() {
         float yaw = (float) Math.toRadians(angle.y);
         

@@ -2,114 +2,71 @@ package ru.mrbedrockpy.renderer.graphics;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import org.joml.Vector2i;
+import org.joml.Vector3f;
+import org.joml.Vector3i;
 import ru.mrbedrockpy.renderer.RenderInit;
 import ru.mrbedrockpy.renderer.api.IBlock;
-import ru.mrbedrockpy.renderer.api.IWorld;
+import ru.mrbedrockpy.renderer.api.RenderChunk;
+import ru.mrbedrockpy.renderer.util.graphics.MeshUtil;
+import ru.mrbedrockpy.renderer.world.BlockReader;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 public class MeshBuilder {
+
     private final List<Float> vertices = new ArrayList<>();
     private final List<Float> texCoords = new ArrayList<>();
     private final List<Float> aoValues  = new ArrayList<>();
-    private final TextureAtlas atlas;
 
+    private final TextureAtlas atlas;
+    private final BlockReader reader;
+
+    private static final int SIZE = 16;
     private static final int DIRS = IBlock.Direction.values().length - 1;
 
-    public MeshBuilder(TextureAtlas atlas) {
+    public MeshBuilder(TextureAtlas atlas, BlockReader reader) {
         this.atlas = atlas;
+        this.reader = reader;
     }
 
-    private float calculateAO(boolean side1, boolean side2, boolean corner) {
-        if (side1 && side2) return 0.5f;
-        int occlusion = (side1 ? 1 : 0) + (side2 ? 1 : 0) + (corner ? 1 : 0);
-        return switch (occlusion) { case 0 -> 1.0f; case 1 -> 0.8f; case 2 -> 0.65f; default -> 0.5f; };
-    }
+    public Mesh.Data createChunk(RenderChunk chunk) {
+        vertices.clear();
+        texCoords.clear();
+        aoValues.clear();
 
-    public void addFace(int x, int y, int z, IBlock.Direction dir, IBlock block, IWorld world) {
-        String modelName = modelNameFor(block);
-        float[][][] modelCorners = getCornersForModel(modelName);
+        float[][][] faceCorners = getCornersForModel("cube_all");
 
-        int d = dir.ordinal();
-        float[][] c = modelCorners[d];
+        for (int z = 0; z < SIZE; z++) {
+            for (int y = 0; y < SIZE; y++) {
+                for (int x = 0; x < SIZE; x++) {
+                    short id = chunk.blocks()[x][y][z];
+                    if (id == 0) continue;
 
-        float[][] corners = new float[4][3];
-        for (int i = 0; i < 4; i++) {
-            corners[i][0] = x + c[i][0];
-            corners[i][1] = y + c[i][1];
-            corners[i][2] = z + c[i][2];
-        }
+                    for (IBlock.Direction d : IBlock.Direction.values()) {
+                        if (d == IBlock.Direction.NONE) continue;
 
-        float[] nuv = atlas.normalizedUv(RenderInit.BLOCKS.getName(block));
-        float[][] uvs = new float[][]{
-            { nuv[0], nuv[1] },
-            { nuv[2], nuv[3] },
-            { nuv[4], nuv[5] },
-            { nuv[6], nuv[7] }
-        };
+                        Vector3i n = d.offset();
+                        if (isSolidWorld(chunk,x + n.x, y + n.y, z + n.z)) continue;
 
-        int[] nrm     = normalOf(dir);   // (nx,ny,nz) ∈ {-1,0,1}
-        int[][] basis = basisUV(dir);    // basis[0]=u, basis[1]=v (каждый ∈ {-1,0,1}^3)
+                        String tileName = RenderInit.BLOCKS.getName(RenderInit.BLOCKS.get(id));
+                        float[] uv = atlas.normalizedUv(tileName);
 
-        float[] cornerAO = new float[4];
-        for (int i = 0; i < 4; i++) {
-            int[] s = cornerSigns(i);       // su, sv ∈ {-1,+1}
-            int su = s[0], sv = s[1];
+                        float[][] corners = faceCorners[d.ordinal()];
 
-            int o1x = nrm[0] + sv * basis[1][0]; // n + sv*v
-            int o1y = nrm[1] + sv * basis[1][1];
-            int o1z = nrm[2] + sv * basis[1][2];
-
-            int o2x = nrm[0] + su * basis[0][0]; // n + su*u
-            int o2y = nrm[1] + su * basis[0][1];
-            int o2z = nrm[2] + su * basis[0][2];
-
-            int o3x = nrm[0] + su * basis[0][0] + sv * basis[1][0]; // n + su*u + sv*v
-            int o3y = nrm[1] + su * basis[0][1] + sv * basis[1][1];
-            int o3z = nrm[2] + su * basis[0][2] + sv * basis[1][2];
-
-            cornerAO[i] = calculateAO(
-                world.block(x + o1x, y + o1y, z + o1z).isSolid(),
-                world.block(x + o2x, y + o2y, z + o2z).isSolid(),
-                world.block(x + o3x, y + o3y, z + o3z).isSolid()
-            );
-        }
-
-        int[] idx = (cornerAO[0] + cornerAO[2] > cornerAO[1] + cornerAO[3])
-                ? new int[]{0, 1, 3, 1, 2, 3}
-                : new int[]{0, 1, 2, 0, 2, 3};
-
-        for (int i : idx) v(corners[i], uvs[i], cornerAO[i]);
-    }
-
-    private float[][][] getCornersForModel(String modelName) {
-        float[][][] out = new float[DIRS][4][3];
-
-        JsonObject model = RenderInit.RESOURCE_MANAGER.getModel("cube_all");
-        if (model == null) return out;
-
-        for (IBlock.Direction d : IBlock.Direction.values()) {
-            if(d == IBlock.Direction.NONE) continue;
-            String key = d.name();
-            JsonObject face = null;
-
-            if (model.has(key) && model.get(key).isJsonObject()) {
-                face = model.getAsJsonObject(key);
-            } else {
-                String low = key.toLowerCase();
-                if (model.has(low) && model.get(low).isJsonObject()) {
-                    face = model.getAsJsonObject(low);
+                        emitFace(x, y, z, d, corners, uv, chunk);
+                    }
                 }
             }
-
-            if (face == null) continue;
-            if (!face.has("vertices") || !face.get("vertices").isJsonArray()) continue;
-
-            float[][] parsed = parseVerts(face.getAsJsonArray("vertices"));
-            out[d.ordinal()] = parsed;
         }
 
-        return out;
+        return new Mesh.Data(
+                toFloatArray(vertices),
+                toFloatArray(texCoords),
+                toFloatArray(aoValues)
+        );
     }
 
     private void v(float[] pos, float[] uv, float ao) {
@@ -118,59 +75,144 @@ public class MeshBuilder {
         aoValues.add(ao);
     }
 
-    public Mesh.Data buildData() {
-        float[] vArr = new float[vertices.size()];
-        float[] tArr = new float[texCoords.size()];
-        float[] aArr = new float[aoValues.size()];
-        for (int i = 0; i < vArr.length; i++) vArr[i] = vertices.get(i);
-        for (int i = 0; i < tArr.length; i++) tArr[i] = texCoords.get(i);
-        for (int i = 0; i < aArr.length; i++) aArr[i] = aoValues.get(i);
-        return new Mesh.Data(vArr, tArr, aArr);
-    }
+    private void emitFace(int bx, int by, int bz,
+                          IBlock.Direction d,
+                          float[][] corners,
+                          float[] uv4,
+                          RenderChunk chunk) {
 
-    private static String modelNameFor(IBlock block) {
-        return RenderInit.BLOCKS.getName(block);
-    }
+        float[] aoCorner = computeFaceAO(chunk, bx, by, bz, d, corners);
 
-    private static float[][] parseVerts(JsonArray arr) {
-        float[][] v = new float[4][3];
-        for (int i = 0; i < Math.min(4, arr.size()); i++) {
-            JsonArray p = arr.get(i).getAsJsonArray();
-            v[i][0] = p.get(0).getAsFloat();
-            v[i][1] = p.get(1).getAsFloat();
-            v[i][2] = p.get(2).getAsFloat();
+        float s02 = aoCorner[0] + aoCorner[2];
+        float s13 = aoCorner[1] + aoCorner[3];
+
+        final int[][] TRI_A = {{0,2,1},{0,3,2}};
+        final int[][] TRI_B = {{0,1,3},{3,1,2}};
+        int[][] tri = (s02 > s13) ? TRI_A : TRI_B;
+        float[][] uvByCorner = {
+                {uv4[0], uv4[1]},
+                {uv4[2], uv4[3]},
+                {uv4[4], uv4[5]},
+                {uv4[6], uv4[7]}
+        };
+
+        for (int t = 0; t < 2; t++) {
+            for (int k = 0; k < 3; k++) {
+                int c = tri[t][k];
+                float[] p = corners[c];
+                float[] pos = new float[]{ p[0] + bx + chunk.getWorldPos().x, p[1] + by + chunk.getWorldPos().y, p[2] + bz };
+                v(pos, uvByCorner[c], aoCorner[c]);
+            }
         }
-        return v;
     }
 
-    private static int[] normalOf(IBlock.Direction d) {
-        return switch (d) {
-            case UP    -> new int[]{ 0, 0, 1};
-            case DOWN  -> new int[]{ 0, 0,-1};
-            case NORTH -> new int[]{ 0,-1, 0};
-            case SOUTH -> new int[]{ 0, 1, 0};
-            case WEST  -> new int[]{-1, 0, 0};
-            case EAST  -> new int[]{ 1, 0, 0};
-            default    -> new int[]{ 0, 0, 0};
+    private static float[] toFloatArray(List<Float> src) {
+        float[] a = new float[src.size()];
+        for (int i = 0; i < src.size(); i++) a[i] = src.get(i);
+        return a;
+    }
+
+    private float[] computeFaceAO(RenderChunk chunk, int x, int y, int z,
+                                  IBlock.Direction face, float[][] corners) {
+        int dir = face.ordinal();
+        float[] out = new float[4];
+
+        for (int i = 0; i < 4; i++) {
+            int[] o1 = AO_OFFSETS[dir][i][0];
+            int[] o2 = AO_OFFSETS[dir][i][1];
+            int[] o3 = AO_OFFSETS[dir][i][2];
+
+            boolean side1 = isSolidWorld(chunk, x + o1[0], y + o1[1], z + o1[2]);
+            boolean side2 = isSolidWorld(chunk, x + o2[0], y + o2[1], z + o2[2]);
+            boolean diag  = isSolidWorld(chunk, x + o3[0], y + o3[1], z + o3[2]);
+
+            out[i] = aoValue(side1, side2, diag);
+        }
+        return out;
+    }
+
+    private float[][][] getCornersForModel(String modelName) {
+        int LEN = IBlock.Direction.values().length;
+        float[][][] out = new float[LEN][4][3];
+
+        JsonObject model = RenderInit.RESOURCE_MANAGER.getModel("cube_all");
+        if (model == null) return out;
+
+        for (IBlock.Direction d : IBlock.Direction.values()) {
+            if (d == IBlock.Direction.NONE) continue;
+            JsonObject face = model.has(d.name()) && model.get(d.name()).isJsonObject()
+                    ? model.getAsJsonObject(d.name())
+                    : (model.has(d.name().toLowerCase()) && model.get(d.name().toLowerCase()).isJsonObject()
+                    ? model.getAsJsonObject(d.name().toLowerCase())
+                    : null);
+            if (face == null || !face.has("vertices") || !face.get("vertices").isJsonArray()) continue;
+
+            out[d.ordinal()] = MeshUtil.parseVerts(face.getAsJsonArray("vertices")); // 4x3
+        }
+        return out;
+    }
+
+    private boolean isSolidWorld(RenderChunk chunk, int lx, int ly, int lz) {
+        Vector2i base = chunk.getWorldPos();
+        int wx = base.x + lx;
+        int wy = base.y + ly;
+        int wz = lz;
+        return reader.isSolid(wx, wy, wz);
+    }
+
+    private static float aoValue(boolean side1, boolean side2, boolean corner){
+        if (side1 && side2) return 0.5f;
+        int occ = (side1?1:0) + (side2?1:0) + (corner?1:0);
+        return switch (occ){
+            case 0 -> 1.0f;
+            case 1 -> 0.8f;
+            case 2 -> 0.65f;
+            default -> 0.5f;
         };
     }
 
-    private static int[][] basisUV(IBlock.Direction d) {
-        return switch (d) {
-            case UP, DOWN      -> new int[][]{ {1,0,0}, {0,1,0} };
-            case NORTH, SOUTH  -> new int[][]{ {1,0,0}, {0,0,1} };
-            case WEST, EAST    -> new int[][]{ {0,1,0}, {0,0,1} };
-            default            -> new int[][]{ {1,0,0}, {0,1,0} };
-        };
-    }
-
-    private static int[] cornerSigns(int cornerIndex) {
-        return switch (cornerIndex) {
-            case 0 -> new int[]{-1, -1};
-            case 1 -> new int[]{+1, -1};
-            case 2 -> new int[]{+1, +1};
-            case 3 -> new int[]{-1, +1};
-            default -> new int[]{-1, -1};
-        };
-    }
+    private static final int[][][][] AO_OFFSETS = {
+            // UP (+Z)
+            {
+                    {{ 0,-1, 1}, {-1, 0, 1}, {-1,-1, 1}}, // corner 0
+                    {{ 0,-1, 1}, { 1, 0, 1}, { 1,-1, 1}}, // corner 1
+                    {{ 0, 1, 1}, { 1, 0, 1}, { 1, 1, 1}}, // corner 2
+                    {{ 0, 1, 1}, {-1, 0, 1}, {-1, 1, 1}}, // corner 3
+            },
+            // DOWN (-Z)
+            {
+                    {{ 0, 1,-1}, {-1, 0,-1}, {-1, 1,-1}}, // c0
+                    {{ 0, 1,-1}, { 1, 0,-1}, { 1, 1,-1}}, // c1
+                    {{ 0,-1,-1}, { 1, 0,-1}, { 1,-1,-1}}, // c2
+                    {{ 0,-1,-1}, {-1, 0,-1}, {-1,-1,-1}}, // c3
+            },
+            // NORTH (-Y)
+            {
+                    {{ 0,-1,-1}, {-1,-1, 0}, {-1,-1,-1}}, // c0
+                    {{ 0,-1,-1}, { 1,-1, 0}, { 1,-1,-1}}, // c1
+                    {{ 0,-1, 1}, { 1,-1, 0}, { 1,-1, 1}}, // c2
+                    {{ 0,-1, 1}, {-1,-1, 0}, {-1,-1, 1}}, // c3
+            },
+            // SOUTH (+Y)
+            {
+                    {{ 0, 1,-1}, { 1, 1, 0}, { 1, 1,-1}}, // c0
+                    {{ 0, 1,-1}, {-1, 1, 0}, {-1, 1,-1}}, // c1
+                    {{ 0, 1, 1}, {-1, 1, 0}, {-1, 1, 1}}, // c2
+                    {{ 0, 1, 1}, { 1, 1, 0}, { 1, 1, 1}}, // c3
+            },
+            // WEST (-X)
+            {
+                    {{-1, 1,-1}, {-1, 0, 0}, {-1, 1, 0}}, // c0
+                    {{-1,-1,-1}, {-1, 0, 0}, {-1,-1, 0}}, // c1
+                    {{-1,-1, 1}, {-1, 0, 0}, {-1,-1, 0}}, // c2
+                    {{-1, 1, 1}, {-1, 0, 0}, {-1, 1, 0}}, // c3
+            },
+            // EAST (+X)
+            {
+                    {{ 1,-1,-1}, { 1, 0, 0}, { 1,-1, 0}}, // c0
+                    {{ 1, 1,-1}, { 1, 0, 0}, { 1, 1, 0}}, // c1
+                    {{ 1, 1, 1}, { 1, 0, 0}, { 1, 1, 0}}, // c2
+                    {{ 1,-1, 1}, { 1, 0, 0}, { 1,-1, 0}}, // c3
+            }
+    };
 }

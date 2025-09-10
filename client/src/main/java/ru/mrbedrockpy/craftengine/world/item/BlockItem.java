@@ -3,12 +3,9 @@ package ru.mrbedrockpy.craftengine.world.item;
 import lombok.Getter;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
-import ru.mrbedrockpy.craftengine.world.ClientWorld;
 import ru.mrbedrockpy.craftengine.world.World;
 import ru.mrbedrockpy.craftengine.world.block.Block;
-import ru.mrbedrockpy.craftengine.world.block.Blocks;
 import ru.mrbedrockpy.craftengine.world.entity.ClientPlayerEntity;
-import ru.mrbedrockpy.craftengine.world.inventory.Inventory;
 import ru.mrbedrockpy.craftengine.world.inventory.PlayerInventory;
 import ru.mrbedrockpy.renderer.world.raycast.BlockRaycastResult;
 

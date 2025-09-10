@@ -5,18 +5,16 @@ import lombok.Setter;
 import org.joml.Vector2i;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
-import ru.mrbedrockpy.renderer.api.IEntity;
+import ru.mrbedrockpy.craftengine.world.chunk.Chunk;
 import ru.mrbedrockpy.renderer.phys.AABB;
 import ru.mrbedrockpy.craftengine.window.Camera;
-import ru.mrbedrockpy.craftengine.world.Chunk;
 import ru.mrbedrockpy.craftengine.world.ClientWorld;
 import ru.mrbedrockpy.craftengine.world.World;
 
 import java.util.List;
 import java.util.function.Consumer;
 
-// TODO: разделить LivingEntity на Entity и LivingEntity, чтобы не было лишних методов в LivingEntity
-public abstract class LivingEntity implements IEntity {
+public abstract class Entity {
     
     @Getter
     protected Vector3f tickPosition = new Vector3f();
@@ -33,9 +31,10 @@ public abstract class LivingEntity implements IEntity {
     protected boolean onGround = false;
     
     private final float jumpStrength = 0.5f;
+    @Getter
     protected AABB boundingBox;
     
-    public LivingEntity(Vector3f tickPosition, Vector3f size, World world) {
+    public Entity(Vector3f tickPosition, Vector3f size, World world) {
         this.size.set(size);
         this.world = world;
         setTickPosition(tickPosition);
@@ -46,7 +45,6 @@ public abstract class LivingEntity implements IEntity {
 
     public abstract void render(Camera camera);
     
-    @Override
     public void tick() {
         previousTickPosition = new Vector3f(tickPosition);
     }
@@ -129,14 +127,8 @@ public abstract class LivingEntity implements IEntity {
             onGround = false;
         }
     }
-    
-    @Override
-    public Vector2i getChunkPosition() {
-        return new Vector2i((int) (tickPosition.x / Chunk.WIDTH), (int) (tickPosition.y / Chunk.WIDTH));
-    }
 
-    @Override
-    public AABB getBoundingBox() {
-        return boundingBox;
+    public Vector2i getChunkPosition() {
+        return new Vector2i((int) (tickPosition.x / Chunk.SIZE), (int) (tickPosition.y / Chunk.SIZE));
     }
 }

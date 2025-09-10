@@ -1,11 +1,9 @@
 package ru.mrbedrockpy.craftengine.world.generator;
 
-import org.joml.Vector2i;
 import ru.mrbedrockpy.craftengine.registry.Registries;
-import ru.mrbedrockpy.craftengine.world.Chunk;
+import ru.mrbedrockpy.craftengine.world.chunk.Chunk;
 import ru.mrbedrockpy.craftengine.world.block.Blocks;
 import ru.mrbedrockpy.craftengine.world.generator.perlin.FractalNoise;
-import ru.mrbedrockpy.renderer.api.IChunk;
 
 public final class PerlinChunkGenerator implements ChunkGenerator {
     private final FractalNoise heightNoise;
@@ -26,12 +24,12 @@ public final class PerlinChunkGenerator implements ChunkGenerator {
     }
 
     @Override
-    public void generate(Vector2i chunkPos, IChunk chunk) {
-        final int CW = IChunk.WIDTH;
-        final int CH = IChunk.HEIGHT;
+    public void generate(Chunk chunk) {
+        final int CW = Chunk.SIZE;
+        final int CH = Chunk.SIZE;
 
-        int worldX0 = chunkPos.x * CW;
-        int worldY0 = chunkPos.y * CW;
+        int worldX0 = chunk.getPosition().x * CW;
+        int worldY0 = chunk.getPosition().y * CW;
 
         for (int x = 0; x < CW; x++) for (int y = 0; y < CW; y++) for (int z = 0; z < CH; z++)
             chunk.setBlock(x, y, z, Blocks.AIR);

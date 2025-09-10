@@ -2,89 +2,87 @@ package ru.mrbedrockpy.renderer.world;
 
 import org.joml.Matrix4f;
 import org.joml.Vector2i;
-import org.joml.Vector3f;
-import org.joml.Vector3i;
 import ru.mrbedrockpy.renderer.RenderInit;
-import ru.mrbedrockpy.renderer.api.ICamera;
-import ru.mrbedrockpy.renderer.api.IChunk;
-import ru.mrbedrockpy.renderer.api.IEntity;
-import ru.mrbedrockpy.renderer.api.IWorld;
+import ru.mrbedrockpy.renderer.api.RenderChunk;
 import ru.mrbedrockpy.renderer.graphics.*;
 import ru.mrbedrockpy.renderer.util.FileLoader;
 import ru.mrbedrockpy.renderer.util.graphics.ShaderUtil;
-import ru.mrbedrockpy.renderer.util.graphics.TextureUtil;
-import ru.mrbedrockpy.renderer.world.raycast.BlockRaycastResult;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.*;
 
 public class WorldRenderer {
-    private final ICamera camera;
-    private Shader shader;
+    private static final int CHUNK_SIZE = 16;
+
+    private final Shader shader;
     private final TextureAtlas atlas;
     private final Texture texture;
-    
-    public WorldRenderer(ICamera camera) {
-        this.camera = camera;
-        shader = ShaderUtil.load("vertex.glsl", "fragment.glsl");
-        this.atlas = new TextureAtlas(16);
-        try {
-            loadTextures();
-        } catch (IOException e) {
-            e.printStackTrace();
+
+    // храним и меши, и быстрый доступ к чанку по координате чанка
+    private final Map<RenderChunk, Mesh> posMeshes = new HashMap<>();
+    private final Map<Vector2i, RenderChunk> chunksByPos = new HashMap<>();
+
+    private final BlockReader blockReader = new BlockReader() {
+        @Override public boolean isSolid(int wx, int wy, int wz) {
+            int cx = Math.floorDiv(wx, CHUNK_SIZE);
+            int cy = Math.floorDiv(wy, CHUNK_SIZE);
+            RenderChunk ch = chunksByPos.get(new Vector2i(cx, cy));
+            if (ch == null) return false;
+
+            int lx = Math.floorMod(wx, CHUNK_SIZE);
+            int ly = Math.floorMod(wy, CHUNK_SIZE);
+            int lz = wz;
+            if (lz < 0 || lz >= CHUNK_SIZE) return true;
+
+            return ch.blocks()[lx][ly][lz] != 0;
         }
+    };
+
+    public WorldRenderer() {
+        shader = ShaderUtil.load("vertex.glsl", "fragment.glsl");
+        this.atlas = new TextureAtlas(CHUNK_SIZE);
+        try { loadTextures(); } catch (IOException e) { e.printStackTrace(); }
         texture = atlas.buildAtlas();
     }
-    
+
     private void loadTextures() throws IOException {
         atlas.addTile("dirt", FileLoader.loadImage("dirt.png"));
         atlas.addTile("stone", FileLoader.loadImage("stone.png"));
     }
 
     private final FrustumCuller culler = new FrustumCuller();
-    
-    public void render(IWorld world, IEntity player) {
-        Matrix4f projView = new Matrix4f(camera.getProjectionMatrix())
-            .mul(camera.getViewMatrix());
+
+    public void render(Vector2i playerPos, Matrix4f proj, Matrix4f view) {
+        Matrix4f projView = new Matrix4f(proj).mul(view);
         culler.update(projView);
         shader.use();
-        shader.setUniformMatrix4f("model", new Matrix4f());
-        shader.setUniformMatrix4f("view", camera.getViewMatrix());
-        shader.setUniformMatrix4f("projection", camera.getProjectionMatrix());
+        shader.setUniformMatrix4f("projection", proj);
+        shader.setUniformMatrix4f("view", view);
         texture.use();
-        for (IChunk chunk : chunksAround(player.getChunkPosition(), RenderInit.CONFIG.getInt("render.distance"), world)) {
-            if (chunk == null) continue;
-            if (distanceByAxis(player.getChunkPosition(), chunk.getPosition()) > RenderInit.CONFIG.getInt("render.distance") || !culler.isBoxVisible(
-                chunk.getWorldPosition().x, chunk.getWorldPosition().y, 0,
-                chunk.getWorldPosition().x + IChunk.WIDTH,
-                chunk.getWorldPosition().y + IChunk.WIDTH,
-                IChunk.HEIGHT
-            )) {
-                continue;
-            }
-            Mesh mesh = chunk.chunkMesh(world, atlas);
-            mesh.render();
+        for (RenderChunk chunk : posMeshes.keySet()) {
+            if (distanceByAxis(playerPos, chunk.pos()) > RenderInit.CONFIG.getInt("render.distance")
+                    || !culler.isBoxVisible(chunk.getAABB())) continue;
+            posMeshes.get(chunk).render();
         }
         shader.unbind();
         texture.unbind();
     }
 
-    private int distanceByAxis(Vector2i pos1, Vector2i pos2) {
-        return Math.max(Math.abs(pos1.x - pos2.x), Math.abs(pos1.y - pos2.y));
+    public void createChunk(RenderChunk chunk){
+        deleteChunk(chunk);
+        chunksByPos.put(chunk.pos(), chunk);
+
+        Mesh.Data meshData = new MeshBuilder(atlas, blockReader).createChunk(chunk);
+        posMeshes.put(chunk, new Mesh().data(meshData));
     }
 
-    private IChunk[] chunksAround(Vector2i pos, int radius, IWorld world) {
-        int diameter = 2 * radius + 1;
-        IChunk[] chunks = new IChunk[diameter * diameter];
-        int index = 0;
+    public void deleteChunk(RenderChunk chunk){
+        Mesh mesh = posMeshes.remove(chunk);
+        if (mesh != null) mesh.cleanup();
+        chunksByPos.remove(chunk.pos());
+    }
 
-        for (int dx = -radius; dx <= radius; dx++) {
-            for (int dz = -radius; dz <= radius; dz++) {
-                chunks[index++] = world.chunk(pos.x + dx, pos.y + dz);
-            }
-        }
-
-        return chunks;
+    private int distanceByAxis(Vector2i pos1, Vector2i pos2) {
+        return Math.max(Math.abs(pos1.x - pos2.x), Math.abs(pos1.y - pos2.y));
     }
 }

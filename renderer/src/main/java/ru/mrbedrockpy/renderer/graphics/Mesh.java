@@ -20,6 +20,7 @@ public class Mesh {
     }
 
     public Mesh vertices(float[] vertices){
+        if(isArrayEmpty(vertices)) return this;
         vertexCount = vertices.length / 3;
 
         use();
@@ -33,6 +34,7 @@ public class Mesh {
     }
 
     public Mesh uvs(float[] uvs){
+        if(isArrayEmpty(uvs)) return this;
         use();
         uvboId = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, uvboId);
@@ -44,6 +46,7 @@ public class Mesh {
     }
 
     public Mesh aos(float[] aos){
+        if(isArrayEmpty(aos)) return this;
         use();
         aoboId = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, aoboId);
@@ -52,6 +55,10 @@ public class Mesh {
         glEnableVertexAttribArray(2);
         unbind();
         return this;
+    }
+
+    public Mesh data(Data data){
+        return this.vertices(data.vertices).uvs(data.uvs).aos(data.aos);
     }
 
     public void render() {
@@ -79,6 +86,10 @@ public class Mesh {
         if (vboId  != 0) glDeleteBuffers(vboId);
         if (uvboId != 0) glDeleteBuffers(uvboId);
         if (aoboId != 0) glDeleteBuffers(aoboId);
+    }
+
+    private boolean isArrayEmpty(float[] arr){
+        return arr.length == 0;
     }
 
     public record Data(float[] vertices, float[] uvs, float[] aos){}

@@ -10,7 +10,7 @@ import ru.mrbedrockpy.renderer.window.Input;
 
 import static org.lwjgl.glfw.GLFW.*;
 
-public class ClientPlayerEntity extends LivingEntity {
+public class ClientPlayerEntity extends Entity {
     
     // CONSTANTS
     private static final float speedStandard = 0.08f;

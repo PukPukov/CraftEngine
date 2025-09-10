@@ -1,6 +1,7 @@
 package ru.mrbedrockpy.craftengine.registry;
 
 
+import ru.mrbedrockpy.craftengine.world.block.Block;
 import ru.mrbedrockpy.craftengine.world.item.Item;
 import ru.mrbedrockpy.renderer.api.IBlock;
 

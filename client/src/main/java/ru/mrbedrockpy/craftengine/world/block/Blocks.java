@@ -7,7 +7,7 @@ public class Blocks {
     public static final Block STONE = registerBlock("stone", new Block("stone", true));
     public static final Block DIRT = registerBlock("dirt", new Block("dirt", true));
 
-    private static <T extends ru.mrbedrockpy.renderer.api.IBlock>T registerBlock(String name, T block) {
+    private static <T extends Block>T registerBlock(String name, T block) {
         return Registries.BLOCKS.register(name, block);
     }
     public static void register(){}

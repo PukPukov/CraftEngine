@@ -1,14 +1,12 @@
-#version 460
+#version 460 core
 
-in vec2 texCoord;
-in float vertexAO;
-
+in vec2 vUV;
+in float vAO;
 out vec4 color;
 
 uniform sampler2D tex;
 
 void main() {
-    color = texture(tex, texCoord);
-    float ao = (vertexAO == 0.0) ? 1.0 : vertexAO;
-    color.rgb *= ao;
+    vec4 albedo = texture(tex, vUV);
+    color = vec4(albedo.rgb * vAO, albedo.a);
 }
