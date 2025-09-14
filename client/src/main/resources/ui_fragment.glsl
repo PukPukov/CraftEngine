@@ -11,7 +11,7 @@ uniform bool     useMask;
 
 void main() {
     if (useMask) {
-        float a = texture(uiTexture, fragUV).r;
+        float a = texture(uiTexture, fragUV).a;
         fragColor = vec4(uniformColor.rgb, a) * vertColor;
     }
     else if (useUniformColor) {

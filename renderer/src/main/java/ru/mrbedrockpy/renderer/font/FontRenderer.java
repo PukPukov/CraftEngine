@@ -10,7 +10,9 @@ import org.lwjgl.system.MemoryStack;
 import ru.mrbedrockpy.renderer.graphics.FreeTextureAtlas;
 import ru.mrbedrockpy.renderer.gui.DrawContext;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -23,22 +25,25 @@ import static org.lwjgl.stb.STBTruetype.*;
 
 @Getter
 public class FontRenderer {
-    private static final int BITMAP_W = 512;
-    private static final int BITMAP_H = 512;
+    public static final int BITMAP_W = 512;
+    public static final int BITMAP_H = 512;
     private static final int FONT_SIZE = 32;
 
-    private int textureId;
+    private final FreeTextureAtlas atlas;
+    private final String atlasKey;
+    private Rectangle atlasRect;
+
     private final STBTTPackedchar.Buffer charData = STBTTPackedchar.malloc(96);
     private STBTTFontinfo fontInfo;
     private float scale;
     private int ascent;
 
-    /**
-     * Инициализация шрифта и создание GPU-текстуры.
-     * @param resourcePath путь к TTF-файлу в ресурсах
-     */
+    public FontRenderer(FreeTextureAtlas atlas, String atlasKey) {
+        this.atlas = atlas;
+        this.atlasKey = atlasKey;
+    }
+
     public void init(String resourcePath) throws IOException {
-        // 1) Загружаем TTF в ByteBuffer
         ByteBuffer fontBuffer;
         try (InputStream is = getClass().getClassLoader().getResourceAsStream(resourcePath)) {
             if (is == null) throw new IOException("Font not found: " + resourcePath);
@@ -62,28 +67,30 @@ public class FontRenderer {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             STBTTPackContext pack = STBTTPackContext.malloc(stack);
             stbtt_PackBegin(pack, bitmap, BITMAP_W, BITMAP_H, 0, 1, 0);
-            stbtt_PackFontRange(pack, fontBuffer, 0, FONT_SIZE, 32, charData);
+            stbtt_PackFontRange(pack, fontBuffer, 0, FONT_SIZE, 32, charData); // заполняет charData (x0..y1 и т.п.)
             stbtt_PackEnd(pack);
         }
 
-        textureId = glGenTextures();
-        glBindTexture(GL_TEXTURE_2D, textureId);
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, BITMAP_W, BITMAP_H, 0, GL_RED, GL_UNSIGNED_BYTE, bitmap);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glBindTexture(GL_TEXTURE_2D, 0);
+        BufferedImage img = new BufferedImage(BITMAP_W, BITMAP_H, BufferedImage.TYPE_INT_ARGB);
+        int[] argb = ((DataBufferInt) img.getRaster().getDataBuffer()).getData();
+        bitmap.rewind();
+        for (int y = 0; y < BITMAP_H; y++) {
+            for (int x = 0; x < BITMAP_W; x++) {
+                int a = bitmap.get() & 0xFF;
+                argb[y * BITMAP_W + x] = (a << 24) | 0x00FFFFFF;
+            }
+        }
+
+        if (!atlas.contains(atlasKey)) {
+            atlas.addTexture(atlasKey, img);
+        }
+        atlasRect = atlas.getUvMap().get(atlasKey);
+        if (atlasRect == null) throw new IllegalStateException("Atlas did not record rect for key: " + atlasKey);
     }
 
-    /**
-     * Рассчитывает размер строки в пикселях.
-     */
     public Vector2i getTextSize(String text) {
         int width = 0;
         int maxHeight = 0;
-
         try (MemoryStack stack = MemoryStack.stackPush()) {
             IntBuffer x0 = stack.mallocInt(1);
             IntBuffer y0 = stack.mallocInt(1);
@@ -91,33 +98,27 @@ public class FontRenderer {
             IntBuffer y1 = stack.mallocInt(1);
             IntBuffer advance = stack.mallocInt(1);
             IntBuffer lsb = stack.mallocInt(1);
-
             for (int i = 0; i < text.length(); i++) {
                 char c = text.charAt(i);
-
                 stbtt_GetCodepointHMetrics(fontInfo, c, advance, lsb);
                 width += (int) (advance.get(0) * scale);
-
                 stbtt_GetCodepointBitmapBox(fontInfo, c, scale, scale, x0, y0, x1, y1);
                 int height = y1.get(0) - y0.get(0);
                 maxHeight = Math.max(maxHeight, height);
             }
         }
-
         return new Vector2i(Math.ceilDiv(width, 5), Math.ceilDiv(maxHeight, 5));
     }
 
-
-    public void use(){
-        glBindTexture(GL_TEXTURE_2D, textureId);
-    }
-
-    public void unbind(){
-        glBindTexture(GL_TEXTURE_2D, 0);
-    }
-
     public void dispose() {
-        glDeleteTextures(textureId);
         charData.free();
+    }
+
+    public float u(float localU) {
+        return (atlasRect.x / (float) atlas.getWidthPx()) + localU * (atlasRect.width / (float) atlas.getWidthPx());
+    }
+
+    public float v(float localV) {
+        return (atlasRect.y / (float) atlas.getHeightPx()) + localV * (atlasRect.height / (float) atlas.getHeightPx());
     }
 }

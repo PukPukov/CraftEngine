@@ -3,7 +3,6 @@ package ru.mrbedrockpy.renderer.gui;
 import lombok.Getter;
 import org.joml.Matrix4f;
 import org.joml.Vector2i;
-import org.lwjgl.opengl.GL11C;
 import org.lwjgl.stb.STBTTPackedchar;
 import ru.mrbedrockpy.renderer.font.FontRenderer;
 import ru.mrbedrockpy.renderer.graphics.*;
@@ -23,8 +22,7 @@ public class DrawContext {
     private final int vaoId;
     private final int vboId;
 
-    private final int fboId;
-    private final FreeTextureAtlas atlas = new FreeTextureAtlas(512, 512);
+    private final FreeTextureAtlas atlas = new FreeTextureAtlas();
 
     @Getter
     private final MatrixStack matrices = new MatrixStack();
@@ -49,11 +47,7 @@ public class DrawContext {
         glEnableVertexAttribArray(1);
         glBindVertexArray(0);
 
-        fboId = glGenFramebuffers();
-        glBindFramebuffer(GL_FRAMEBUFFER, fboId);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        fontRenderer = new FontRenderer();
+        fontRenderer = new FontRenderer(atlas, "ui_font_main");
         try {
             fontRenderer.init("minecraft.ttf");
         } catch (IOException e) {
@@ -66,7 +60,7 @@ public class DrawContext {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glDisable(GL_CULL_FACE);
-        atlas.bind();
+        atlas.use();
         uiShader.use();
         uiShader.setUniformMatrix4f("projection", matrices.matrix());
     }
@@ -75,9 +69,6 @@ public class DrawContext {
         glDisable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
         uiShader.unbind();
-//        try {
-//            atlas.saveAsPng("atlas.png");
-//        } catch (Exception ignored){}
     }
 
 
@@ -134,8 +125,6 @@ public class DrawContext {
 
         glBindVertexArray(vaoId);
 
-        fontRenderer.use();
-
         uiShader.setUniform1b("useUniformColor", true);
         uiShader.setUniform1b("useMask", true);
         uiShader.setUniform4f("uniformColor", 1.0f, 1.0f, 1.0f, 1.0f);
@@ -157,10 +146,15 @@ public class DrawContext {
             float w = (g.x1() - g.x0()) * scale;
             float h = (g.y1() - g.y0()) * scale;
 
-            float u0 = g.x0() / 512.0f;
-            float v0 = g.y0() / 512.0f;
-            float u1 = g.x1() / 512.0f;
-            float v1 = g.y1() / 512.0f;
+            float lu0 = g.x0() / (float)FontRenderer.BITMAP_W;
+            float lv0 = g.y0() / (float)FontRenderer.BITMAP_H;
+            float lu1 = g.x1() / (float)FontRenderer.BITMAP_W;
+            float lv1 = g.y1() / (float)FontRenderer.BITMAP_H;
+
+            float u0 = fontRenderer.u(lu0);
+            float v0 = fontRenderer.v(lv0);
+            float u1 = fontRenderer.u(lu1);
+            float v1 = fontRenderer.v(lv1);
 
             float[] vtx = {
                     x0, y0 + h, u0, v1,
@@ -180,8 +174,6 @@ public class DrawContext {
 
         glBindVertexArray(0);
 
-        fontRenderer.unbind();
-        atlas.bind();
     }
 
     public void drawRect(int x, int y, float width, float height, Color color) {
@@ -212,7 +204,6 @@ public class DrawContext {
     public void cleanup() {
         glDeleteVertexArrays(vaoId);
         glDeleteBuffers(vboId);
-        glDeleteFramebuffers(fboId);
         uiShader.dispose();
         fontRenderer.getCharData().free();
     }
