@@ -103,6 +103,10 @@ public class CraftEngineClient {
             Window.setShouldClose(true);
         }
 
+        if (Input.wasPressed(Input.Layer.UI, GLFW.GLFW_KEY_F11) || Input.wasPressed(Input.Layer.GAME, GLFW.GLFW_KEY_F11)) {
+            Window.toggleFullscreen();
+        }
+
         if (Input.wasPressed(Input.Layer.GAME, GLFW.GLFW_KEY_TAB)
                 || Input.wasPressed(Input.Layer.UI, GLFW.GLFW_KEY_TAB)) {
             if (player != null) setScreen(InventoryScreen.create(player.getInventory()));

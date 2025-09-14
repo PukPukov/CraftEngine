@@ -26,14 +26,14 @@ public class HudRenderer {
         this.height = height;
         for (int i = 0; i < hotbarSlots.length; i++) {
             hotbarSlots[i] = UI.slot(CraftEngineClient.INSTANCE.getPlayer().getInventory(), i, InventoryScreen::slotClick);
-            hotbarSlots[i].setPosition(width / 2 + i * 20 - 182 / 2 + 2, height - 22 + 2);
+            hotbarSlots[i].setPosition(width / 2 + i * 20 - 182 / 2 + 3, height - 22 + 3);
         }
     }
     
 
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         context.drawTextureCentred(width / 2, height / 2, 10, 10, "cursor.png");
-        context.drawTexture(width / 2 - 182 / 2, height - 22, 182, 22, "hotbar.png");
+        context.drawTexture(width / 2 - 182 / 2 - 1, height - 22, 184, 22, "hotbar.png");
         context.drawText(String.valueOf(CraftEngineClient.INSTANCE.getFpsCounter().getFps()), 5, 5, 0.5f);
         context.drawText(positionToString(CraftEngineClient.INSTANCE.getPlayer().getTickPosition()), 5, 10, 0.5f);
         context.drawText(CraftEngineClient.INSTANCE.getPlayer().getCamera().getAngle().toString(), 5, 15, 0.5f);
