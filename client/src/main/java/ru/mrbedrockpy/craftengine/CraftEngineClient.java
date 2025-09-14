@@ -32,8 +32,7 @@ import ru.mrbedrockpy.renderer.world.raycast.BlockRaycastResult;
 
 import java.nio.file.Paths;
 
-import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
-import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_RIGHT;
+import static org.lwjgl.glfw.GLFW.*;
 
 public class CraftEngineClient {
 
@@ -56,7 +55,7 @@ public class CraftEngineClient {
         long lastTime = System.currentTimeMillis();
 
         while (!Window.isShouldClose()) {
-            Input.pullEvents(); // current++ и glfwPollEvents()
+            Input.pullEvents();
             long now     = System.currentTimeMillis();
             double dtSec = (now - lastTime) / 1000.0;
             lastTime     = now;
@@ -98,7 +97,7 @@ public class CraftEngineClient {
         tickSystem.update(deltaTime);
 
         if (Input.wasPressed(Input.Layer.UI, GLFW.GLFW_KEY_ESCAPE)) {
-            closeScreen();
+            setScreen(null);
         } else if (Input.wasPressed(Input.Layer.GAME, GLFW.GLFW_KEY_ESCAPE)) {
             Window.setShouldClose(true);
         }
@@ -112,18 +111,18 @@ public class CraftEngineClient {
             if (player != null) setScreen(InventoryScreen.create(player.getInventory()));
         }
 
-        if (Input.wasClicked(Input.Layer.UI, GLFW.GLFW_MOUSE_BUTTON_LEFT)) {
-            fireUiClick(GLFW.GLFW_MOUSE_BUTTON_LEFT);
-        }
-        if (Input.wasClicked(Input.Layer.UI, GLFW.GLFW_MOUSE_BUTTON_RIGHT)) {
-            fireUiClick(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        if (Input.wasPressed(Input.Layer.GAME, GLFW.GLFW_KEY_F2)
+                || Input.wasPressed(Input.Layer.UI, GLFW.GLFW_KEY_F2)) {
+            Window.takeScreenshot();
         }
 
-        if (Input.wasClicked(Input.Layer.GAME, GLFW.GLFW_MOUSE_BUTTON_LEFT)) {
-            handleClick(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        if(Input.wasMouseClickedThisFrame(GLFW_MOUSE_BUTTON_LEFT)){
+            MouseClickEvent ev = new MouseClickEvent(Input.currentLayer(), GLFW_MOUSE_BUTTON_LEFT, Input.getX(), Input.getY());
+            eventManager.callEvent(ev);
         }
-        if (Input.wasClicked(Input.Layer.GAME, GLFW.GLFW_MOUSE_BUTTON_RIGHT)) {
-            handleClick(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        if(Input.wasMouseClickedThisFrame(GLFW_MOUSE_BUTTON_RIGHT)){
+            MouseClickEvent ev = new MouseClickEvent(Input.currentLayer(), GLFW_MOUSE_BUTTON_RIGHT, Input.getX(), Input.getY());
+            eventManager.callEvent(ev);
         }
 
         if (player != null) {
@@ -165,57 +164,11 @@ public class CraftEngineClient {
         }
     }
 
-    private void closeScreen() {
-        setScreen(null);
-    }
-
-    private void fireUiClick(int button) {
-        if (currentScreen != null) {
-            MouseClickEvent ev = new MouseClickEvent(button, Input.getX(), Input.getY());
-            currentScreen.onMouseClick(ev);
-            eventManager.callEvent(ev);
-        }
-    }
-
-    private void handleClick(int button) {
-        MouseClickEvent event = new MouseClickEvent(button, Input.getX(), Input.getY());
-
-        if (player == null || clientWorld == null) return;
-
-        Vector3f rayOrigin = player.getCamera().getPosition();
-        Vector3f rayDir    = player.getCamera().getFront();
-
-        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
-            BlockRaycastResult hit = clientWorld.raycast(rayOrigin, rayDir, 4.5f);
-            if (hit != null) {
-                clientWorld.setBlock(hit.x, hit.y, hit.z, Blocks.AIR);
-            }
-        } else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
-            ItemStack selected = player.getInventory().getSelectedStack();
-            if (selected != null) {
-                selected.item().use(player);
-            }
-        }
-
-        eventManager.callEvent(event);
-    }
-
     public void onMouseClick(MouseClickEvent event) {
-        if (currentScreen != null) {
-            currentScreen.onMouseClick(event);
-            return;
-        }
-        if (player == null || clientWorld == null) return;
-
-        Vector3f rayOrigin = player.getCamera().getPosition();
-        Vector3f rayDirection = player.getCamera().getFront();
-
-        if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
-            BlockRaycastResult hit = clientWorld.raycast(rayOrigin, rayDirection, 4.5f);
-            if (hit != null) clientWorld.setBlock(hit.x, hit.y, hit.z, Blocks.AIR);
-        } else if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
-            ItemStack selected = player.getInventory().getSelectedStack();
-            if (selected != null) selected.item().use(player);
+        if(event.getLayer() == Input.Layer.UI) {
+            if (currentScreen != null) {
+                currentScreen.onMouseClick(event);
+            }
         }
     }
 

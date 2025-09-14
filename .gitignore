@@ -42,4 +42,5 @@ bin/
 .DS_Store
 
 #### CraftEngine ###
-config/
+config
+screenshots

@@ -1,36 +1,24 @@
 package ru.mrbedrockpy.craftengine.event;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class EventManager {
+    private final Map<Class<? extends Event>, List<Listener<? extends Event>>> listeners = new HashMap<>();
 
-    private final List<EventNode<? extends Event>> nodes = new ArrayList<>();
-
-    public <E extends Event> void addListener(Class<E> clazz, Listener<E> listener) {
-        EventNode<E> eventNode = getEventNode(clazz);
-        if (eventNode == null) eventNode = new EventNode<>(clazz);
-        eventNode.addListener(listener);
+    public <T extends Event> void addListener(Class<T> clazz, Listener<T> listener) {
+        listeners.computeIfAbsent(clazz, k -> new ArrayList<>()).add(listener);
     }
 
-    public <E extends Event> void removeListener(Class<E> clazz, Listener<E> listener) {
-        EventNode<E> eventNode = getEventNode(clazz);
-        if (eventNode == null) return;
-        eventNode.removeListener(listener);
-    }
-
-    public <E extends Event> void callEvent(E event) {
-        EventNode<E> eventNode = getEventNode((Class<E>) event.getClass());
-        if (eventNode == null) return;
-        eventNode.listen(event);
-    }
-
-    public <E extends Event> EventNode<E> getEventNode(Class<E> clazz) {
-        for (EventNode<? extends Event> eventNode: nodes) {
-            if (eventNode.getEvent().equals(clazz)) {
-                return (EventNode<E>) eventNode;
+    public <T extends Event> void callEvent(T event) {
+        List<Listener<? extends Event>> list = listeners.get(event.getClass());
+        if (list != null) {
+            for (Listener listener : list) {
+                ((Listener<T>) listener).execute(event);
+                if (event.isCancelled()) break;
             }
         }
-        return null;
     }
 }

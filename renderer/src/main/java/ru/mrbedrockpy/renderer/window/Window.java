@@ -1,6 +1,7 @@
 package ru.mrbedrockpy.renderer.window;
 
 import lombok.Getter;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
@@ -8,7 +9,13 @@ import org.lwjgl.system.MemoryStack;
 import ru.mrbedrockpy.renderer.RenderInit;
 import ru.mrbedrockpy.renderer.window.WindowSettings;
 
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
+import java.io.File;
+import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL46C.*;
@@ -160,6 +167,56 @@ public class Window {
     }
 
     public static void toggleFullscreen() { setFullscreen(!fullscreen); }
+
+    public static Path takeScreenshot() {
+        String ts = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"));
+        return takeScreenshot(Paths.get("screenshots", "screenshot_" + ts + ".png"));
+    }
+
+    public static Path takeScreenshot(Path outPath) {
+        try (MemoryStack stack = stackPush()) {
+            IntBuffer fbW = stack.mallocInt(1);
+            IntBuffer fbH = stack.mallocInt(1);
+            glfwGetFramebufferSize(window, fbW, fbH);
+            int width  = fbW.get(0);
+            int height = fbH.get(0);
+
+            int prevPack = glGetInteger(GL_PACK_ALIGNMENT);
+            glPixelStorei(GL_PACK_ALIGNMENT, 1);
+            ByteBuffer pixels = BufferUtils.createByteBuffer(width * height * 4);
+            glReadBuffer(GL_BACK);
+            glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+            glPixelStorei(GL_PACK_ALIGNMENT, prevPack);
+
+            BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            int[] dst = ((DataBufferInt) img.getRaster().getDataBuffer()).getData();
+
+            int stride = width * 4;
+            for (int y = 0; y < height; y++) {
+                int srcY = height - 1 - y;
+                int srcOff = srcY * stride;
+                for (int x = 0; x < width; x++) {
+                    int i = srcOff + x * 4;
+                    int r = pixels.get(i)   & 0xFF;
+                    int g = pixels.get(i+1) & 0xFF;
+                    int b = pixels.get(i+2) & 0xFF;
+                    int a = pixels.get(i+3) & 0xFF;
+                    dst[y * width + x] = (a << 24) | (r << 16) | (g << 8) | b;
+                }
+            }
+
+            File out = outPath.toFile();
+            File parent = out.getParentFile();
+            if (parent != null) parent.mkdirs();
+            javax.imageio.ImageIO.write(img, "PNG", out);
+
+            return outPath;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 
     private static void centerOnPrimaryMonitor() {
         long primary = glfwGetPrimaryMonitor();

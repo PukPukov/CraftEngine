@@ -2,11 +2,15 @@ package ru.mrbedrockpy.craftengine.world.entity;
 
 import lombok.Getter;
 import org.joml.*;
+import org.lwjgl.glfw.GLFW;
 import ru.mrbedrockpy.craftengine.Util;
 import ru.mrbedrockpy.craftengine.window.Camera;
 import ru.mrbedrockpy.craftengine.world.ClientWorld;
+import ru.mrbedrockpy.craftengine.world.block.Blocks;
 import ru.mrbedrockpy.craftengine.world.inventory.PlayerInventory;
+import ru.mrbedrockpy.craftengine.world.item.ItemStack;
 import ru.mrbedrockpy.renderer.window.Input;
+import ru.mrbedrockpy.renderer.world.raycast.BlockRaycastResult;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -55,6 +59,14 @@ public class ClientPlayerEntity extends Entity {
                 (float) -Input.getDeltaX() * sensitivity
             ));
         }
+        if (Input.wasClicked(Input.Layer.GAME, GLFW_MOUSE_BUTTON_LEFT)) {
+            BlockRaycastResult hit = world.raycast(camera.getPosition(), camera.getFront(), 4.5f);
+            if (hit != null) world.setBlock(hit.x, hit.y, hit.z, Blocks.AIR);
+        } else if (Input.wasClicked(Input.Layer.GAME, GLFW_MOUSE_BUTTON_RIGHT)) {
+            ItemStack selected = inventory.getSelectedStack();
+            if (selected != null) selected.item().use(this);
+        }
+
         long currentTime = System.nanoTime();
         Util.genericLerp(
             this.previousFrameTimeNanos, currentTime,

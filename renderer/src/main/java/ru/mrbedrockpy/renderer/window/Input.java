@@ -3,10 +3,7 @@ package ru.mrbedrockpy.renderer.window;
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.Deque;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -35,10 +32,7 @@ public class Input {
 
     public enum Layer {
         GAME      (   0, true,  true,  true),   // Игровой: забирает клавиатуру/мышь, курсор залочен
-        UI        ( 100, true,  true,  false),  // UI-меню: забирает ввод, курсор свободен
-        CONSOLE   ( 200, true,  false, false),  // Консоль/чат: только клавиатура, мышь свободна
-        OVERLAY   ( 150, false, true,  false),  // Оверлеи: только мышь (например, тултипы/панели)
-        DEBUG     ( 180, true,  true,  false);  // Дебаг-меню: всё, курсор свободен
+        UI        ( 100, true,  true,  false);  // UI-меню: забирает ввод, курсор свободен
 
         public final int priority;
         public final boolean captureKeyboard;
@@ -60,7 +54,6 @@ public class Input {
     private static final Map<Layer, Map<Integer, Runnable>> onPressByLayer   = new ConcurrentHashMap<>();
     private static final Map<Layer, Map<Integer, Runnable>> onReleaseByLayer = new ConcurrentHashMap<>();
 
-    // Утилиты для регистрации
     public static void onPress(Layer layer, int key, Runnable r) {
         onPressByLayer.computeIfAbsent(layer, l -> new ConcurrentHashMap<>()).put(key, r);
     }
@@ -75,7 +68,6 @@ public class Input {
         glfwPollEvents();
     }
 
-    // Управление слоями
     public static void pushLayer(Layer layer) {
         layerStack.push(layer);
         applyCursorPolicy();
@@ -156,7 +148,6 @@ public class Input {
     }
 
     private static void cursorPosCallback(long window, double xpos, double ypos) {
-        Layer top = currentLayer();
         if (cursorStarted) {
             deltaX += xpos - x;
             deltaY += ypos - y;
@@ -208,5 +199,12 @@ public class Input {
     public static boolean wasClicked(Layer layer, int button) {
         if (currentLayer() != layer) return false;
         return keys[MOUSE_BUTTONS_OFFSET + button] && frames[MOUSE_BUTTONS_OFFSET + button] == current;
+    }
+    public static boolean wasKeyPressedThisFrame(int key) {
+        return keys[key] && frames[key] == current;
+    }
+    public static boolean wasMouseClickedThisFrame(int button) {
+        int idx = MOUSE_BUTTONS_OFFSET + button;
+        return keys[idx] && frames[idx] == current;
     }
 }
