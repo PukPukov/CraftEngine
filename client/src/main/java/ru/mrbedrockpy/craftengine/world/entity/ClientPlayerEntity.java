@@ -2,153 +2,147 @@ package ru.mrbedrockpy.craftengine.world.entity;
 
 import lombok.Getter;
 import org.joml.*;
-import org.lwjgl.glfw.GLFW;
 import ru.mrbedrockpy.craftengine.Util;
+import ru.mrbedrockpy.craftengine.keybind.KeyBindings;
 import ru.mrbedrockpy.craftengine.window.Camera;
 import ru.mrbedrockpy.craftengine.world.ClientWorld;
+import ru.mrbedrockpy.craftengine.world.World;
 import ru.mrbedrockpy.craftengine.world.block.Blocks;
 import ru.mrbedrockpy.craftengine.world.inventory.PlayerInventory;
 import ru.mrbedrockpy.craftengine.world.item.ItemStack;
+import ru.mrbedrockpy.renderer.phys.PhysConstants;
 import ru.mrbedrockpy.renderer.window.Input;
 import ru.mrbedrockpy.renderer.world.raycast.BlockRaycastResult;
 
 import static org.lwjgl.glfw.GLFW.*;
 
 public class ClientPlayerEntity extends Entity {
-    
-    // CONSTANTS
-    private static final float speedStandard = 0.08f;
-    private static final float speedSneaking = 0.035f; // сделано не мультиплаерами т.к. приседание в воздухе не должно менять скорость
-    private static final float speedInAir = 0.01f;
-    private static final float sprintingMultiplier = 1.3f;
-    
-    private static final double standardEyeOffset = 1.8;
-    private static final double sneakingEyeOffset = 1.6;
-    private static final double eyeOffsetStep = Util.genericLerpStep(standardEyeOffset, sneakingEyeOffset, 100);
-    
-    private static final float sensitivity = 0.03f;
-    
-    // STATE
-    private @Getter
-    final Camera camera = new Camera();
-    private @Getter double currentEyeOffset = standardEyeOffset;
-    private boolean sneakingStateChangePhase = false;
-    private boolean isSneaking = false;
-    private boolean isSprinting = false;
-    private long previousFrameTimeNanos;
-    private @Getter
-    final PlayerInventory inventory = new PlayerInventory();
-    
-    
+
+    private static final float SPEED_GROUND      = 0.10f;
+    private static final float SPEED_SNEAK       = 0.035f;  // не множитель, чтобы в воздухе не влиял
+    private static final float SPEED_AIR         = 0.02f;
+    private static final float SPRINT_MULT       = 1.3f;
+
+    private static final double EYE_STD          = 1.8;
+    private static final double EYE_SNEAK        = 1.6;
+    private static final double EYE_STEP         = Util.genericLerpStep(EYE_STD, EYE_SNEAK, 100);
+
+    private static final float MOUSE_SENS        = 0.03f;
+
+    @Getter private final Camera camera = new Camera();
+    @Getter private double currentEyeOffset = EYE_STD;
+
+    private boolean eyeLerpPhase = false;
+    private boolean sneaking = false;
+    private boolean sprinting = false;
+
+    private long prevFrameNanos;
+
+    @Getter private final PlayerInventory inventory = new PlayerInventory();
+
+    private final Vector3f tmpDir   = new Vector3f();
+    private final Vector3f tmpFront = new Vector3f();
+    private final Vector3f tmpRight = new Vector3f();
+    private final Vector3f tmpPos   = new Vector3f();
+
     public ClientPlayerEntity(Vector3f position, ClientWorld world) {
         super(position, new Vector3f(0.6f, 0.6f, 1.8f), world);
-        this.camera.setPosition(position.add(0, 0, (float) currentEyeOffset));
-        
-        Input.onPress.put(GLFW_KEY_LEFT_SHIFT, () -> toggleSneak(true));
-        Input.onRelease.put(GLFW_KEY_LEFT_SHIFT, () -> toggleSneak(false));
-        Input.onRelease.put(GLFW_KEY_LEFT_CONTROL, () -> toggleSprint(false));
+        this.camera.setPosition(new Vector3f(position).add(0, 0, (float) currentEyeOffset));
     }
-    
+
     @Override
-    public void update(double deltaTime, double partialTick, ClientWorld world) {
-        super.update(deltaTime, partialTick, world);
-        if (Input.currentLayer() == Input.Layer.GAME) {
-            // Как блять они стали наоборот работать?
-            camera.rotate(new Vector2f(
-                (float) -Input.getDeltaY() * sensitivity,
-                (float) -Input.getDeltaX() * sensitivity
-            ));
+    public void update(double deltaTime, double partialTick) {
+        super.update(deltaTime, partialTick);
+
+        handleMouseLook();
+        handleMouseActions(world);
+
+        long now = System.nanoTime();
+        Util.genericLerp(
+                this.prevFrameNanos, now,
+                this.currentEyeOffset,
+                sneaking ? EYE_SNEAK : EYE_STD,
+                (off) -> this.currentEyeOffset = off,
+                EYE_STEP,
+                this.eyeLerpPhase, (ph) -> this.eyeLerpPhase = ph
+        );
+        this.camera.frameUpdate(this.prevFrameNanos, now);
+        this.prevFrameNanos = now;
+
+        if (partialTick < 0.03) {
+            tmpPos.set(this.previousTickPosition);
+        } else {
+            tmpPos.set(this.previousTickPosition).lerp(this.tickPosition, (float) partialTick);
         }
-        if (Input.wasClicked(Input.Layer.GAME, GLFW_MOUSE_BUTTON_LEFT)) {
+        camera.setPosition(tmpPos.add(0, 0, (float) currentEyeOffset));
+    }
+
+    private void handleMouseLook() {
+        if (Input.currentLayer() != Input.Layer.GAME) return;
+        camera.rotate(new Vector2f(
+                (float) -Input.getDeltaY() * MOUSE_SENS,
+                (float) -Input.getDeltaX() * MOUSE_SENS
+        ));
+    }
+
+    private void handleMouseActions(World world) {
+        if (KeyBindings.ATTACK.wasPressed()) {
             BlockRaycastResult hit = world.raycast(camera.getPosition(), camera.getFront(), 4.5f);
             if (hit != null) world.setBlock(hit.x, hit.y, hit.z, Blocks.AIR);
-        } else if (Input.wasClicked(Input.Layer.GAME, GLFW_MOUSE_BUTTON_RIGHT)) {
+        } else if (KeyBindings.BUILD.wasPressed()) {
             ItemStack selected = inventory.getSelectedStack();
             if (selected != null) selected.item().use(this);
         }
+    }
 
-        long currentTime = System.nanoTime();
-        Util.genericLerp(
-            this.previousFrameTimeNanos, currentTime,
-            this.currentEyeOffset, !this.isSneaking ? standardEyeOffset : sneakingEyeOffset, (offset) -> this.currentEyeOffset = offset,
-            eyeOffsetStep,
-            this.sneakingStateChangePhase, (phase) -> this.sneakingStateChangePhase = phase
-        );
-        this.camera.frameUpdate(this.previousFrameTimeNanos, currentTime);
-        this.previousFrameTimeNanos = currentTime;
-        
-        Vector3f position = partialTick < 0.03 ? this.previousTickPosition : new Vector3f(this.previousTickPosition).lerp(this.tickPosition, (float) partialTick);
-        camera.setPosition(new Vector3f(position).add(0, 0, (float) currentEyeOffset));
-    }
-    
-    @Override
-    public Vector3f getTickPosition() {
-        return tickPosition;
-    }
-    
     @Override
     public void tick() {
         super.tick();
-        Vector3f direction = new Vector3f();
-        Vector3f front = camera.getFlatFront();
-        Vector3f right = new Vector3f();
-        front.cross(new Vector3f(0, 0, 1), right).normalize(); // установка right
-        
-        boolean noSprint = false;
-        if (Input.isPressed(Input.Layer.GAME, GLFW_KEY_W)) direction.add(new Vector3f(front));
-        else noSprint = true;
-        if (Input.isPressed(Input.Layer.GAME, GLFW_KEY_S)) {
-            direction.sub(new Vector3f(front));
-            noSprint = true;
-        }
-        if (Input.isPressed(Input.Layer.GAME, GLFW_KEY_A)) direction.sub(new Vector3f(right));
-        if (Input.isPressed(Input.Layer.GAME, GLFW_KEY_D)) direction.add(new Vector3f(right));
-        if (Input.isPressed(Input.Layer.GAME, GLFW_KEY_SPACE)) this.jump();
-        control:
-        if (Input.isPressed(Input.Layer.GAME, GLFW_KEY_LEFT_CONTROL)) {
-            if (noSprint) {
-                toggleSprint(false);
-                break control;
-            }
-            toggleSprint(true);
-        }
 
-        if(direction.x + direction.y + direction.z != 0){
-            direction.normalize();
-        }
+        tmpDir.set(0, 0, 0);
+        tmpFront.set(camera.getFlatFront());
+        tmpRight.set(tmpFront).cross(0, 0, 1).normalize();
 
-        direction.mul(speed());
-        velocity.z -= 0.08f; // гравитация
-        velocity.mul(0.97f, 0.97f, 0.97f); // сопротивление воздуха
-        if (onGround) { // трение об землю
-            velocity.x *= 0.546f;
-            velocity.y *= 0.546f;
-        }
+        boolean anyBackwardish = false;
+        if (KeyBindings.MOVE_FORWARD.isPressed()) tmpDir.add(tmpFront); else anyBackwardish = true;
+        if (KeyBindings.MOVE_BACK.isPressed())   { tmpDir.sub(tmpFront); anyBackwardish = true; }
+        if (KeyBindings.MOVE_LEFT.isPressed())   tmpDir.sub(tmpRight);
+        if (KeyBindings.MOVE_RIGHT.isPressed())  tmpDir.add(tmpRight);
 
-        velocity.add(direction);
-        this.moveLimited(new Vector3d(velocity.x, velocity.y, velocity.z), this.isSneaking);
+        if (KeyBindings.JUMP.isPressed()) jump();
+
+        setSprinting(KeyBindings.SPRINT.isPressed() && !anyBackwardish);
+        setSneaking(KeyBindings.SHIFT.isPressed());
+
+        if (tmpDir.x != 0 || tmpDir.y != 0 || tmpDir.z != 0) tmpDir.normalize();
+
+        tmpDir.mul(currentSpeed());
+
+        velocity.add(tmpDir);
+
+        this.moveLimited(new Vector3d(velocity.x, velocity.y, velocity.z), this.sneaking);
     }
-    
+
     @Override
-    public void render(Camera camera) {
-        
-    }
-    
-    private void toggleSneak(boolean isSneaking) {
-        this.isSneaking = isSneaking;
-        this.sneakingStateChangePhase = true;
-    }
-    
-    private void toggleSprint(boolean isSprinting) {
-        this.isSprinting = isSprinting;
-        if (isSprinting) this.camera.sprint();
-        else this.camera.walk();
+    public void render(Camera camera) {}
+
+
+    private void setSneaking(boolean value) {
+        if (this.sneaking == value) return;
+        this.sneaking = value;
+        this.eyeLerpPhase = true;
     }
 
-    private float speed() {
-        if (!this.onGround) return speedInAir;
-        float currentSprintingMultiplier = this.isSprinting ? sprintingMultiplier : 1.0f;
-        return this.isSneaking ? (speedSneaking) : (speedStandard * currentSprintingMultiplier);
+    private void setSprinting(boolean value) {
+        if (this.sprinting == value) return;
+        this.sprinting = value;
+        if (value) this.camera.sprint();
+        else       this.camera.walk();
     }
 
+    private float currentSpeed() {
+        if (!this.onGround) return SPEED_AIR;
+        float currentSprintingMultiplier = this.sprinting ? SPRINT_MULT : 1.0f;
+        return this.sneaking ? (SPEED_SNEAK) : (SPEED_GROUND * currentSprintingMultiplier);
+    }
 }

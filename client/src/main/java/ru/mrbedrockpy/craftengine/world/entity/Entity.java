@@ -10,6 +10,7 @@ import ru.mrbedrockpy.renderer.phys.AABB;
 import ru.mrbedrockpy.craftengine.window.Camera;
 import ru.mrbedrockpy.craftengine.world.ClientWorld;
 import ru.mrbedrockpy.craftengine.world.World;
+import ru.mrbedrockpy.renderer.phys.PhysConstants;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -40,13 +41,19 @@ public abstract class Entity {
         setTickPosition(tickPosition);
     }
     
-    public void update(double deltaTime, double partialTick, ClientWorld world) {
+    public void update(double deltaTime, double partialTick) {
     }
 
     public abstract void render(Camera camera);
     
     public void tick() {
         previousTickPosition = new Vector3f(tickPosition);
+        velocity.z -= PhysConstants.GRAVITY;
+        velocity.mul(PhysConstants.AIR_DRAG);
+        if (onGround) {
+            velocity.x *= PhysConstants.GROUND_FRICTION;
+            velocity.y *= PhysConstants.GROUND_FRICTION;
+        }
     }
     
     // MOVE LIMITED

@@ -126,7 +126,7 @@ public class CraftEngineClient {
         }
 
         if (player != null) {
-            player.update(deltaTime, tickSystem.partialTick(), clientWorld);
+            player.update(deltaTime, tickSystem.partialTick());
         }
     }
 
