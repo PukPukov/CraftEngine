@@ -53,96 +53,73 @@ public class CraftEngineClient {
 
     public void run() {
         this.initialize();
-        long lastTime    = System.currentTimeMillis();
+        long lastTime = System.currentTimeMillis();
 
         while (!Window.isShouldClose()) {
-            Input.pullEvents();
-            long currentTime  = System.currentTimeMillis();
-            double deltaMs    = currentTime - lastTime;
-            lastTime          = currentTime;
-            this.update(deltaMs / 1000.0);
+            Input.pullEvents(); // current++ и glfwPollEvents()
+            long now     = System.currentTimeMillis();
+            double dtSec = (now - lastTime) / 1000.0;
+            lastTime     = now;
+
+            this.update(dtSec);
             Window.clear();
             this.render();
             this.renderUI();
             Window.swapBuffers();
         }
-
         Window.terminate();
     }
-
 
     public void initialize() {
         CraftEngineConfiguration.register();
         Window.initialize(ConfigVars.INSTANCE.getObject("window.settings", WindowSettings.class));
+
         Input.initialize();
+
         context = new DrawContext(Window.scaledWidth(), Window.scaledHeight());
+
         eventManager.addListener(MouseClickEvent.class, this::onMouseClick);
+
         Blocks.register();
         Items.register();
         Registries.freeze();
+
         RESOURCE_MANAGER.push(new FileResourceSource(Paths.get("")));
         RESOURCE_MANAGER.load();
+
         RenderInit.RESOURCE_MANAGER = RESOURCE_MANAGER;
         RenderInit.BLOCKS = Registries.BLOCKS;
+
         setScreen(MainMenuScreen.create());
     }
 
     private void update(double deltaTime) {
         fpsCounter.update();
         tickSystem.update(deltaTime);
-        if (Input.jpressed(GLFW.GLFW_KEY_ESCAPE)) {
+
+        if (Input.wasPressed(Input.Layer.UI, GLFW.GLFW_KEY_ESCAPE)) {
+            closeScreen();
+        } else if (Input.wasPressed(Input.Layer.GAME, GLFW.GLFW_KEY_ESCAPE)) {
             Window.setShouldClose(true);
         }
-        if (Input.jclicked(GLFW.GLFW_MOUSE_BUTTON_LEFT)) {
-            MouseClickEvent event = new MouseClickEvent(GLFW.GLFW_MOUSE_BUTTON_LEFT, Input.getX(), Input.getY());
-            if (currentScreen != null) {
-                currentScreen.onMouseClick(event);
-                return;
-            }
 
-            Vector3f rayOrigin = player.getCamera().getPosition();
-            Vector3f rayDirection = player.getCamera().getFront();
-
-            if (event.getButton() == GLFW_MOUSE_BUTTON_LEFT) {
-                BlockRaycastResult blockRaycastResult = clientWorld.raycast(rayOrigin, rayDirection, 4.5f);
-                if (blockRaycastResult != null) {
-                    clientWorld.setBlock(blockRaycastResult.x, blockRaycastResult.y, blockRaycastResult.z, Blocks.AIR);
-                }
-            } else if (event.getButton() == GLFW_MOUSE_BUTTON_RIGHT) {
-                ItemStack selected = player.getInventory().getSelectedStack();
-                if(selected != null){
-                    selected.item().use(player);
-                }
-            }
-
-            eventManager.callEvent(event);
+        if (Input.wasPressed(Input.Layer.GAME, GLFW.GLFW_KEY_TAB)
+                || Input.wasPressed(Input.Layer.UI, GLFW.GLFW_KEY_TAB)) {
+            if (player != null) setScreen(InventoryScreen.create(player.getInventory()));
         }
-        if (Input.jclicked(GLFW.GLFW_MOUSE_BUTTON_RIGHT)) {
-            MouseClickEvent event = new MouseClickEvent(GLFW.GLFW_MOUSE_BUTTON_RIGHT, Input.getX(), Input.getY());
-            if (currentScreen != null) {
-                currentScreen.onMouseClick(event);
-                return;
-            }
 
-            Vector3f rayOrigin = player.getCamera().getPosition();
-            Vector3f rayDirection = player.getCamera().getFront();
-
-            if (event.getButton() == GLFW_MOUSE_BUTTON_LEFT) {
-                BlockRaycastResult blockRaycastResult = clientWorld.raycast(rayOrigin, rayDirection, 4.5f);
-                if (blockRaycastResult != null) {
-                    clientWorld.setBlock(blockRaycastResult.x, blockRaycastResult.y, blockRaycastResult.z, Blocks.AIR);
-                }
-            } else if (event.getButton() == GLFW_MOUSE_BUTTON_RIGHT) {
-                ItemStack selected = player.getInventory().getSelectedStack();
-                if(selected != null){
-                    selected.item().use(player);
-                }
-            }
-
-            eventManager.callEvent(event);
+        if (Input.wasClicked(Input.Layer.UI, GLFW.GLFW_MOUSE_BUTTON_LEFT)) {
+            fireUiClick(GLFW.GLFW_MOUSE_BUTTON_LEFT);
         }
-        if (Input.jpressed(GLFW.GLFW_KEY_TAB)) {
-            setScreen(InventoryScreen.create(player.getInventory()));
+        if (Input.wasClicked(Input.Layer.UI, GLFW.GLFW_MOUSE_BUTTON_RIGHT)) {
+            fireUiClick(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+        }
+
+        if (Input.wasClicked(Input.Layer.GAME, GLFW.GLFW_MOUSE_BUTTON_LEFT)) {
+            handleClick(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        }
+        if (Input.wasClicked(Input.Layer.GAME, GLFW.GLFW_MOUSE_BUTTON_RIGHT)) {
+            handleClick(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
         }
 
         if (player != null) {
@@ -156,7 +133,7 @@ public class CraftEngineClient {
         }
     }
 
-    private void renderUI(){
+    private void renderUI() {
         context.enableGL();
         if (clientWorld != null && player != null) {
             hudRenderer.render(context, scale((int) Input.getX()), scale((int) Input.getY()), (float) tickSystem.partialTick());
@@ -170,12 +147,53 @@ public class CraftEngineClient {
     public void setScreen(@Nullable Screen screen) {
         if (currentScreen != null) {
             currentScreen.close();
+            currentScreen = null;
+            if (Input.currentLayer() == Input.Layer.UI) {
+                Input.popLayer();
+            }
         }
         this.currentScreen = screen;
         if (screen != null) {
-            Input.openGUI();
+            if (Input.currentLayer() != Input.Layer.UI) {
+                Input.pushLayer(Input.Layer.UI);
+            }
             screen.init();
         }
+    }
+
+    private void closeScreen() {
+        setScreen(null);
+    }
+
+    private void fireUiClick(int button) {
+        if (currentScreen != null) {
+            MouseClickEvent ev = new MouseClickEvent(button, Input.getX(), Input.getY());
+            currentScreen.onMouseClick(ev);
+            eventManager.callEvent(ev);
+        }
+    }
+
+    private void handleClick(int button) {
+        MouseClickEvent event = new MouseClickEvent(button, Input.getX(), Input.getY());
+
+        if (player == null || clientWorld == null) return;
+
+        Vector3f rayOrigin = player.getCamera().getPosition();
+        Vector3f rayDir    = player.getCamera().getFront();
+
+        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+            BlockRaycastResult hit = clientWorld.raycast(rayOrigin, rayDir, 4.5f);
+            if (hit != null) {
+                clientWorld.setBlock(hit.x, hit.y, hit.z, Blocks.AIR);
+            }
+        } else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
+            ItemStack selected = player.getInventory().getSelectedStack();
+            if (selected != null) {
+                selected.item().use(player);
+            }
+        }
+
+        eventManager.callEvent(event);
     }
 
     public void onMouseClick(MouseClickEvent event) {
@@ -183,20 +201,17 @@ public class CraftEngineClient {
             currentScreen.onMouseClick(event);
             return;
         }
+        if (player == null || clientWorld == null) return;
 
         Vector3f rayOrigin = player.getCamera().getPosition();
         Vector3f rayDirection = player.getCamera().getFront();
 
-        if (event.getButton() == GLFW_MOUSE_BUTTON_LEFT) {
-            BlockRaycastResult blockRaycastResult = clientWorld.raycast(rayOrigin, rayDirection, 4.5f);
-            if (blockRaycastResult != null) {
-                clientWorld.setBlock(blockRaycastResult.x, blockRaycastResult.y, blockRaycastResult.z, Blocks.AIR);
-            }
-        } else if (event.getButton() == GLFW_MOUSE_BUTTON_RIGHT) {
+        if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+            BlockRaycastResult hit = clientWorld.raycast(rayOrigin, rayDirection, 4.5f);
+            if (hit != null) clientWorld.setBlock(hit.x, hit.y, hit.z, Blocks.AIR);
+        } else if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
             ItemStack selected = player.getInventory().getSelectedStack();
-            if(selected != null){
-                selected.item().use(player);
-            }
+            if (selected != null) selected.item().use(player);
         }
     }
 

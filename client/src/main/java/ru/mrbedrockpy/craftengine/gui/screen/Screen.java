@@ -24,7 +24,6 @@ public final class Screen {
     }
     
     public void close() {
-        Input.closeGUI();
     }
     
     public void addWidget(AbstractWidget widget) {
@@ -38,11 +37,9 @@ public final class Screen {
     }
     
     public void onMouseClick(MouseClickEvent event) {
-        if (Input.isGUIOpen()) {
-            for (AbstractWidget widget : widgets) {
-                if (widget.isVisible() && widget.isMouseOver(scale((int) event.getX()), scale((int) event.getY()))) {
-                    widget.onMouseClick(scale((int) event.getX()), scale((int) event.getY()), event.getButton());
-                }
+        for (AbstractWidget widget : widgets) {
+            if (widget.isVisible() && widget.isMouseOver(scale((int) event.getX()), scale((int) event.getY()))) {
+                widget.onMouseClick(scale((int) event.getX()), scale((int) event.getY()), event.getButton());
             }
         }
     }

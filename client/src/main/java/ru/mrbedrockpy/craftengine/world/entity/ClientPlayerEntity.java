@@ -48,7 +48,7 @@ public class ClientPlayerEntity extends Entity {
     @Override
     public void update(double deltaTime, double partialTick, ClientWorld world) {
         super.update(deltaTime, partialTick, world);
-        if (!Input.isGUIOpen()) {
+        if (Input.currentLayer() == Input.Layer.GAME) {
             // Как блять они стали наоборот работать?
             camera.rotate(new Vector2f(
                 (float) -Input.getDeltaY() * sensitivity,
@@ -83,17 +83,17 @@ public class ClientPlayerEntity extends Entity {
         front.cross(new Vector3f(0, 0, 1), right).normalize(); // установка right
         
         boolean noSprint = false;
-        if (Input.pressed(GLFW_KEY_W)) direction.add(new Vector3f(front));
+        if (Input.isPressed(Input.Layer.GAME, GLFW_KEY_W)) direction.add(new Vector3f(front));
         else noSprint = true;
-        if (Input.pressed(GLFW_KEY_S)) {
+        if (Input.isPressed(Input.Layer.GAME, GLFW_KEY_S)) {
             direction.sub(new Vector3f(front));
             noSprint = true;
         }
-        if (Input.pressed(GLFW_KEY_A)) direction.sub(new Vector3f(right));
-        if (Input.pressed(GLFW_KEY_D)) direction.add(new Vector3f(right));
-        if (Input.pressed(GLFW_KEY_SPACE)) this.jump();
+        if (Input.isPressed(Input.Layer.GAME, GLFW_KEY_A)) direction.sub(new Vector3f(right));
+        if (Input.isPressed(Input.Layer.GAME, GLFW_KEY_D)) direction.add(new Vector3f(right));
+        if (Input.isPressed(Input.Layer.GAME, GLFW_KEY_SPACE)) this.jump();
         control:
-        if (Input.pressed(GLFW_KEY_LEFT_CONTROL)) {
+        if (Input.isPressed(Input.Layer.GAME, GLFW_KEY_LEFT_CONTROL)) {
             if (noSprint) {
                 toggleSprint(false);
                 break control;

@@ -18,7 +18,6 @@ public class WorldRenderer {
     private final TextureAtlas atlas;
     private final Texture texture;
 
-    // храним и меши, и быстрый доступ к чанку по координате чанка
     private final Map<RenderChunk, Mesh> posMeshes = new HashMap<>();
     private final Map<Vector2i, RenderChunk> chunksByPos = new HashMap<>();
 

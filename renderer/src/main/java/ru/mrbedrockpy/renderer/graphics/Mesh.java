@@ -20,7 +20,7 @@ public class Mesh {
     }
 
     public Mesh vertices(float[] vertices){
-        if(isArrayEmpty(vertices)) return this;
+        if(isArrayEmpty(vertices)) throw new IllegalArgumentException("vertices array is empty");
         vertexCount = vertices.length / 3;
 
         use();
@@ -34,7 +34,7 @@ public class Mesh {
     }
 
     public Mesh uvs(float[] uvs){
-        if(isArrayEmpty(uvs)) return this;
+        if(isArrayEmpty(uvs)) throw new IllegalArgumentException("uvs array is empty");
         use();
         uvboId = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, uvboId);
@@ -46,7 +46,7 @@ public class Mesh {
     }
 
     public Mesh aos(float[] aos){
-        if(isArrayEmpty(aos)) return this;
+        if(isArrayEmpty(aos)) throw new IllegalArgumentException("aos array is empty");
         use();
         aoboId = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, aoboId);
@@ -89,7 +89,7 @@ public class Mesh {
     }
 
     private boolean isArrayEmpty(float[] arr){
-        return arr.length == 0;
+        return arr == null || arr.length == 0;
     }
 
     public record Data(float[] vertices, float[] uvs, float[] aos){}
