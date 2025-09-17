@@ -183,6 +183,19 @@ public class Input {
     }
 
     // is - зажат ли, was - был ли нажат
+    public static boolean isPressed(int key) {
+        return keys[key];
+    }
+    public static boolean wasPressed(int key) {
+        return keys[key] && frames[key] == current;
+    }
+    public static boolean isClicked(int button) {
+        return keys[MOUSE_BUTTONS_OFFSET + button];
+    }
+    public static boolean wasClicked(int button) {
+        return keys[MOUSE_BUTTONS_OFFSET + button] && frames[MOUSE_BUTTONS_OFFSET + button] == current;
+    }
+
     public static boolean isPressed(Layer layer, int key) {
         if (currentLayer() != layer) return false;
         return keys[key];
@@ -198,12 +211,5 @@ public class Input {
     public static boolean wasClicked(Layer layer, int button) {
         if (currentLayer() != layer) return false;
         return keys[MOUSE_BUTTONS_OFFSET + button] && frames[MOUSE_BUTTONS_OFFSET + button] == current;
-    }
-    public static boolean wasKeyPressedThisFrame(int key) {
-        return keys[key] && frames[key] == current;
-    }
-    public static boolean wasMouseClickedThisFrame(int button) {
-        int idx = MOUSE_BUTTONS_OFFSET + button;
-        return keys[idx] && frames[idx] == current;
     }
 }
