@@ -16,6 +16,7 @@ dependencies {
     compileOnly lombok
     annotationProcessor lombok
     implementation project(':renderer')
+    implementation("io.netty:netty-all:4.1.124.Final")
 }
 
 jar {
