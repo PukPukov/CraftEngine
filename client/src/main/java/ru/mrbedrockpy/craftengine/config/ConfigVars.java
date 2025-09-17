@@ -47,7 +47,6 @@ public final class ConfigVars implements IConfig {
         return type.isInstance(o) ? (T) o : null;
     }
 
-
     @Override
     public Map<String, Object> asMap() {
         return Map.copyOf(map);
@@ -57,11 +56,11 @@ public final class ConfigVars implements IConfig {
     }
 
     public void pushToRuntime() {
-        map.put("gui.scale",        CraftEngineConfiguration.MAIN_CONFIG.getInt("gui.scale", 6));
-        map.put("render.distance",  CraftEngineConfiguration.MAIN_CONFIG.getInt("render.distance", 8));
+        map.put("gui.scale", CraftEngineConfiguration.MAIN_CONFIG.getInt("gui.scale", 6));
+        map.put("render.distance", CraftEngineConfiguration.MAIN_CONFIG.getInt("render.distance", 8));
         map.put("fov.dynamic_multiplier", CraftEngineConfiguration.MAIN_CONFIG.getFloat("fov.dynamic_multiplier", 1.0f));
-        map.put("fov",              CraftEngineConfiguration.MAIN_CONFIG.getFloat("fov", 70.0f));
-        map.put("window.settings",  CraftEngineConfiguration.MAIN_CONFIG.getObject("window.settings", WindowSettings.class, WindowSettings.DEFAULT));
+        map.put("fov", CraftEngineConfiguration.MAIN_CONFIG.getFloat("fov", 70.0f));
+        map.put("window.settings", CraftEngineConfiguration.MAIN_CONFIG.getObject("window.settings", WindowSettings.class, WindowSettings.DEFAULT));
         RenderInit.CONFIG = this;
     }
 }

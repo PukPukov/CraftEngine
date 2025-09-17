@@ -1,6 +1,5 @@
 package ru.mrbedrockpy.craftengine.config;
 
-import ru.mrbedrockpy.renderer.window.Window;
 import ru.mrbedrockpy.renderer.window.WindowSettings;
 
 import java.util.Map;

@@ -32,44 +32,21 @@ import ru.mrbedrockpy.renderer.world.raycast.BlockRaycastResult;
 
 import java.nio.file.Paths;
 
-import static org.lwjgl.glfw.GLFW.*;
-
 public class CraftEngineClient {
 
-    public static CraftEngineClient INSTANCE = new CraftEngineClient();
+    public static final CraftEngineClient INSTANCE = new CraftEngineClient();
 
     public final EventManager eventManager = new EventManager();
-    public       HudRenderer hudRenderer;
-    public static final CompositeResourceManager RESOURCE_MANAGER = new CompositeResourceManager();
-    private                 DrawContext context;
-    private @Getter final   FPSCounter fpsCounter = new FPSCounter();
-    private @Getter @Setter ClientWorld clientWorld;
-    private @Getter @Setter ClientPlayerEntity player;
-    private @Getter         Screen currentScreen = null;
-    private @Getter final   TickSystem tickSystem = new TickSystem(20);
+    public HudRenderer hudRenderer;
+    public final CompositeResourceManager resourceManager = new CompositeResourceManager();
+    private final DrawContext context;
+    @Getter private final FPSCounter fpsCounter = new FPSCounter();
+    @Getter @Setter private ClientWorld clientWorld;
+    @Getter @Setter private ClientPlayerEntity player;
+    @Getter private Screen currentScreen = null;
+    @Getter private final TickSystem tickSystem = new TickSystem(20);
 
-    private CraftEngineClient() {}
-
-    public void run() {
-        this.initialize();
-        long lastTime = System.currentTimeMillis();
-
-        while (!Window.isShouldClose()) {
-            Input.pullEvents();
-            long now     = System.currentTimeMillis();
-            double dtSec = (now - lastTime) / 1000.0;
-            lastTime     = now;
-
-            this.update(dtSec);
-            Window.clear();
-            this.render();
-            this.renderUI();
-            Window.swapBuffers();
-        }
-        Window.terminate();
-    }
-
-    public void initialize() {
+    private CraftEngineClient() {
         CraftEngineConfiguration.register();
         Window.initialize(ConfigVars.INSTANCE.getObject("window.settings", WindowSettings.class));
 
@@ -83,13 +60,29 @@ public class CraftEngineClient {
         Items.register();
         Registries.freeze();
 
-        RESOURCE_MANAGER.push(new FileResourceSource(Paths.get("")));
-        RESOURCE_MANAGER.load();
+        resourceManager.push(new FileResourceSource(Paths.get("")));
+        resourceManager.load();
 
-        RenderInit.RESOURCE_MANAGER = RESOURCE_MANAGER;
+        RenderInit.RESOURCE_MANAGER = resourceManager;
         RenderInit.BLOCKS = Registries.BLOCKS;
 
         setScreen(MainMenuScreen.create());
+    }
+
+    public void run() {
+        long lastTime = System.currentTimeMillis();
+        while (!Window.isShouldClose()) {
+            Input.pullEvents();
+            long now = System.currentTimeMillis();
+            double deltaSeconds = (now - lastTime) / 1000.0;
+            lastTime = now;
+            this.update(deltaSeconds);
+            Window.clear();
+            this.render();
+            this.renderUI();
+            Window.swapBuffers();
+        }
+        Window.terminate();
     }
 
     private void update(double deltaTime) {
@@ -97,7 +90,7 @@ public class CraftEngineClient {
         tickSystem.update(deltaTime);
 
         if (Input.wasPressed(Input.Layer.UI, GLFW.GLFW_KEY_ESCAPE)) {
-            setScreen(null);
+            closeScreen();
         } else if (Input.wasPressed(Input.Layer.GAME, GLFW.GLFW_KEY_ESCAPE)) {
             Window.setShouldClose(true);
         }
@@ -111,22 +104,22 @@ public class CraftEngineClient {
             if (player != null) setScreen(InventoryScreen.create(player.getInventory()));
         }
 
-        if (Input.wasPressed(Input.Layer.GAME, GLFW.GLFW_KEY_F2)
-                || Input.wasPressed(Input.Layer.UI, GLFW.GLFW_KEY_F2)) {
-            Window.takeScreenshot();
+        if (Input.wasClicked(Input.Layer.UI, GLFW.GLFW_MOUSE_BUTTON_LEFT)) {
+            fireUiClick(GLFW.GLFW_MOUSE_BUTTON_LEFT);
+        }
+        if (Input.wasClicked(Input.Layer.UI, GLFW.GLFW_MOUSE_BUTTON_RIGHT)) {
+            fireUiClick(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
         }
 
-        if(Input.wasMouseClickedThisFrame(GLFW_MOUSE_BUTTON_LEFT)){
-            MouseClickEvent ev = new MouseClickEvent(Input.currentLayer(), GLFW_MOUSE_BUTTON_LEFT, Input.getX(), Input.getY());
-            eventManager.callEvent(ev);
+        if (Input.wasClicked(Input.Layer.GAME, GLFW.GLFW_MOUSE_BUTTON_LEFT)) {
+            handleClick(GLFW.GLFW_MOUSE_BUTTON_LEFT);
         }
-        if(Input.wasMouseClickedThisFrame(GLFW_MOUSE_BUTTON_RIGHT)){
-            MouseClickEvent ev = new MouseClickEvent(Input.currentLayer(), GLFW_MOUSE_BUTTON_RIGHT, Input.getX(), Input.getY());
-            eventManager.callEvent(ev);
+        if (Input.wasClicked(Input.Layer.GAME, GLFW.GLFW_MOUSE_BUTTON_RIGHT)) {
+            handleClick(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
         }
 
         if (player != null) {
-            player.update(deltaTime, tickSystem.partialTick());
+            player.update(deltaTime, tickSystem.partialTick(), clientWorld);
         }
     }
 
@@ -164,11 +157,57 @@ public class CraftEngineClient {
         }
     }
 
-    public void onMouseClick(MouseClickEvent event) {
-        if(event.getLayer() == Input.Layer.UI) {
-            if (currentScreen != null) {
-                currentScreen.onMouseClick(event);
+    private void closeScreen() {
+        setScreen(null);
+    }
+
+    private void fireUiClick(int button) {
+        if (currentScreen != null) {
+            MouseClickEvent ev = new MouseClickEvent(button, Input.getX(), Input.getY());
+            currentScreen.onMouseClick(ev);
+            eventManager.callEvent(ev);
+        }
+    }
+
+    private void handleClick(int button) {
+        MouseClickEvent event = new MouseClickEvent(button, Input.getX(), Input.getY());
+
+        if (player == null || clientWorld == null) return;
+
+        Vector3f rayOrigin = player.getCamera().getPosition();
+        Vector3f rayDir    = player.getCamera().getFront();
+
+        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+            BlockRaycastResult hit = clientWorld.raycast(rayOrigin, rayDir, 4.5f);
+            if (hit != null) {
+                clientWorld.setBlock(hit.x, hit.y, hit.z, Blocks.AIR);
             }
+        } else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
+            ItemStack selected = player.getInventory().getSelectedStack();
+            if (selected != null) {
+                selected.item().use(player);
+            }
+        }
+
+        eventManager.callEvent(event);
+    }
+
+    public void onMouseClick(MouseClickEvent event) {
+        if (currentScreen != null) {
+            currentScreen.onMouseClick(event);
+            return;
+        }
+        if (player == null || clientWorld == null) return;
+
+        Vector3f rayOrigin = player.getCamera().getPosition();
+        Vector3f rayDirection = player.getCamera().getFront();
+
+        if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+            BlockRaycastResult hit = clientWorld.raycast(rayOrigin, rayDirection, 4.5f);
+            if (hit != null) clientWorld.setBlock(hit.x, hit.y, hit.z, Blocks.AIR);
+        } else if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
+            ItemStack selected = player.getInventory().getSelectedStack();
+            if (selected != null) selected.item().use(player);
         }
     }
 
