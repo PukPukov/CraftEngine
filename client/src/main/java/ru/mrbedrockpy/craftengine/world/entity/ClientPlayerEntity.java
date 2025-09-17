@@ -14,14 +14,11 @@ import ru.mrbedrockpy.renderer.phys.PhysConstants;
 import ru.mrbedrockpy.renderer.window.Input;
 import ru.mrbedrockpy.renderer.world.raycast.BlockRaycastResult;
 
+import java.lang.Math;
+
 import static org.lwjgl.glfw.GLFW.*;
 
 public class ClientPlayerEntity extends Entity {
-
-    private static final float SPEED_GROUND      = 0.10f;
-    private static final float SPEED_SNEAK       = 0.035f;  // не множитель, чтобы в воздухе не влиял
-    private static final float SPEED_AIR         = 0.02f;
-    private static final float SPRINT_MULT       = 1.3f;
 
     private static final double EYE_STD          = 1.8;
     private static final double EYE_SNEAK        = 1.6;
@@ -39,10 +36,6 @@ public class ClientPlayerEntity extends Entity {
     private long prevFrameNanos;
 
     @Getter private final PlayerInventory inventory = new PlayerInventory();
-
-    private final Vector3f tmpDir   = new Vector3f();
-    private final Vector3f tmpFront = new Vector3f();
-    private final Vector3f tmpRight = new Vector3f();
     private final Vector3f tmpPos   = new Vector3f();
 
     public ClientPlayerEntity(Vector3f position, ClientWorld world) {
@@ -99,26 +92,37 @@ public class ClientPlayerEntity extends Entity {
     public void tick() {
         super.tick();
 
-        tmpDir.set(0, 0, 0);
-        tmpFront.set(camera.getFlatFront());
-        tmpRight.set(tmpFront).cross(0, 0, 1).normalize();
-
-        boolean anyBackwardish = false;
-        if (KeyBindings.MOVE_FORWARD.isPressed()) tmpDir.add(tmpFront); else anyBackwardish = true;
-        if (KeyBindings.MOVE_BACK.isPressed())   { tmpDir.sub(tmpFront); anyBackwardish = true; }
-        if (KeyBindings.MOVE_LEFT.isPressed())   tmpDir.sub(tmpRight);
-        if (KeyBindings.MOVE_RIGHT.isPressed())  tmpDir.add(tmpRight);
+        float strafe = 0f, forward = 0f;
+        if (KeyBindings.MOVE_LEFT.isPressed())   strafe -= 1f;
+        if (KeyBindings.MOVE_RIGHT.isPressed())  strafe += 1f;
+        if (KeyBindings.MOVE_FORWARD.isPressed()) forward += 1f;
+        if (KeyBindings.MOVE_BACK.isPressed())    forward -= 1f;
 
         if (KeyBindings.JUMP.isPressed()) jump();
-
-        setSprinting(KeyBindings.SPRINT.isPressed() && !anyBackwardish);
         setSneaking(KeyBindings.SHIFT.isPressed());
 
-        if (tmpDir.x != 0 || tmpDir.y != 0 || tmpDir.z != 0) tmpDir.normalize();
+        boolean backwardish = forward <= 0f;
+        setSprinting(KeyBindings.SPRINT.isPressed() && !backwardish);
 
-        tmpDir.mul(currentSpeed());
+        float slipperiness = onGround ? 0.6f : 1.0f;
+        float friction = onGround ? slipperiness * 0.91f : 0.91f;
 
-        velocity.add(tmpDir);
+        float accel = onGround ? (0.1f * (0.16277136f / (friction * friction * friction))) : 0.02f;
+
+        if (sprinting) accel *= 1.3f;
+        if (sneaking)  accel *= 0.3f;
+
+        Vector3f front = camera.getFlatFront();
+        Vector3f right = new Vector3f(front).cross(0,0,1).normalize();
+
+        float len = (float) Math.sqrt(strafe*strafe + forward*forward);
+        if (len > 1e-6f) { strafe /= len; forward /= len; }
+
+        velocity.x += (front.x * forward + right.x * strafe) * accel;
+        velocity.y += (front.y * forward + right.y * strafe) * accel;
+
+        velocity.x *= friction;
+        velocity.y *= friction;
 
         this.moveLimited(new Vector3d(velocity.x, velocity.y, velocity.z), this.sneaking);
     }
@@ -138,11 +142,5 @@ public class ClientPlayerEntity extends Entity {
         this.sprinting = value;
         if (value) this.camera.sprint();
         else       this.camera.walk();
-    }
-
-    private float currentSpeed() {
-        if (!this.onGround) return SPEED_AIR;
-        float currentSprintingMultiplier = this.sprinting ? SPRINT_MULT : 1.0f;
-        return this.sneaking ? (SPEED_SNEAK) : (SPEED_GROUND * currentSprintingMultiplier);
     }
 }

@@ -16,8 +16,8 @@ public class InventoryScreen {
     
     public static Screen create(PlayerInventory inv) {
         inventory = inv;
-        return UI.create().grid(i -> slot(inv, i, InventoryScreen::slotClick), 3, 9, 150, 100, 0, 0)
-            .render(InventoryScreen::render).b();
+        return UI.create()
+                .grid(i -> slot(inv, i, InventoryScreen::slotClick), 3, 9, 150, 100, 0, 0).render(InventoryScreen::render).b();
     }
     
     public static void slotClick(SlotWidget slot) {

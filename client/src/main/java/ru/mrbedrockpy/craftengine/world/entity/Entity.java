@@ -23,15 +23,13 @@ public abstract class Entity {
     public Vector3f previousTickPosition = new Vector3f();
     @Getter
     protected Vector3f size = new Vector3f(1, 1, 1);
-    protected int pitch;
-    protected int yaw;
     @Getter
     @Setter
     protected World world;
     
     protected boolean onGround = false;
     
-    private final float jumpStrength = 0.5f;
+    private final float jumpStrength = 0.44f;
     @Getter
     protected AABB boundingBox;
     
@@ -49,11 +47,6 @@ public abstract class Entity {
     public void tick() {
         previousTickPosition = new Vector3f(tickPosition);
         velocity.z -= PhysConstants.GRAVITY;
-        velocity.mul(PhysConstants.AIR_DRAG);
-        if (onGround) {
-            velocity.x *= PhysConstants.GROUND_FRICTION;
-            velocity.y *= PhysConstants.GROUND_FRICTION;
-        }
     }
     
     // MOVE LIMITED
