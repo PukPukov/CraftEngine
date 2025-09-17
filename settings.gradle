@@ -1,3 +1,5 @@
 rootProject.name = 'CraftEngine'
 
 include ':renderer', ':client'
+
+include 'server'
