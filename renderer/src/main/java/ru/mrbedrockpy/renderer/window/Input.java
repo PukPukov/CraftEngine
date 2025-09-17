@@ -32,7 +32,6 @@ public class Input {
     public static Map<Integer, Runnable> onPress = new ConcurrentHashMap<>();
     public static Map<Integer, Runnable> onRelease = new ConcurrentHashMap<>();
 
-
     public enum Layer {
         GAME      (   0, true,  true,  true),   // Игровой: забирает клавиатуру/мышь, курсор залочен
         UI        ( 100, true,  true,  false),  // UI-меню: забирает ввод, курсор свободен

@@ -1,6 +1,5 @@
 package ru.mrbedrockpy.renderer;
 
-import lombok.Setter;
 import ru.mrbedrockpy.renderer.api.IBlock;
 import ru.mrbedrockpy.renderer.api.IConfig;
 import ru.mrbedrockpy.renderer.api.IRegistryProvider;
@@ -11,9 +10,5 @@ public class RenderInit {
     public static IResourceManager RESOURCE_MANAGER;
     public static IRegistryProvider<IBlock> BLOCKS;
     public static IConfig CONFIG;
-    
-    public static void init() {
-        
-    }
     
 }

@@ -32,45 +32,21 @@ import ru.mrbedrockpy.renderer.world.raycast.BlockRaycastResult;
 
 import java.nio.file.Paths;
 
-import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
-import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_RIGHT;
-
 public class CraftEngineClient {
 
-    public static CraftEngineClient INSTANCE = new CraftEngineClient();
+    public static final CraftEngineClient INSTANCE = new CraftEngineClient();
 
     public final EventManager eventManager = new EventManager();
-    public       HudRenderer hudRenderer;
-    public static final CompositeResourceManager RESOURCE_MANAGER = new CompositeResourceManager();
-    private                 DrawContext context;
-    private @Getter final   FPSCounter fpsCounter = new FPSCounter();
-    private @Getter @Setter ClientWorld clientWorld;
-    private @Getter @Setter ClientPlayerEntity player;
-    private @Getter         Screen currentScreen = null;
-    private @Getter final   TickSystem tickSystem = new TickSystem(20);
+    public HudRenderer hudRenderer;
+    public final CompositeResourceManager resourceManager = new CompositeResourceManager();
+    private final DrawContext context;
+    @Getter private final FPSCounter fpsCounter = new FPSCounter();
+    @Getter @Setter private ClientWorld clientWorld;
+    @Getter @Setter private ClientPlayerEntity player;
+    @Getter private Screen currentScreen = null;
+    @Getter private final TickSystem tickSystem = new TickSystem(20);
 
-    private CraftEngineClient() {}
-
-    public void run() {
-        this.initialize();
-        long lastTime = System.currentTimeMillis();
-
-        while (!Window.isShouldClose()) {
-            Input.pullEvents(); // current++ и glfwPollEvents()
-            long now     = System.currentTimeMillis();
-            double dtSec = (now - lastTime) / 1000.0;
-            lastTime     = now;
-
-            this.update(dtSec);
-            Window.clear();
-            this.render();
-            this.renderUI();
-            Window.swapBuffers();
-        }
-        Window.terminate();
-    }
-
-    public void initialize() {
+    private CraftEngineClient() {
         CraftEngineConfiguration.register();
         Window.initialize(ConfigVars.INSTANCE.getObject("window.settings", WindowSettings.class));
 
@@ -84,13 +60,29 @@ public class CraftEngineClient {
         Items.register();
         Registries.freeze();
 
-        RESOURCE_MANAGER.push(new FileResourceSource(Paths.get("")));
-        RESOURCE_MANAGER.load();
+        resourceManager.push(new FileResourceSource(Paths.get("")));
+        resourceManager.load();
 
-        RenderInit.RESOURCE_MANAGER = RESOURCE_MANAGER;
+        RenderInit.RESOURCE_MANAGER = resourceManager;
         RenderInit.BLOCKS = Registries.BLOCKS;
 
         setScreen(MainMenuScreen.create());
+    }
+
+    public void run() {
+        long lastTime = System.currentTimeMillis();
+        while (!Window.isShouldClose()) {
+            Input.pullEvents();
+            long now = System.currentTimeMillis();
+            double deltaSeconds = (now - lastTime) / 1000.0;
+            lastTime = now;
+            this.update(deltaSeconds);
+            Window.clear();
+            this.render();
+            this.renderUI();
+            Window.swapBuffers();
+        }
+        Window.terminate();
     }
 
     private void update(double deltaTime) {
