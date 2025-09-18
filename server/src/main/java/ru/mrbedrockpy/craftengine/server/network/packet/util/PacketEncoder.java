@@ -1,19 +1,18 @@
-package ru.mrbedrockpy.craftengine.client.network.util;
+package ru.mrbedrockpy.craftengine.server.network.packet.util;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.handler.codec.MessageToMessageEncoder;
-import ru.mrbedrockpy.craftengine.client.network.PacketRegistry;
-import ru.mrbedrockpy.craftengine.client.network.packet.Packet;
-import ru.mrbedrockpy.craftengine.client.network.packet.PacketCodec;
-import ru.mrbedrockpy.craftengine.client.network.packet.PacketDirection;
+import ru.mrbedrockpy.craftengine.server.network.codec.PacketCodec;
+import ru.mrbedrockpy.craftengine.server.network.packet.PacketRegistry;
+import ru.mrbedrockpy.craftengine.server.network.packet.Packet;
+import ru.mrbedrockpy.craftengine.server.network.packet.PacketDirection;
 
 import java.util.List;
 
-public final class ClientPacketEncoder extends MessageToMessageEncoder<Packet> {
+public final class PacketEncoder extends MessageToMessageEncoder<Packet> {
     private final PacketRegistry reg;
-    public ClientPacketEncoder(PacketRegistry r) { this.reg = r; }
+    public PacketEncoder(PacketRegistry r) { this.reg = r; }
 
     @Override protected void encode(ChannelHandlerContext ctx, Packet msg, List<Object> out) {
         int id = reg.idOf(PacketDirection.C2S, msg.getClass());

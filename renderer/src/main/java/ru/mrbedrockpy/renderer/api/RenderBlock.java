@@ -1,15 +1,19 @@
 package ru.mrbedrockpy.renderer.api;
 
+import lombok.Getter;
 import org.joml.Vector3i;
-import ru.mrbedrockpy.renderer.phys.AABB;
 
-public interface IBlock {
-    
-    String getId();
-    boolean isSolid();
-    AABB getAABB(int x, int y, int z);
+public class RenderBlock {
+    @Getter
+    private final String id;
+    @Getter
+    private final boolean solid;
+    public RenderBlock(String id, boolean solid){
+        this.id = id;
+        this.solid = solid;
+    }
 
-    enum Direction {
+    public enum Direction {
         UP(0, 0, 1),
         DOWN(0, 0, -1),
         NORTH(0, -1, 0),

@@ -1,8 +1,7 @@
 package ru.mrbedrockpy.renderer.api;
 
 import org.joml.Vector2i;
-import ru.mrbedrockpy.renderer.graphics.Mesh;
-import ru.mrbedrockpy.renderer.phys.AABB;
+import ru.mrbedrockpy.craftengine.core.phys.AABB;
 
 import java.util.Objects;
 

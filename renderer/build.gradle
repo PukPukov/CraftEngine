@@ -7,7 +7,6 @@ group = 'ru.mrbedrockpy'
 version = '1.0'
 
 project.ext.lwjglVersion = "3.3.6"
-project.ext.jomlVersion = "1.10.8"
 
 repositories {
     mavenCentral()
@@ -19,6 +18,8 @@ dependencies {
     compileOnly lombok
     annotationProcessor lombok
 
+    implementation project(':core')
+
     api platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
 
     implementation "org.lwjgl:lwjgl"
@@ -26,9 +27,6 @@ dependencies {
     api "org.lwjgl:lwjgl-glfw"
     api "org.lwjgl:lwjgl-opengl"
     implementation "org.lwjgl:lwjgl-stb"
-    api "com.google.code.gson:gson:2.10.1"
-
-    api "org.joml:joml:${jomlVersion}"
 
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'

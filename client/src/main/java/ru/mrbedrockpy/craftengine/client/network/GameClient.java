@@ -1,20 +1,17 @@
 package ru.mrbedrockpy.craftengine.client.network;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import ru.mrbedrockpy.craftengine.client.network.game.GameClientListener;
-import ru.mrbedrockpy.craftengine.client.network.packet.Packet;
-import ru.mrbedrockpy.craftengine.client.network.util.ClientPacketDecoder;
-import ru.mrbedrockpy.craftengine.client.network.util.ClientPacketEncoder;
-import ru.mrbedrockpy.craftengine.client.network.util.VarintFrameDecoder;
-import ru.mrbedrockpy.craftengine.client.network.util.VarintFrameEncoder;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
+import ru.mrbedrockpy.craftengine.server.network.packet.Packet;
+import ru.mrbedrockpy.craftengine.server.network.packet.util.PacketDecoder;
+import ru.mrbedrockpy.craftengine.server.network.packet.util.PacketEncoder;
+import ru.mrbedrockpy.craftengine.server.network.packet.util.VarintFrameDecoder;
+import ru.mrbedrockpy.craftengine.server.network.packet.util.VarintFrameEncoder;
+import ru.mrbedrockpy.craftengine.server.network.packet.PacketRegistry;
 
 public final class GameClient {
 
@@ -55,8 +52,8 @@ public final class GameClient {
                         ChannelPipeline p = ch.pipeline();
                         // [frame] length(varint) + payload
                         p.addLast(new VarintFrameDecoder());
-                        p.addLast(new ClientPacketDecoder(registry));
-                        p.addLast(new ClientPacketEncoder(registry));
+                        p.addLast(new PacketDecoder(registry));
+                        p.addLast(new PacketEncoder(registry));
                         p.addLast(new VarintFrameEncoder());
                         p.addLast(new SimpleChannelInboundHandler<Packet>() {
                             @Override public void channelActive(ChannelHandlerContext ctx) {

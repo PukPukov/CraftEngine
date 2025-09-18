@@ -2,21 +2,12 @@ package ru.mrbedrockpy.renderer.graphics;
 
 import lombok.AccessLevel;
 import lombok.Getter;
-import org.joml.Vector2i;
-import ru.mrbedrockpy.renderer.api.IBlock;
-import ru.mrbedrockpy.renderer.util.ImageUtil;
 import ru.mrbedrockpy.renderer.util.graphics.TextureUtil;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.lwjgl.opengl.GL46C.*;
 
 public class TextureAtlas {
     private final int tileSize = 32;
@@ -63,6 +54,14 @@ public class TextureAtlas {
 
     public float[] normalizedUv(String name) {
         Rectangle r = uv(name);
+        try {
+            if(r == null){
+                throw new IllegalArgumentException("Rectangle for: \'" + name + "\' is null");
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+            return new float[]{};
+        }
         float atlasPix = tileSize * atlasSize;
         float x0 = r.x, x1 = r.x + r.width;
         float y0 = r.y, y1 = r.y + r.height;

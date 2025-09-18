@@ -1,17 +1,14 @@
 package ru.mrbedrockpy.renderer.graphics;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.joml.Vector2i;
-import org.joml.Vector3f;
 import org.joml.Vector3i;
 import ru.mrbedrockpy.renderer.RenderInit;
-import ru.mrbedrockpy.renderer.api.IBlock;
+import ru.mrbedrockpy.renderer.api.RenderBlock;
 import ru.mrbedrockpy.renderer.api.RenderChunk;
 import ru.mrbedrockpy.renderer.util.graphics.MeshUtil;
 import ru.mrbedrockpy.renderer.world.BlockReader;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 
@@ -25,7 +22,7 @@ public class MeshBuilder {
     private final BlockReader reader;
 
     private static final int SIZE = 16;
-    private static final int DIRS = IBlock.Direction.values().length - 1;
+    private static final int DIRS = RenderBlock.Direction.values().length - 1;
 
     public MeshBuilder(TextureAtlas atlas, BlockReader reader) {
         this.atlas = atlas;
@@ -45,8 +42,8 @@ public class MeshBuilder {
                     short id = chunk.blocks()[x][y][z];
                     if (id == 0) continue;
 
-                    for (IBlock.Direction d : IBlock.Direction.values()) {
-                        if (d == IBlock.Direction.NONE) continue;
+                    for (RenderBlock.Direction d : RenderBlock.Direction.values()) {
+                        if (d == RenderBlock.Direction.NONE) continue;
 
                         Vector3i n = d.offset();
                         if (isSolidWorld(chunk,x + n.x, y + n.y, z + n.z)) continue;
@@ -76,7 +73,7 @@ public class MeshBuilder {
     }
 
     private void emitFace(int bx, int by, int bz,
-                          IBlock.Direction d,
+                          RenderBlock.Direction d,
                           float[][] corners,
                           float[] uv4,
                           RenderChunk chunk) {
@@ -113,7 +110,7 @@ public class MeshBuilder {
     }
 
     private float[] computeFaceAO(RenderChunk chunk, int x, int y, int z,
-                                  IBlock.Direction face, float[][] corners) {
+                                  RenderBlock.Direction face, float[][] corners) {
         int dir = face.ordinal();
         float[] out = new float[4];
 
@@ -132,14 +129,14 @@ public class MeshBuilder {
     }
 
     private float[][][] getCornersForModel(String modelName) {
-        int LEN = IBlock.Direction.values().length;
+        int LEN = RenderBlock.Direction.values().length;
         float[][][] out = new float[LEN][4][3];
 
         JsonObject model = RenderInit.RESOURCE_MANAGER.getModel("cube_all");
         if (model == null) return out;
 
-        for (IBlock.Direction d : IBlock.Direction.values()) {
-            if (d == IBlock.Direction.NONE) continue;
+        for (RenderBlock.Direction d : RenderBlock.Direction.values()) {
+            if (d == RenderBlock.Direction.NONE) continue;
             JsonObject face = model.has(d.name()) && model.get(d.name()).isJsonObject()
                     ? model.getAsJsonObject(d.name())
                     : (model.has(d.name().toLowerCase()) && model.get(d.name().toLowerCase()).isJsonObject()

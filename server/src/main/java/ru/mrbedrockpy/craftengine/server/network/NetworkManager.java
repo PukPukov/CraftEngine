@@ -10,19 +10,22 @@ import io.netty.util.ReferenceCountUtil;
 import ru.mrbedrockpy.craftengine.server.Logger;
 import ru.mrbedrockpy.craftengine.server.network.packet.Packet;
 import ru.mrbedrockpy.craftengine.server.network.codec.PacketCodec;
+import ru.mrbedrockpy.craftengine.server.network.packet.PacketDirection;
 import ru.mrbedrockpy.craftengine.server.network.packet.PacketRegistry;
 
 public class NetworkManager extends Thread {
 
     private final int port;
     private final ConcurrentQueue<Packet> incomingQueue;
+    private final PacketRegistry packetRegistry;
     private final Logger logger = Logger.getLogger(NetworkManager.class);
 
     private volatile boolean running = true;
     
-    public NetworkManager(int port, ConcurrentQueue<Packet> incomingQueue) {
+    public NetworkManager(int port, ConcurrentQueue<Packet> incomingQueue, PacketRegistry packetRegistry) {
         this.port = port;
         this.incomingQueue = incomingQueue;
+        this.packetRegistry = packetRegistry;
         setName("NetworkManager-Thread");
     }
     
@@ -37,7 +40,7 @@ public class NetworkManager extends Thread {
              .childHandler(new ChannelInitializer<SocketChannel>() {
                  @Override
                  protected void initChannel(SocketChannel ch) {
-                     ch.pipeline().addLast(new NetworkHandler(incomingQueue, logger));
+                     ch.pipeline().addLast(new NetworkHandler(incomingQueue, logger, packetRegistry));
                  }
              })
              .option(ChannelOption.SO_BACKLOG, 128)
@@ -67,22 +70,23 @@ public class NetworkManager extends Thread {
 
         private final ConcurrentQueue<Packet> incomingQueue;
         private final Logger logger;
+        private final PacketRegistry packetRegistry;
 
-        public NetworkHandler(ConcurrentQueue<Packet> incomingQueue, Logger logger) {
+        public NetworkHandler(ConcurrentQueue<Packet> incomingQueue, Logger logger, PacketRegistry packetRegistry) {
             this.incomingQueue = incomingQueue;
             this.logger = logger;
+            this.packetRegistry = packetRegistry;
         }
         
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) {
             try {
                 ByteBuf in = (ByteBuf) msg;
-                logger.info("Received packet");
                 if (in.writableBytes() < 1) {
                     logger.error("Invalid packet length");
                     return;
                 }
-                PacketCodec<? extends Packet> codec = PacketRegistry.INSTANCE.getById(in.readByte());
+                PacketCodec<? extends Packet> codec = packetRegistry.byId(PacketDirection.C2S, in.readByte());
                 if (codec == null) {
                     logger.error("Unknown packet");
                     return;

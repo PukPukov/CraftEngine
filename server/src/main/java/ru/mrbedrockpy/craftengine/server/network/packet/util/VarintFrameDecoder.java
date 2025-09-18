@@ -1,4 +1,4 @@
-package ru.mrbedrockpy.craftengine.client.network.util;
+package ru.mrbedrockpy.craftengine.server.network.packet.util;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;

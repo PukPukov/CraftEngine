@@ -1,4 +1,4 @@
-package ru.mrbedrockpy.renderer.phys;
+package ru.mrbedrockpy.craftengine.core.phys;
 
 import org.joml.Vector3d;
 import org.joml.Vector3f;

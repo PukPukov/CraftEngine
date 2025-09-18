@@ -1,4 +1,3 @@
 package ru.mrbedrockpy.craftengine.server.network.packet;
 
-public interface Packet {
-}
+public enum PacketDirection {C2S, S2C}

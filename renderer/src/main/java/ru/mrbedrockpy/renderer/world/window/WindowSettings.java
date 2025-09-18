@@ -1,4 +1,4 @@
-package ru.mrbedrockpy.renderer.window;
+package ru.mrbedrockpy.renderer.world.window;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

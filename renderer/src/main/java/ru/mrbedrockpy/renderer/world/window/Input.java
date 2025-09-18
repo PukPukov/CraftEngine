@@ -1,4 +1,4 @@
-package ru.mrbedrockpy.renderer.window;
+package ru.mrbedrockpy.renderer.world.window;
 
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;

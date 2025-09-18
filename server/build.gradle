@@ -1,10 +1,11 @@
 plugins {
     id 'java'
-    id 'com.gradleup.shadow' version '9.0.0-beta13'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 group = 'ru.mrbedrockpy'
 version = '1.0'
+
 
 repositories {
     mavenCentral()
@@ -14,12 +15,24 @@ def lombok = "org.projectlombok:lombok:1.18.38";
 dependencies {
     compileOnly lombok
     annotationProcessor lombok
-    implementation "io.netty:netty-all:4.1.124.Final"
+    // Без этого не работает fat-jar
+    implementation platform("io.netty:netty-bom:4.1.124.Final")
+    implementation "io.netty:netty-common"
+    implementation "io.netty:netty-buffer"
+    implementation "io.netty:netty-transport"
+    implementation "io.netty:netty-resolver"
+    implementation "io.netty:netty-codec"
+    implementation "io.netty:netty-handler"
+
+    runtimeOnly "io.netty:netty-transport-native-epoll"
+    runtimeOnly "io.netty:netty-transport-native-kqueue"
+
+    implementation project(':core')
 }
 
 shadowJar {
-    configurations = project.configurations.named('runtimeClasspath').map { [it] }
-    archiveFileName = "${project.name}-${project.version}.jar"
+    archiveBaseName.set('server')
+    archiveVersion.set('1.0')
 }
 
 jar {

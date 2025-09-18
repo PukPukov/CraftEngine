@@ -1,4 +1,4 @@
-package ru.mrbedrockpy.renderer.window;
+package ru.mrbedrockpy.renderer.world.window;
 
 import lombok.Getter;
 import org.lwjgl.BufferUtils;
@@ -7,7 +7,6 @@ import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
 import ru.mrbedrockpy.renderer.RenderInit;
-import ru.mrbedrockpy.renderer.window.WindowSettings;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;

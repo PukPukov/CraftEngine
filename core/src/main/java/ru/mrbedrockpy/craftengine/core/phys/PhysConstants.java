@@ -1,4 +1,4 @@
-package ru.mrbedrockpy.renderer.phys;
+package ru.mrbedrockpy.craftengine.core.phys;
 
 public class PhysConstants {
     public static final float GROUND_FRICTION = 0.546f;

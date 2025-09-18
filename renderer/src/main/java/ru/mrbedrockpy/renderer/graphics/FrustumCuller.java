@@ -2,7 +2,7 @@ package ru.mrbedrockpy.renderer.graphics;
 
 import org.joml.FrustumIntersection;
 import org.joml.Matrix4f;
-import ru.mrbedrockpy.renderer.phys.AABB;
+import ru.mrbedrockpy.craftengine.core.phys.AABB;
 
 public class FrustumCuller {
     private final FrustumIntersection frustum = new FrustumIntersection();

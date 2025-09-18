@@ -1,6 +1,6 @@
 package ru.mrbedrockpy.craftengine.client.network.game;
 
-import ru.mrbedrockpy.craftengine.client.network.packet.Packet;
+import ru.mrbedrockpy.craftengine.server.network.packet.Packet;
 
 public interface GameClientListener {
     void onPacket(Packet packet);
