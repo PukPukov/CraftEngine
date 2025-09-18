@@ -6,7 +6,7 @@ import ru.mrbedrockpy.craftengine.server.network.packet.Packet;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-public interface PacketCodec<P extends Packet> {
+public interface PacketCodec<P> {
     void encode(P pkt, ByteBuf out);
     P decode(ByteBuf in);
 

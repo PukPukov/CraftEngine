@@ -7,7 +7,7 @@ import org.joml.Vector3i;
 import ru.mrbedrockpy.craftengine.client.CraftEngineClient;
 import ru.mrbedrockpy.craftengine.client.keybind.KeyBindings;
 import ru.mrbedrockpy.craftengine.client.window.Camera;
-import ru.mrbedrockpy.craftengine.server.network.packet.BlockBreakC2S;
+import ru.mrbedrockpy.craftengine.server.network.packet.custom.BlockBreakC2S;
 import ru.mrbedrockpy.craftengine.server.util.Util;
 import ru.mrbedrockpy.craftengine.server.world.World;
 import ru.mrbedrockpy.craftengine.server.world.block.Blocks;

@@ -9,7 +9,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class WindowSettings {
     
-    public static final WindowSettings DEFAULT = new WindowSettings(1280, 720, "CraftEngine", false, false);
+    public static final WindowSettings DEFAULT = new WindowSettings(1920, 1080, "CraftEngine", true, true);
     
     private int width;
     private int height;

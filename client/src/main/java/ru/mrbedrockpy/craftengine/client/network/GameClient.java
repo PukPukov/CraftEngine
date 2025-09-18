@@ -23,7 +23,9 @@ public final class GameClient {
 
     private volatile GameClientListener listener = new GameClientListener() {
         @Override
-        public void onPacket(Packet packet) {}
+        public void onPacket(Packet packet) {
+            System.out.println(packet);
+        }
     };
     private final PacketRegistry registry;
 
