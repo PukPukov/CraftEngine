@@ -6,71 +6,60 @@ import ru.mrbedrockpy.craftengine.server.network.codec.PacketCodec;
 import ru.mrbedrockpy.craftengine.server.network.packet.util.VarInt;
 
 public final class PlayerConnection implements PacketSender {
-    private final Channel ch;
+    private final Channel channel;
     private final PacketRegistry registry;
+    private final PacketDirection direction;
 
-    public PlayerConnection(Channel ch, PacketRegistry registry) {
-        this.ch = ch;
+    public PlayerConnection(PacketDirection direction, Channel ch, PacketRegistry registry) {
+        this.channel = ch;
         this.registry = registry;
+        this.direction = direction;
     }
 
     @Override
     public void send(Packet packet) {
         if (!isOpen()) return;
-        ch.eventLoop().execute(() -> {
-            ByteBuf buf = null;
-            try {
-                buf = ch.alloc().ioBuffer();
-                encodePacket(packet, buf);
-                ch.write(buf);
-                buf = null;
-            } catch (Throwable t) {
-                if (buf != null) buf.release();
-            }
-        });
+
+        ByteBuf buf = channel.alloc().buffer();
+        try {
+            encodePacket(packet, buf);
+            channel.writeAndFlush(buf);
+        } catch (Exception ex) {
+            buf.release();
+            throw ex;
+        }
     }
 
     @Override
     public void sendNow(Packet packet) {
-        if (!isOpen()) return;
-        ch.eventLoop().execute(() -> {
-            ByteBuf buf = null;
-            try {
-                buf = ch.alloc().ioBuffer();
-                encodePacket(packet, buf);
-                ch.writeAndFlush(buf);
-                buf = null;
-            } catch (Throwable t) {
-                if (buf != null) buf.release();
-            }
-        });
+
     }
 
     @Override
     public void flush() {
         if (!isOpen()) return;
-        ch.eventLoop().execute(ch::flush);
+        channel.eventLoop().execute(channel::flush);
     }
 
     @Override
     public void close(String reason) {
         if (!isOpen()) return;
-        ch.eventLoop().execute(() -> ch.close());
+        channel.eventLoop().execute(channel::close);
     }
 
     @Override
     public boolean isOpen() {
-        return ch != null && ch.isActive();
+        return channel != null && channel.isActive();
     }
 
     @SuppressWarnings("unchecked")
     private void encodePacket(Packet p, ByteBuf out) {
-        int id = registry.idOf(PacketDirection.S2C, p.getClass());
+        int id = registry.idOf(direction, p.getClass());
 
         VarInt.write(out, id);
 
         PacketCodec<Packet> codec =
-                (PacketCodec<Packet>) registry.byId(PacketDirection.S2C, id);
+                (PacketCodec<Packet>) registry.byId(direction, id);
         codec.encode(p, out);
     }
 }

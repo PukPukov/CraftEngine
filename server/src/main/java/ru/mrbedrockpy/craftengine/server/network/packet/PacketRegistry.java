@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public final class PacketRegistry {
+    public static final PacketRegistry INSTANCE = new PacketRegistry();
     private static final class Key {
         final PacketDirection dir; final Class<? extends Packet> type;
         Key(PacketDirection d, Class<? extends Packet> t) { dir=d; type=t; }
@@ -18,11 +19,12 @@ public final class PacketRegistry {
     private final Map<Integer, PacketCodec<? extends Packet>> idToCodecClient = new HashMap<>();
     private final Map<Integer, PacketCodec<? extends Packet>> idToCodecServer = new HashMap<>();
     private final Map<Key, Integer> classToId = new HashMap<>();
-
-    public <P extends Packet> void register(PacketDirection dir, int id, Class<P> cls, PacketCodec<P> codec) {
-        if (dir == PacketDirection.C2S) idToCodecClient.put(id, codec);
-        else                               idToCodecServer.put(id, codec);
-        classToId.put(new Key(dir, cls), id);
+    private int currentId = 0;
+    public <P extends Packet> void register(PacketDirection dir, Class<P> cls, PacketCodec<P> codec) {
+        if (dir == PacketDirection.C2S) idToCodecClient.put(currentId, codec);
+        else                               idToCodecServer.put(currentId, codec);
+        classToId.put(new Key(dir, cls), currentId);
+        currentId++;
     }
 
     public PacketCodec<? extends Packet> byId(PacketDirection dir, int id) {

@@ -15,12 +15,10 @@ public record BlockBreakC2S(Vector3i pos) implements Packet {
             (buf) -> new BlockBreakC2S(PacketCodecs.POS_CODEC.decode(buf))
     );
 
-    @Override
-    public void handle(PacketHandleContext ctx) {
-        ctx.player().getWorld().setBlock(pos, Blocks.AIR);
-        Server server = ctx.server();
-        for(ServerPlayerEntity player : server.getPlayers()){
-            player.send(new BlockUpdatePacketS2C(pos, Blocks.AIR));
-        }
-    }
+//        ctx.player().send(new BlockUpdatePacketS2C(pos, Blocks.AIR));
+//        ctx.player().getWorld().setBlock(pos, Blocks.AIR);
+//        Server server = ctx.server();
+//        for(ServerPlayerEntity player : server.getPlayers()){
+//            player.send(new BlockUpdatePacketS2C(pos, Blocks.AIR));
+//        }
 }

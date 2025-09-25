@@ -2,6 +2,7 @@ package ru.mrbedrockpy.craftengine.server;
 
 
 import io.netty.channel.*;
+import lombok.RequiredArgsConstructor;
 import org.joml.Vector3f;
 import ru.mrbedrockpy.craftengine.server.network.ConcurrentQueue;
 import ru.mrbedrockpy.craftengine.server.network.NetworkManager;
@@ -15,15 +16,16 @@ import ru.mrbedrockpy.craftengine.server.world.generator.PerlinChunkGenerator;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+@RequiredArgsConstructor
 public abstract class Server {
 
+    protected final ServerPacketHandler handler;
     protected final Logger logger = Logger.getLogger(getClass());
     protected final ConcurrentQueue<IncomingPacket> incomingQueue = new ConcurrentQueue<>();
-    protected final PacketRegistry packetRegistry = new PacketRegistry();
+    protected final PacketRegistry packetRegistry = PacketRegistry.INSTANCE;
 
     protected final TickSystem tickSystem = new TickSystem(20);
     protected volatile boolean running = true;
@@ -31,17 +33,12 @@ public abstract class Server {
     protected final Map<UUID, ServerPlayerEntity> playersById = new ConcurrentHashMap<>();
     protected final Map<ChannelId, ServerPlayerEntity> playersByChannel = new ConcurrentHashMap<>();
 
-    private static final int MAX_PACKETS_PER_TICK = 500;
+    public static final int MAX_PACKETS_PER_TICK = 500;
     private NetworkManager network;
     public final World world = new World(100, new PerlinChunkGenerator(0l, 5, 5, 5));
 
-    protected Server() {
-    }
-
     public void start() {
         onInit();
-
-        registerPackets(packetRegistry);
 
         this.network = createNetworkManager(incomingQueue, packetRegistry);
         if (network != null) {
@@ -84,11 +81,7 @@ public abstract class Server {
         logger.info("Game server shutdown complete");
     }
 
-    protected void onInit() {}
-
-    protected void registerPackets(PacketRegistry reg) {
-        reg.register(PacketDirection.C2S, 0, BlockBreakC2S.class, BlockBreakC2S.CODEC);
-        reg.register(PacketDirection.S2C, 1, BlockUpdatePacketS2C.class, BlockUpdatePacketS2C.CODEC);
+    protected void onInit() {
     }
 
     protected abstract NetworkManager createNetworkManager(ConcurrentQueue<IncomingPacket> in, PacketRegistry reg);
@@ -132,14 +125,14 @@ public abstract class Server {
             if (in == null) break;
 
             Channel ch = in.channel();
-            Packet  p  = in.packet();
+            Packet  packet  = in.packet();
 
             try {
                 ServerPlayerEntity player = playersByChannel.get(ch.id());
 
-                PacketSender sender = new PlayerConnection(ch, packetRegistry);
+                PacketSender sender = new PlayerConnection(PacketDirection.S2C, ch, packetRegistry);
 
-                PacketHandleContext ctx = new PacketHandleContext.Builder()
+                ServerHandleContext ctx = new ServerHandleContext.Builder()
                         .channel(ch)
                         .player(player)
                         .server(this)
@@ -149,19 +142,20 @@ public abstract class Server {
                         .tick(0L)
                         .build();
 
-                p.handle(ctx);
+                handler.handle(ctx, packet);
             } catch (Exception ex) {
-                logger.error("Packet handling error: " + p + " " + ex);
+                logger.error("Packet handling error: " + packet + " " + ex);
             }
             processed++;
         }
     }
 
     protected void handleConnect(Channel ch) {
-        PacketSender sender = new PlayerConnection(ch, packetRegistry);
+        PacketSender sender = new PlayerConnection(PacketDirection.S2C, ch, packetRegistry);
 
         UUID uuid = UUID.randomUUID();
         String name = "Player_" + uuid.toString().substring(0, 8);
+        logger.info(name + " joined");
 
         ServerPlayerEntity player = new ServerPlayerEntity(
                 uuid, name, new Vector3f(0, 64, 0), world, sender);
@@ -172,13 +166,14 @@ public abstract class Server {
 
     protected void handleDisconnect(Channel ch) {
         ServerPlayerEntity p = playersByChannel.remove(ch.id());
+        logger.info(p.getName() + " left");
         if (p != null) {
             playersById.remove(p.getUuid());
         }
     }
 
     public List<ServerPlayerEntity> getPlayers() {
-        return (List<ServerPlayerEntity>) playersById.values();
+        return playersById.values().stream().toList();
     }
 
     public record IncomingPacket(Channel channel, Packet packet) {}

@@ -1,101 +1,204 @@
 package ru.mrbedrockpy.craftengine.server.network;
 
+import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.buffer.ByteBuf;
-import io.netty.handler.codec.ByteToMessageDecoder;
-import io.netty.handler.codec.MessageToByteEncoder;
-import io.netty.util.ReferenceCountUtil;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import lombok.Getter;
 import ru.mrbedrockpy.craftengine.server.Logger;
 import ru.mrbedrockpy.craftengine.server.Server;
 import ru.mrbedrockpy.craftengine.server.network.packet.Packet;
-import ru.mrbedrockpy.craftengine.server.network.codec.PacketCodec;
 import ru.mrbedrockpy.craftengine.server.network.packet.PacketDirection;
 import ru.mrbedrockpy.craftengine.server.network.packet.PacketRegistry;
 
-import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.timeout.ReadTimeoutHandler;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
 import ru.mrbedrockpy.craftengine.server.network.packet.util.*;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
 
 public final class NetworkManager extends Thread {
+
 
     public interface ConnectionListener {
         void onConnected(Channel ch);
         void onDisconnected(Channel ch);
     }
 
-    private final int port;
+    public enum Mode { SERVER, CLIENT }
+
+    private final Mode mode;
+    private final String host;  // для клиента
+    private final int port;     // для сервера и клиента
+
     private final ConcurrentQueue<Server.IncomingPacket> incomingQueue;
     private final PacketRegistry packetRegistry;
     private final Logger logger = Logger.getLogger(NetworkManager.class);
 
     private final List<ConnectionListener> listeners = new CopyOnWriteArrayList<>();
 
-    private EventLoopGroup bossGroup;
-    private EventLoopGroup workerGroup;
-    private Channel serverChannel;
+    private EventLoopGroup bossGroup;   // только сервер
+    private EventLoopGroup workerGroup; // сервер/клиент
+    @Getter
+    private Channel channel;
 
-    public NetworkManager(int port, ConcurrentQueue<Server.IncomingPacket> incomingQueue, PacketRegistry packetRegistry) {
+    // --- Конструкторы ---
+    // Сервер
+    public static NetworkManager server(int port,
+                                        ConcurrentQueue<Server.IncomingPacket> incomingQueue,
+                                        PacketRegistry packetRegistry) {
+        return new NetworkManager(Mode.SERVER, null, port, incomingQueue, packetRegistry);
+    }
+    // Клиент
+    public static NetworkManager client(String host, int port,
+                                        ConcurrentQueue<Server.IncomingPacket> incomingQueue,
+                                        PacketRegistry packetRegistry) {
+        Objects.requireNonNull(host, "host");
+        return new NetworkManager(Mode.CLIENT, host, port, incomingQueue, packetRegistry);
+    }
+
+    private NetworkManager(Mode mode, String host, int port,
+                           ConcurrentQueue<Server.IncomingPacket> incomingQueue,
+                           PacketRegistry packetRegistry) {
+        this.mode = Objects.requireNonNull(mode, "mode");
+        this.host = host;
         this.port = port;
         this.incomingQueue = Objects.requireNonNull(incomingQueue, "incomingQueue");
         this.packetRegistry = Objects.requireNonNull(packetRegistry, "packetRegistry");
-        setName("NetworkManager");
+        setName("NetworkManager-" + mode.name().toLowerCase());
         setDaemon(false);
     }
 
     public void addListener(ConnectionListener l) { listeners.add(l); }
     public void removeListener(ConnectionListener l) { listeners.remove(l); }
 
-    @Override
-    public void run() {
-        bossGroup   = new NioEventLoopGroup(1);
+    // Общий инициализатор пайплайна
+    private ChannelInitializer<SocketChannel> pipeline(Mode sideMode) {
+        final boolean isServer = (sideMode == Mode.SERVER);
+        final PacketDirection inboundDir  = isServer ? PacketDirection.C2S : PacketDirection.S2C;
+        final PacketDirection outboundDir = isServer ? PacketDirection.S2C : PacketDirection.C2S;
+
+        return new ChannelInitializer<>() {
+            @Override protected void initChannel(SocketChannel ch) {
+                ChannelPipeline p = ch.pipeline();
+
+                p.addLast(new VarintFrameDecoder());
+                p.addLast(new PacketDecoder(packetRegistry, inboundDir));
+
+                p.addLast(new VarintFrameEncoder());
+                p.addLast(new PacketEncoder(packetRegistry, outboundDir));
+
+                p.addLast(new SimpleChannelInboundHandler<Packet>() {
+                    @Override protected void channelRead0(ChannelHandlerContext ctx, Packet pkt) {
+                        incomingQueue.add(new Server.IncomingPacket(ctx.channel(), pkt));
+                    }
+                    @Override public void channelActive(ChannelHandlerContext ctx) {
+                        for (var l : listeners) l.onConnected(ctx.channel());
+                    }
+                    @Override public void channelInactive(ChannelHandlerContext ctx) {
+                        for (var l : listeners) l.onDisconnected(ctx.channel());
+                    }
+                    @Override public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+                        logger.error("Channel exception: " + ctx.channel(), cause);
+                        ctx.close();
+                    }
+                });
+            }
+        };
+    }
+
+    public Channel connectSync() {
+        if (mode != Mode.CLIENT) throw new IllegalStateException("Only for client");
         workerGroup = new NioEventLoopGroup(Math.max(2, Runtime.getRuntime().availableProcessors() / 2));
-
         try {
-            ServerBootstrap b = new ServerBootstrap()
-                    .group(bossGroup, workerGroup)
-                    .channel(NioServerSocketChannel.class)
-                    .childHandler(new GameInboundHandler(incomingQueue, logger, packetRegistry, listeners))
-                    .option(ChannelOption.SO_BACKLOG, 256)
-                    .childOption(ChannelOption.TCP_NODELAY, true)
-                    .childOption(ChannelOption.SO_KEEPALIVE, true);
+            Bootstrap b = new Bootstrap()
+                    .group(workerGroup)
+                    .channel(NioSocketChannel.class)
+                    .option(ChannelOption.TCP_NODELAY, true)
+                    .option(ChannelOption.SO_KEEPALIVE, true)
+                    .handler(pipeline(Mode.CLIENT));
 
-            ChannelFuture bindFuture = b.bind(port).sync();
-            serverChannel = bindFuture.channel();
-            logger.info("Network manager started on port " + port);
-
-            serverChannel.closeFuture().sync();
+            ChannelFuture cf = b.connect(host, port).sync(); // блокируемся
+            this.channel = cf.channel();
+            return this.channel;
         } catch (InterruptedException ie) {
-            logger.error("Network manager interrupted");
             Thread.currentThread().interrupt();
+            throw new RuntimeException("Interrupted while connecting", ie);
         } catch (Throwable t) {
-            logger.error("Network manager fatal error " + t);
-        } finally {
-            // корректное завершение
-            shutdownEventLoops();
-            logger.info("Network manager stopped");
+            throw new RuntimeException("Failed to connect", t);
         }
     }
 
+    @Override
+    public void run() {
+        if (mode == Mode.SERVER) runServer();
+        else runClient();
+    }
+
+    private void runServer() {
+        bossGroup   = new NioEventLoopGroup(1);
+        workerGroup = new NioEventLoopGroup(Math.max(2, Runtime.getRuntime().availableProcessors() / 2));
+        try {
+            ServerBootstrap b = new ServerBootstrap()
+                .group(bossGroup, workerGroup)
+                .channel(NioServerSocketChannel.class)
+                .childHandler(pipeline(Mode.SERVER))
+                .option(ChannelOption.SO_BACKLOG, 256)
+                .childOption(ChannelOption.TCP_NODELAY, true)
+                .childOption(ChannelOption.SO_KEEPALIVE, true);
+
+            ChannelFuture bindFuture = b.bind(port).sync();
+            channel = bindFuture.channel();
+            logger.info("NetworkManager SERVER started on port " + port);
+
+            channel.closeFuture().sync(); // ждём закрытия
+        } catch (InterruptedException ie) {
+            logger.warn("NetworkManager SERVER interrupted");
+            Thread.currentThread().interrupt();
+        } catch (Throwable t) {
+            logger.error("NetworkManager SERVER fatal error", t);
+        } finally {
+            shutdownEventLoops();
+            logger.info("NetworkManager SERVER stopped");
+        }
+    }
+
+    private void runClient() {
+        workerGroup = new NioEventLoopGroup(Math.max(2, Runtime.getRuntime().availableProcessors() / 2));
+        try {
+            Bootstrap b = new Bootstrap()
+                .group(workerGroup)
+                .channel(NioSocketChannel.class)
+                .option(ChannelOption.TCP_NODELAY, true)
+                .option(ChannelOption.SO_KEEPALIVE, true)
+                .handler(pipeline(Mode.CLIENT));
+
+            ChannelFuture connectFuture = b.connect(host, port).sync();
+            channel = connectFuture.channel();
+            logger.info("NetworkManager CLIENT connected to " + host + ":" + port);
+
+            channel.closeFuture().sync(); // ждём закрытия
+        } catch (InterruptedException ie) {
+            logger.warn("NetworkManager CLIENT interrupted");
+            Thread.currentThread().interrupt();
+        } catch (Throwable t) {
+            logger.error("NetworkManager CLIENT fatal error", t);
+        } finally {
+            shutdownEventLoops();
+            logger.info("NetworkManager CLIENT stopped");
+        }
+    }
+
+    // ---------- API ----------
+    /** Асинхронно закрыть канал и петли. */
     public void shutdown() {
-        if (serverChannel != null) {
-            serverChannel.eventLoop().execute(() -> {
-                if (serverChannel.isOpen()) serverChannel.close();
+        Channel ch = this.channel;
+        if (ch != null) {
+            ch.eventLoop().execute(() -> {
+                if (ch.isOpen()) ch.close();
             });
         } else {
             shutdownEventLoops();
@@ -103,83 +206,20 @@ public final class NetworkManager extends Thread {
         interrupt();
     }
 
+    /** Удобный helper для отправки пакета по активному каналу. */
+    public void send(Packet pkt) {
+        Channel ch = this.channel;
+        if (ch != null && ch.isActive()) {
+            ch.writeAndFlush(pkt);
+        } else {
+            logger.warn("send(): channel is not active");
+        }
+    }
+
     private void shutdownEventLoops() {
         if (bossGroup != null)  bossGroup.shutdownGracefully();
         if (workerGroup != null) workerGroup.shutdownGracefully();
         bossGroup = null;
         workerGroup = null;
-    }
-
-    private static final class GameInboundHandler extends SimpleChannelInboundHandler<ByteBuf> {
-        private final ConcurrentQueue<Server.IncomingPacket> incomingQueue;
-        private final Logger logger;
-        private final PacketRegistry packetRegistry;
-        private final List<ConnectionListener> listeners;
-
-        GameInboundHandler(ConcurrentQueue<Server.IncomingPacket> incomingQueue,
-                           Logger logger,
-                           PacketRegistry packetRegistry,
-                           List<ConnectionListener> listeners) {
-            super(true);
-            this.incomingQueue = incomingQueue;
-            this.logger = logger;
-            this.packetRegistry = packetRegistry;
-            this.listeners = listeners;
-        }
-
-        @Override
-        public void channelActive(ChannelHandlerContext ctx) {
-            for (var l : listeners) l.onConnected(ctx.channel());
-            ctx.fireChannelActive();
-        }
-
-        @Override
-        public void channelInactive(ChannelHandlerContext ctx) {
-            for (var l : listeners) l.onDisconnected(ctx.channel());
-            ctx.fireChannelInactive();
-        }
-
-        @Override
-        protected void channelRead0(ChannelHandlerContext ctx, ByteBuf in) {
-            // Фрейм: [VarInt packetId][payload...]
-            if (in.readableBytes() < 1) {
-                logger.error("Empty frame");
-                return;
-            }
-            int packetId;
-            try {
-                packetId = VarInt.read(in);
-            } catch (IndexOutOfBoundsException e) {
-                logger.error("Malformed VarInt for packet id");
-                return;
-            }
-
-            @SuppressWarnings("unchecked")
-            PacketCodec<? extends Packet> codec = (PacketCodec<? extends Packet>)
-                    packetRegistry.byId(PacketDirection.C2S, packetId);
-
-            if (codec == null) {
-                logger.error("Unknown packet id: " + packetId);
-                return;
-            }
-
-            try {
-                Packet packet = codec.decode(in);
-                if (packet == null) {
-                    logger.error("Decoded null packet id=" + packetId);
-                    return;
-                }
-                incomingQueue.add(new Server.IncomingPacket(ctx.channel(), packet));
-            } catch (Throwable t) {
-                logger.error("Packet decode error, id=" + packetId + " " + t);
-                ctx.close();
-            }
-        }
-
-        @Override
-        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-            logger.error("Channel exception: " + ctx.channel() + cause);
-            ctx.close();
-        }
     }
 }

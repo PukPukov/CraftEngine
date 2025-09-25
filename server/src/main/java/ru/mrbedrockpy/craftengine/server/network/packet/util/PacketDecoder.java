@@ -10,11 +10,17 @@ import ru.mrbedrockpy.craftengine.server.network.packet.PacketDirection;
 
 public final class PacketDecoder extends SimpleChannelInboundHandler<ByteBuf> {
     private final PacketRegistry registry;
-    public PacketDecoder(PacketRegistry r) { this.registry = r; }
+    private final PacketDirection dir;
 
-    @Override protected void channelRead0(ChannelHandlerContext ctx, ByteBuf frame) {
+    public PacketDecoder(PacketRegistry rm, PacketDirection dir) {
+        this.registry = rm;
+        this.dir = dir;
+    }
+
+    @Override
+    protected void channelRead0(ChannelHandlerContext ctx, ByteBuf frame) {
         int id = VarInt.read(frame);
-        PacketCodec<? extends Packet> codec = registry.byId(PacketDirection.C2S, id);
+        PacketCodec<? extends Packet> codec = registry.byId(dir, id);
         if (codec == null) throw new IllegalStateException("Unknown clientbound id: " + id);
         Packet pkt = codec.decode(frame);
         ctx.fireChannelRead(pkt);

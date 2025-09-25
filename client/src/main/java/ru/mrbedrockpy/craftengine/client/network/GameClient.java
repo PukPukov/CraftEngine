@@ -1,99 +1,81 @@
 package ru.mrbedrockpy.craftengine.client.network;
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import ru.mrbedrockpy.craftengine.client.CraftEngineClient;
 import ru.mrbedrockpy.craftengine.client.network.game.GameClientListener;
-import ru.mrbedrockpy.craftengine.server.network.packet.Packet;
-import ru.mrbedrockpy.craftengine.server.network.packet.util.PacketDecoder;
-import ru.mrbedrockpy.craftengine.server.network.packet.util.PacketEncoder;
-import ru.mrbedrockpy.craftengine.server.network.packet.util.VarintFrameDecoder;
-import ru.mrbedrockpy.craftengine.server.network.packet.util.VarintFrameEncoder;
-import ru.mrbedrockpy.craftengine.server.network.packet.PacketRegistry;
+import ru.mrbedrockpy.craftengine.server.Server;
+import ru.mrbedrockpy.craftengine.server.network.ConcurrentQueue;
+import ru.mrbedrockpy.craftengine.server.network.NetworkManager;
+import ru.mrbedrockpy.craftengine.server.network.codec.PacketCodec;
+import ru.mrbedrockpy.craftengine.server.network.packet.*;
+import ru.mrbedrockpy.craftengine.server.network.packet.util.*;
+import ru.mrbedrockpy.craftengine.server.world.entity.ServerPlayerEntity;
+
+import java.util.Arrays;
+
+import static ru.mrbedrockpy.craftengine.server.Server.MAX_PACKETS_PER_TICK;
 
 public final class GameClient {
 
     private final String host;
     private final int port;
 
-    private final EventLoopGroup group = new NioEventLoopGroup();
-    private Channel channel;
+    private final ConcurrentQueue<Server.IncomingPacket> incomingQueue = new ConcurrentQueue<>();
+    private NetworkManager network;
 
-    private volatile GameClientListener listener = new GameClientListener() {
-        @Override
-        public void onPacket(Packet packet) {
-            System.out.println(packet);
-        }
-    };
     private final PacketRegistry registry;
+    private final ClientPacketHandler handler;
+    private PlayerConnection connection;
 
-    public GameClient(String host, int port, PacketRegistry registry) {
+    public GameClient(String host, int port, PacketRegistry registry, ClientPacketHandler handler) {
         this.host = host;
         this.port = port;
         this.registry = registry;
+        this.handler = handler;
     }
 
-    public void setListener(GameClientListener l) {
-        this.listener = (l != null) ? l : new GameClientListener() {
-            @Override
-            public void onPacket(Packet packet) {
+    public void connect() {
+        network = NetworkManager.client(host, port, incomingQueue, registry);
+        network.start();
+        Channel ch = network.connectSync();
+        connection = new PlayerConnection(PacketDirection.C2S, ch, registry);
+    }
 
+    public void tick(){
+        int processed = 0;
+        while (processed < MAX_PACKETS_PER_TICK && incomingQueue.size() > 0) {
+            Server.IncomingPacket in;
+            try {
+                in = incomingQueue.poll();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
             }
-        };
-    }
+            if (in == null) break;
 
-    public void connect() throws InterruptedException {
-        Bootstrap b = new Bootstrap()
-                .group(group)
-                .channel(NioSocketChannel.class)
-                .option(ChannelOption.TCP_NODELAY, true)
-                .handler(new ChannelInitializer<SocketChannel>() {
-                    @Override protected void initChannel(SocketChannel ch) {
-                        ChannelPipeline p = ch.pipeline();
-                        // [frame] length(varint) + payload
-                        p.addLast(new VarintFrameDecoder());
-                        p.addLast(new PacketDecoder(registry));
-                        p.addLast(new PacketEncoder(registry));
-                        p.addLast(new VarintFrameEncoder());
-                        p.addLast(new SimpleChannelInboundHandler<Packet>() {
-                            @Override public void channelActive(ChannelHandlerContext ctx) {
-                                listener.onConnected();
-                            }
-                            @Override protected void channelRead0(ChannelHandlerContext ctx, Packet msg) {
-                                listener.onPacket(msg);
-                            }
-                            @Override public void channelInactive(ChannelHandlerContext ctx) {
-                                listener.onDisconnected("connection closed", null);
-                            }
-                            @Override public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-                                listener.onDisconnected("netty error", cause);
-                                ctx.close();
-                            }
-                        });
-                    }
-                });
+            Channel ch = in.channel();
+            Packet  packet  = in.packet();
 
-        ChannelFuture f = b.connect(host, port).sync();
-        channel = f.channel();
+            try {
+                ClientHandleContext ctx = new ClientHandleContext.Builder().client(CraftEngineClient.INSTANCE).channel(ch).sender(connection).build();
+                handler.handle(ctx, packet);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            processed++;
+        }
     }
 
     public void send(Packet packet) {
-        if (channel != null && channel.isActive()) {
-            channel.writeAndFlush(packet);
-        }
+        connection.send(packet);
     }
 
     public void close() {
-        try {
-            if (channel != null) channel.close().syncUninterruptibly();
-        } finally {
-            group.shutdownGracefully();
-        }
-    }
-
-    public boolean isConnected() {
-        return channel != null && channel.isActive();
+        network.shutdown();
     }
 }

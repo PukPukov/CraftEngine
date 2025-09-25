@@ -21,12 +21,16 @@ public class Logger {
 
     private final String namespace;
 
-    public void info(String msg) {
-        System.out.println(":: " + ANSI_GREEN + getNowTime() + " INFO [" + namespace + "] >> " + msg + ANSI_RESET);
+    public void info(Object... msg) {
+        System.out.println(":: " + ANSI_GREEN + getNowTime() + " INFO [" + namespace + "] >> " + Arrays.toString(msg) + ANSI_RESET);
     }
 
-    public void error(String msg) {
-        System.out.println(":: " + ANSI_RED + getNowTime() + " ERROR [" + namespace + "] >> " + msg + ANSI_RESET);
+    public void error(Object... msg) {
+        System.out.println(":: " + ANSI_RED + getNowTime() + " ERROR [" + namespace + "] >> " + Arrays.toString(msg) + ANSI_RESET);
+    }
+
+    public void warn(Object... msg) {
+        System.out.println(":: " + ANSI_RED + getNowTime() + " ERROR [" + namespace + "] >> " + Arrays.toString(msg) + ANSI_RESET);
     }
 
     public String validate(int digit) {
