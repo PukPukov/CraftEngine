@@ -8,6 +8,7 @@ import ru.mrbedrockpy.craftengine.server.network.packet.ServerPacketHandler;
 import ru.mrbedrockpy.craftengine.server.network.packet.custom.BlockBreakC2S;
 import ru.mrbedrockpy.craftengine.server.network.packet.custom.BlockUpdatePacketS2C;
 import ru.mrbedrockpy.craftengine.server.world.block.Blocks;
+import ru.mrbedrockpy.craftengine.server.world.entity.ServerPlayerEntity;
 
 import javax.swing.plaf.IconUIResource;
 
@@ -23,7 +24,9 @@ public class GameServer {
         packetHandler.register(BlockBreakC2S.class, (context, packet) -> {
             if(packet instanceof BlockBreakC2S pkt) {
                 System.out.println(pkt);
-                context.send(new BlockUpdatePacketS2C(pkt.pos(), Blocks.AIR));
+                for(ServerPlayerEntity player : server.getPlayers()) {
+                    player.send(new BlockUpdatePacketS2C(pkt.pos(), Blocks.AIR));
+                }
             }
         });
 
