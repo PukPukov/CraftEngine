@@ -10,16 +10,16 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 
 @RequiredArgsConstructor
-public class ClientPacketHandler implements PacketHandler<Packet, ClientHandleContext> {
+public class ClientPacketHandler implements PacketHandler<ClientHandleContext> {
     private final PacketRegistry registry;
     private final Map<Integer, BiConsumer<ClientHandleContext, Packet>> handles = new HashMap<>();
-    public <P extends Packet> void register(Class<P> clazz, BiConsumer<ClientHandleContext, Packet> handler){
+    public <P extends Packet> void register(Class<P> clazz, BiConsumer<ClientHandleContext, P> handler){
         int id = registry.idOf(PacketDirection.S2C, clazz);
-        handles.put(id, handler);
+        handles.put(id, (ctx, pkt) -> handler.accept(ctx, clazz.cast(pkt)));
     }
 
     @Override
-    public void handle(ClientHandleContext ctx, Packet packet) {
+    public <P extends Packet>void handle(ClientHandleContext ctx, P packet) {
         handles.get(registry.idOf(PacketDirection.S2C, packet.getClass())).accept(ctx, packet);
     }
 }

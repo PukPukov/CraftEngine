@@ -27,7 +27,6 @@ public abstract class PacketHandleContext {
         this.now     = (b.now != null ? b.now : Instant.now());
     }
 
-    // --- общее API ---
     public Channel channel()                 { return channel; }
     public Logger logger()                   { return logger; }
     public long tick()                       { return tick; }

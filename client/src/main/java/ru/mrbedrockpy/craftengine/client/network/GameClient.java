@@ -7,12 +7,14 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import ru.mrbedrockpy.craftengine.client.CraftEngineClient;
+import ru.mrbedrockpy.craftengine.client.event.ClientConnectEvent;
 import ru.mrbedrockpy.craftengine.client.network.game.GameClientListener;
 import ru.mrbedrockpy.craftengine.server.Server;
 import ru.mrbedrockpy.craftengine.server.network.ConcurrentQueue;
 import ru.mrbedrockpy.craftengine.server.network.NetworkManager;
 import ru.mrbedrockpy.craftengine.server.network.codec.PacketCodec;
 import ru.mrbedrockpy.craftengine.server.network.packet.*;
+import ru.mrbedrockpy.craftengine.server.network.packet.custom.ClientLoginPacketC2S;
 import ru.mrbedrockpy.craftengine.server.network.packet.util.*;
 import ru.mrbedrockpy.craftengine.server.world.entity.ServerPlayerEntity;
 
@@ -39,11 +41,13 @@ public final class GameClient {
         this.handler = handler;
     }
 
-    public void connect() {
+    public void connect(String userName) {
         network = NetworkManager.client(host, port, incomingQueue, registry);
         network.start();
         Channel ch = network.connectSync();
         connection = new PlayerConnection(PacketDirection.C2S, ch, registry);
+        CraftEngineClient.INSTANCE.eventManager.callEvent(new ClientConnectEvent(connection, host, port));
+        connection.send(new ClientLoginPacketC2S(userName));
     }
 
     public void tick(){

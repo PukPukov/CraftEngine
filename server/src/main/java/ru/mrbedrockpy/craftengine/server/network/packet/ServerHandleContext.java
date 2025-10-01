@@ -12,12 +12,10 @@ public final class ServerHandleContext extends PacketHandleContext {
 
     private final Server server;
     private final ServerPlayerEntity player;
-    private final Executor serverExecutor;
 
     private ServerHandleContext(Builder b) {
         super(b);
         this.server = Objects.requireNonNull(b.server, "server");
-        this.serverExecutor = Objects.requireNonNull(b.serverExecutor, "serverExecutor");
         this.player = b.player;
     }
 
@@ -31,10 +29,6 @@ public final class ServerHandleContext extends PacketHandleContext {
 
     public UUID playerId() {
         return player != null ? player.getUuid() : null;
-    }
-
-    public void runOnServer(Runnable r) {
-        serverExecutor.execute(r);
     }
 
     @Override

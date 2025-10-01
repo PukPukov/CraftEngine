@@ -46,7 +46,7 @@ public class Mesh {
     }
 
     public Mesh aos(float[] aos){
-        if(isArrayEmpty(aos)) throw new IllegalArgumentException("aos array is empty");
+        if(isArrayEmpty(aos)) return this;
         use();
         aoboId = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, aoboId);

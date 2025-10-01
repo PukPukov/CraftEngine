@@ -28,7 +28,7 @@ jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest {
         attributes(
-                'Main-Class': 'ru.mrbedrockpy.craftengine.Main',
+                'Main-Class': 'ru.mrbedrockpy.craftengine.client.Main',
                 'Implementation-Title': 'CraftEngine Client',
         )
     }

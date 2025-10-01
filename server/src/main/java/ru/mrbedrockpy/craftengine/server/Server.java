@@ -9,14 +9,13 @@ import ru.mrbedrockpy.craftengine.server.network.NetworkManager;
 import ru.mrbedrockpy.craftengine.server.network.packet.*;
 import ru.mrbedrockpy.craftengine.server.network.packet.custom.BlockBreakC2S;
 import ru.mrbedrockpy.craftengine.server.network.packet.custom.BlockUpdatePacketS2C;
+import ru.mrbedrockpy.craftengine.server.network.packet.custom.ClientLoginPacketC2S;
 import ru.mrbedrockpy.craftengine.server.world.TickSystem;
 import ru.mrbedrockpy.craftengine.server.world.World;
 import ru.mrbedrockpy.craftengine.server.world.entity.ServerPlayerEntity;
 import ru.mrbedrockpy.craftengine.server.world.generator.PerlinChunkGenerator;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @RequiredArgsConstructor
@@ -32,6 +31,8 @@ public abstract class Server {
 
     protected final Map<UUID, ServerPlayerEntity> playersById = new ConcurrentHashMap<>();
     protected final Map<ChannelId, ServerPlayerEntity> playersByChannel = new ConcurrentHashMap<>();
+    protected final Set<ChannelId> awaitingLogin = ConcurrentHashMap.newKeySet();
+    protected final Set<String> takenNames = ConcurrentHashMap.newKeySet();
 
     public static final int MAX_PACKETS_PER_TICK = 500;
     private NetworkManager network;
@@ -151,25 +152,64 @@ public abstract class Server {
     }
 
     protected void handleConnect(Channel ch) {
-        PacketSender sender = new PlayerConnection(PacketDirection.S2C, ch, packetRegistry);
+        awaitingLogin.add(ch.id());
+        logger.info("Channel " + ch.id() + " connected; awaiting login");
+    }
+
+    protected void handleDisconnect(Channel ch) {
+        ServerPlayerEntity p = playersByChannel.remove(ch.id());
+        awaitingLogin.remove(ch.id());
+        if (p != null) {
+            playersById.remove(p.getUuid());
+            takenNames.remove(p.getName());
+            logger.info(p.getName() + " left");
+        } else {
+            logger.info("Channel " + ch.id() + " disconnected (no player)");
+        }
+    }
+
+    public void onClientLogin(ServerHandleContext ctx, ClientLoginPacketC2S pkt) {
+        Channel ch = ctx.channel();
+
+        if (!awaitingLogin.remove(ch.id())) {
+            logger.warn("Login received but channel already logged in: " + ch.id());
+            return;
+        }
+
+        String rawName = pkt.name();
+        String name = sanitizeName(rawName);
+        if (name == null) {
+            logger.warn("Bad player name from " + ch.id() + ": '" + rawName + "'");
+            ch.close();
+            return;
+        }
+
+        String key = name.toLowerCase(Locale.ROOT);
+        boolean unique = takenNames.add(key);
+        if (!unique) {
+            logger.warn("Duplicate name: " + name + " from " + ch.id());
+            ch.close();
+            return;
+        }
 
         UUID uuid = UUID.randomUUID();
-        String name = "Player_" + uuid.toString().substring(0, 8);
-        logger.info(name + " joined");
+        PacketSender sender = new PlayerConnection(PacketDirection.S2C, ch, packetRegistry);
 
         ServerPlayerEntity player = new ServerPlayerEntity(
                 uuid, name, new Vector3f(0, 64, 0), world, sender);
 
         playersById.put(uuid, player);
         playersByChannel.put(ch.id(), player);
+
+        logger.info(name + " joined (uuid=" + uuid + ")");
     }
 
-    protected void handleDisconnect(Channel ch) {
-        ServerPlayerEntity p = playersByChannel.remove(ch.id());
-        logger.info(p.getName() + " left");
-        if (p != null) {
-            playersById.remove(p.getUuid());
-        }
+    private static String sanitizeName(String s) {
+        if (s == null) return null;
+        s = s.trim();
+        if (s.length() < 3 || s.length() > 16) return null;
+        if (!s.matches("[A-Za-z0-9_]+")) return null;
+        return s;
     }
 
     public List<ServerPlayerEntity> getPlayers() {

@@ -31,8 +31,8 @@ public final class NetworkManager extends Thread {
     public enum Mode { SERVER, CLIENT }
 
     private final Mode mode;
-    private final String host;  // для клиента
-    private final int port;     // для сервера и клиента
+    private final String host;
+    private final int port;
 
     private final ConcurrentQueue<Server.IncomingPacket> incomingQueue;
     private final PacketRegistry packetRegistry;
@@ -40,12 +40,11 @@ public final class NetworkManager extends Thread {
 
     private final List<ConnectionListener> listeners = new CopyOnWriteArrayList<>();
 
-    private EventLoopGroup bossGroup;   // только сервер
-    private EventLoopGroup workerGroup; // сервер/клиент
+    private EventLoopGroup bossGroup;
+    private EventLoopGroup workerGroup;
     @Getter
     private Channel channel;
 
-    // --- Конструкторы ---
     // Сервер
     public static NetworkManager server(int port,
                                         ConcurrentQueue<Server.IncomingPacket> incomingQueue,
