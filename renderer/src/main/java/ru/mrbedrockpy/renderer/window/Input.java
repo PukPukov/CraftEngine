@@ -1,10 +1,13 @@
-package ru.mrbedrockpy.renderer.world.window;
+package ru.mrbedrockpy.renderer.window;
 
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
+import ru.mrbedrockpy.renderer.api.KeyCallback;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11C.glViewport;
@@ -28,10 +31,11 @@ public class Input {
 
     public static Map<Integer, Runnable> onPress = new ConcurrentHashMap<>();
     public static Map<Integer, Runnable> onRelease = new ConcurrentHashMap<>();
+    public static List<Consumer<KeyCallback>> onPressAny = new ArrayList<>();
 
     public enum Layer {
-        GAME      (   0, true,  true,  true),   // Игровой: забирает клавиатуру/мышь, курсор залочен
-        UI        ( 100, true,  true,  false);  // UI-меню: забирает ввод, курсор свободен
+        GAME      (   0, true,  true,  true),
+        UI        ( 100, true,  true,  false);
 
         public final int priority;
         public final boolean captureKeyboard;
@@ -86,14 +90,18 @@ public class Input {
         boolean lock = top != null ? top.lockCursorByDefault : true;
         setCursorLocked(lock);
     }
-
-    private static void keyCallback(long window, int key, int scancode, int inputAction, int mode) {
+    private static void keyCallback(long window, int key, int scancode, int inputAction, int mods) {
         Layer top = currentLayer();
         boolean deliverToGlobal = (top == null || !top.captureKeyboard);
+
+        if (key < 0 || key >= KEYS) return; // защита от выхода за массив
 
         if (inputAction == GLFW_PRESS) {
             keys[key] = true;
             frames[key] = current;
+            for(Consumer<KeyCallback> cb : onPressAny){
+                cb.accept(new KeyCallback(key, scancode, inputAction, mods));
+            }
 
             if (!deliverToGlobal) {
                 Runnable r = onPressByLayer.getOrDefault(top, Map.of()).get(key);
@@ -102,6 +110,7 @@ public class Input {
                 Runnable r = onPress.get(key);
                 if (r != null) r.run();
             }
+
         } else if (inputAction == GLFW_RELEASE) {
             keys[key] = false;
             frames[key] = current;

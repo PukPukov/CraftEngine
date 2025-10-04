@@ -1,6 +1,7 @@
 package ru.mrbedrockpy.renderer.font;
 
 import lombok.Getter;
+import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBTTFontinfo;
@@ -9,6 +10,7 @@ import org.lwjgl.stb.STBTTPackedchar;
 import org.lwjgl.system.MemoryStack;
 import ru.mrbedrockpy.renderer.graphics.FreeTextureAtlas;
 import ru.mrbedrockpy.renderer.gui.DrawContext;
+import ru.mrbedrockpy.renderer.window.Window;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -25,16 +27,17 @@ import static org.lwjgl.stb.STBTruetype.*;
 
 @Getter
 public class FontRenderer {
-    public static final int BITMAP_W = 512;
-    public static final int BITMAP_H = 512;
+    public static final int BITMAP_W = 512, BITMAP_H = 512;
     private static final int FONT_SIZE = 32;
 
     private final FreeTextureAtlas atlas;
     private final String atlasKey;
     private Rectangle atlasRect;
 
-    private final STBTTPackedchar.Buffer charData = STBTTPackedchar.malloc(96);
+    // было final -> убрал
+    private STBTTPackedchar.Buffer charData;
     private STBTTFontinfo fontInfo;
+    private ByteBuffer fontData;        // <-- ДЕРЖИМ ЭТО ПОЛЕ, пока жив шрифт!
     private float scale;
     private int ascent;
 
@@ -44,17 +47,21 @@ public class FontRenderer {
     }
 
     public void init(String resourcePath) throws IOException {
-        ByteBuffer fontBuffer;
+        // если уже инициализировано — аккуратно очистим
+        if (fontInfo != null || charData != null) dispose();
+
+        // грузим TTF в persistent direct ByteBuffer (НЕ stack!)
         try (InputStream is = getClass().getClassLoader().getResourceAsStream(resourcePath)) {
             if (is == null) throw new IOException("Font not found: " + resourcePath);
             byte[] bytes = is.readAllBytes();
-            fontBuffer = BufferUtils.createByteBuffer(bytes.length);
-            fontBuffer.put(bytes).flip();
+            fontData = BufferUtils.createByteBuffer(bytes.length);
+            fontData.put(bytes).flip();
         }
 
         fontInfo = STBTTFontinfo.create();
-        if (!stbtt_InitFont(fontInfo, fontBuffer))
+        if (!stbtt_InitFont(fontInfo, fontData)) {
             throw new IllegalStateException("Failed to init font info");
+        }
 
         scale = stbtt_ScaleForPixelHeight(fontInfo, FONT_SIZE);
         try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -63,11 +70,15 @@ public class FontRenderer {
             ascent = (int) (pAscent.get(0) * scale);
         }
 
+        // (пере)аллоцируем charData тут, а не в поле по умолчанию
+        charData = STBTTPackedchar.malloc(96);
+
+        // билдим атлас глифов
         ByteBuffer bitmap = BufferUtils.createByteBuffer(BITMAP_W * BITMAP_H);
         try (MemoryStack stack = MemoryStack.stackPush()) {
             STBTTPackContext pack = STBTTPackContext.malloc(stack);
             stbtt_PackBegin(pack, bitmap, BITMAP_W, BITMAP_H, 0, 1, 0);
-            stbtt_PackFontRange(pack, fontBuffer, 0, FONT_SIZE, 32, charData); // заполняет charData (x0..y1 и т.п.)
+            stbtt_PackFontRange(pack, fontData, 0, FONT_SIZE, 32, charData);
             stbtt_PackEnd(pack);
         }
 
@@ -88,30 +99,48 @@ public class FontRenderer {
         if (atlasRect == null) throw new IllegalStateException("Atlas did not record rect for key: " + atlasKey);
     }
 
-    public Vector2i getTextSize(String text) {
-        int width = 0;
-        int maxHeight = 0;
+    public Vector2f measureTextPx(String text) {
+        if (text == null || text.isEmpty()) return new Vector2f(0, 0);
+        if (fontInfo == null || fontData == null) throw new IllegalStateException("Font not initialized");
+
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            IntBuffer x0 = stack.mallocInt(1);
-            IntBuffer y0 = stack.mallocInt(1);
-            IntBuffer x1 = stack.mallocInt(1);
-            IntBuffer y1 = stack.mallocInt(1);
+            IntBuffer ascentBuf  = stack.mallocInt(1);
+            IntBuffer descentBuf = stack.mallocInt(1);
+            IntBuffer gapBuf     = stack.mallocInt(1);
+            stbtt_GetFontVMetrics(fontInfo, ascentBuf, descentBuf, gapBuf);
+
+            float a = ascentBuf.get(0), d = descentBuf.get(0), g = gapBuf.get(0);
+            if (a == 0 && d == 0) throw new IllegalStateException("Font metrics are zero (dangling fontInfo/fontData)");
+
+            float s = this.scale;
+            float lineHeightPx = (a - d + g) * s;
+
             IntBuffer advance = stack.mallocInt(1);
-            IntBuffer lsb = stack.mallocInt(1);
-            for (int i = 0; i < text.length(); i++) {
-                char c = text.charAt(i);
-                stbtt_GetCodepointHMetrics(fontInfo, c, advance, lsb);
-                width += (int) (advance.get(0) * scale);
-                stbtt_GetCodepointBitmapBox(fontInfo, c, scale, scale, x0, y0, x1, y1);
-                int height = y1.get(0) - y0.get(0);
-                maxHeight = Math.max(maxHeight, height);
+            IntBuffer lsb     = stack.mallocInt(1);
+
+            float widthPx = 0f; int prev = 0;
+            for (int cp : text.codePoints().toArray()) {
+                stbtt_GetCodepointHMetrics(fontInfo, cp, advance, lsb);
+                widthPx += advance.get(0) * s;
+                if (prev != 0) widthPx += stbtt_GetCodepointKernAdvance(fontInfo, prev, cp) * s;
+                prev = cp;
             }
+            return new Vector2f(Math.max(0, widthPx), Math.max(0, lineHeightPx));
         }
-        return new Vector2i(Math.ceilDiv(width, 5), Math.ceilDiv(maxHeight, 5));
+    }
+
+    public Vector2f getTextSize(String text, float renderScale) {
+        Vector2f px = measureTextPx(text);
+        float sx = Window.scaledWidth()  / (float) Window.getWidth();
+        float sy = Window.scaledHeight() / (float) Window.getHeight();
+        return new Vector2f(px.x * renderScale * sx, px.y * renderScale * sy);
     }
 
     public void dispose() {
-        charData.free();
+        if (charData != null) { charData.free(); charData = null; }
+        fontInfo = null;
+        fontData = null;
+        atlasRect = null;
     }
 
     public float u(float localU) {
@@ -121,4 +150,5 @@ public class FontRenderer {
     public float v(float localV) {
         return (atlasRect.y / (float) atlas.getHeightPx()) + localV * (atlasRect.height / (float) atlas.getHeightPx());
     }
+
 }

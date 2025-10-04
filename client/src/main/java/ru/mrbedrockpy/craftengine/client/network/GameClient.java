@@ -6,8 +6,10 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import lombok.Setter;
 import ru.mrbedrockpy.craftengine.client.CraftEngineClient;
 import ru.mrbedrockpy.craftengine.client.event.ClientConnectEvent;
+import ru.mrbedrockpy.craftengine.client.network.aut.GameProfile;
 import ru.mrbedrockpy.craftengine.client.network.game.GameClientListener;
 import ru.mrbedrockpy.craftengine.server.Server;
 import ru.mrbedrockpy.craftengine.server.network.ConcurrentQueue;
@@ -23,31 +25,27 @@ import java.util.Arrays;
 import static ru.mrbedrockpy.craftengine.server.Server.MAX_PACKETS_PER_TICK;
 
 public final class GameClient {
-
-    private final String host;
-    private final int port;
-
     private final ConcurrentQueue<Server.IncomingPacket> incomingQueue = new ConcurrentQueue<>();
     private NetworkManager network;
 
     private final PacketRegistry registry;
     private final ClientPacketHandler handler;
     private PlayerConnection connection;
+    @Setter
+    private GameProfile profile;
 
-    public GameClient(String host, int port, PacketRegistry registry, ClientPacketHandler handler) {
-        this.host = host;
-        this.port = port;
+    public GameClient(PacketRegistry registry, ClientPacketHandler handler) {
         this.registry = registry;
         this.handler = handler;
     }
 
-    public void connect(String userName) {
+    public void connect(String host, int port) {
         network = NetworkManager.client(host, port, incomingQueue, registry);
         network.start();
         Channel ch = network.connectSync();
         connection = new PlayerConnection(PacketDirection.C2S, ch, registry);
         CraftEngineClient.INSTANCE.eventManager.callEvent(new ClientConnectEvent(connection, host, port));
-        connection.send(new ClientLoginPacketC2S(userName));
+        connection.send(new ClientLoginPacketC2S(profile.name()));
     }
 
     public void tick(){
@@ -76,10 +74,10 @@ public final class GameClient {
     }
 
     public void send(Packet packet) {
-        connection.send(packet);
+        if(connection != null && connection.isOpen()) connection.send(packet);
     }
 
     public void close() {
-        network.shutdown();
+        if(network != null) network.shutdown();
     }
 }

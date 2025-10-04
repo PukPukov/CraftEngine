@@ -1,4 +1,4 @@
-package ru.mrbedrockpy.renderer.world.window;
+package ru.mrbedrockpy.renderer.window;
 
 import lombok.Getter;
 import org.lwjgl.BufferUtils;

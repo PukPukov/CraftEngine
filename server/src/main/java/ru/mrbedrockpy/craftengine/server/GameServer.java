@@ -12,8 +12,9 @@ import javax.swing.plaf.IconUIResource;
 
 public class GameServer {
     private static final ServerPacketHandler packetHandler = new ServerPacketHandler(PacketRegistry.INSTANCE);
-    private static final Server server = new CraftEngineServer(8080, packetHandler);
+    private static Server server;
     public static void main(String[] args) {
+        server = new CraftEngineServer(Integer.parseInt(args[0]), packetHandler);
         server.onInit();
         Packets.register();
 

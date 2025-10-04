@@ -17,6 +17,7 @@ import ru.mrbedrockpy.craftengine.server.world.generator.PerlinChunkGenerator;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public abstract class Server {
@@ -157,14 +158,16 @@ public abstract class Server {
     }
 
     protected void handleDisconnect(Channel ch) {
-        ServerPlayerEntity p = playersByChannel.remove(ch.id());
-        awaitingLogin.remove(ch.id());
+        ServerPlayerEntity p = playersByChannel.get(ch.id());
+        playersByChannel.remove(ch.id());
+        boolean removedAwait = awaitingLogin.remove(ch.id());
+
         if (p != null) {
             playersById.remove(p.getUuid());
-            takenNames.remove(p.getName());
+            takenNames.remove(p.getName().toLowerCase(Locale.ROOT)); // <—
             logger.info(p.getName() + " left");
         } else {
-            logger.info("Channel " + ch.id() + " disconnected (no player)");
+            logger.info("Channel " + ch.id() + " disconnected (no player), awaitingLogin.remove=" + removedAwait);
         }
     }
 

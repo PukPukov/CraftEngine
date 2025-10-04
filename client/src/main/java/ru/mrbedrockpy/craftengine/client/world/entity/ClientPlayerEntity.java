@@ -14,7 +14,7 @@ import ru.mrbedrockpy.craftengine.server.world.block.Blocks;
 import ru.mrbedrockpy.craftengine.server.world.entity.PlayerEntity;
 import ru.mrbedrockpy.craftengine.server.world.item.ItemStack;
 import ru.mrbedrockpy.craftengine.server.world.raycast.BlockRaycastResult;
-import ru.mrbedrockpy.renderer.world.window.Input;
+import ru.mrbedrockpy.renderer.window.Input;
 
 public class ClientPlayerEntity extends PlayerEntity {
 
@@ -97,7 +97,7 @@ public class ClientPlayerEntity extends PlayerEntity {
         setSneaking(KeyBindings.SHIFT.isPressed());
 
         boolean backwardish = forward <= 0f;
-//        setSprinting(KeyBindings.SPRINT.isPressed() && !backwardish);
+        setSprinting(KeyBindings.SPRINT.isPressed() && !backwardish);
 
         float slipperiness = onGround ? 0.6f : 1.0f;
         float friction = onGround ? slipperiness * 0.91f : 0.91f;
@@ -129,5 +129,13 @@ public class ClientPlayerEntity extends PlayerEntity {
     public void setSneaking(boolean value) {
         super.setSneaking(value);
         this.eyeLerpPhase = true;
+    }
+
+    @Override
+    public void setSprinting(boolean value) {
+        if (this.sprinting == value) return;
+        this.sprinting = value;
+        if (value) this.camera.sprint();
+        else       this.camera.walk();
     }
 }

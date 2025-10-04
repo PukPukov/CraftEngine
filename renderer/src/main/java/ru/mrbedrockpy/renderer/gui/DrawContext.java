@@ -2,12 +2,14 @@ package ru.mrbedrockpy.renderer.gui;
 
 import lombok.Getter;
 import org.joml.Matrix4f;
+import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.lwjgl.stb.STBTTPackedchar;
 import ru.mrbedrockpy.renderer.font.FontRenderer;
 import ru.mrbedrockpy.renderer.graphics.*;
 import ru.mrbedrockpy.renderer.util.FileLoader;
 import ru.mrbedrockpy.renderer.util.graphics.ShaderUtil;
+import ru.mrbedrockpy.renderer.window.Window;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -111,10 +113,20 @@ public class DrawContext {
         drawCentredText(text, x, y, 1.0f);
     }
 
-    public void drawCentredText(String text, int x, int y, float scale) {
-        Vector2i textSize = fontRenderer.getTextSize(text);
-        drawText(text, x - textSize.x / 2, y - textSize.y / 2, scale);
+    public void drawCentredText(String text, int cx, int cy, float fontScale) {
+        if (text == null || text.isEmpty()) return;
+
+        Vector2f sz = fontRenderer.getTextSize(text, fontScale);
+
+        float w = sz.x * fontScale;
+        float h = sz.y * fontScale;
+
+        int x = Math.round(cx - w / 2f);
+        int y = Math.round(cy + h / 2f);
+
+        drawText(text, x, y, fontScale);
     }
+
 
     public void drawText(String text, int x, int y) {
         drawText(text, x, y, 1.0f);
@@ -199,6 +211,10 @@ public class DrawContext {
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
         glBindVertexArray(0);
+    }
+
+    private static int scale(int v){
+        return (int) (v * Window.scaledWidth() / (float) Window.getWidth());
     }
 
     public void cleanup() {
