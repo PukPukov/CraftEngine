@@ -1,4 +1,4 @@
-package ru.mrbedrockpy.craftengine.server.world.raycast;
+package ru.mrbedrockpy.craftengine.core.world.raycast;
 
 import lombok.AllArgsConstructor;
 import org.joml.Vector3i;

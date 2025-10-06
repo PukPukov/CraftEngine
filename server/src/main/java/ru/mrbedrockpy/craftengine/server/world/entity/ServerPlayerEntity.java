@@ -5,9 +5,10 @@ import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 import org.joml.Vector3f;
+import ru.mrbedrockpy.craftengine.core.world.World;
+import ru.mrbedrockpy.craftengine.core.world.entity.PlayerEntity;
 import ru.mrbedrockpy.craftengine.server.network.packet.Packet;
 import ru.mrbedrockpy.craftengine.server.network.packet.PacketSender;
-import ru.mrbedrockpy.craftengine.server.world.World;
 
 public class ServerPlayerEntity extends PlayerEntity {
 

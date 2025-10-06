@@ -8,7 +8,6 @@ import ru.mrbedrockpy.craftengine.server.network.codec.PacketCodec;
 import ru.mrbedrockpy.craftengine.server.network.codec.PacketCodecs;
 import ru.mrbedrockpy.craftengine.server.network.packet.Packet;
 import ru.mrbedrockpy.craftengine.server.network.packet.PacketHandleContext;
-import ru.mrbedrockpy.craftengine.server.registry.Registries;
 import ru.mrbedrockpy.craftengine.server.world.entity.ServerPlayerEntity;
 
 public record BlockUpdatePacketS2C(Vector3i pos, Block block) implements Packet {

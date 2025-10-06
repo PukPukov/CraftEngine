@@ -3,9 +3,9 @@ package ru.mrbedrockpy.renderer.graphics;
 import com.google.gson.JsonObject;
 import org.joml.Vector2i;
 import org.joml.Vector3i;
+import ru.mrbedrockpy.craftengine.core.world.block.Block;
+import ru.mrbedrockpy.craftengine.core.world.chunk.Chunk;
 import ru.mrbedrockpy.renderer.RenderInit;
-import ru.mrbedrockpy.renderer.api.RenderBlock;
-import ru.mrbedrockpy.renderer.api.RenderChunk;
 import ru.mrbedrockpy.renderer.util.graphics.MeshUtil;
 import ru.mrbedrockpy.renderer.world.BlockReader;
 
@@ -22,14 +22,13 @@ public class MeshBuilder {
     private final BlockReader reader;
 
     private static final int SIZE = 16;
-    private static final int DIRS = RenderBlock.Direction.values().length - 1;
 
     public MeshBuilder(TextureAtlas atlas, BlockReader reader) {
         this.atlas = atlas;
         this.reader = reader;
     }
 
-    public Mesh.Data createChunk(RenderChunk chunk) {
+    public Mesh.Data createChunk(Chunk chunk) {
         vertices.clear();
         texCoords.clear();
         aoValues.clear();
@@ -39,12 +38,10 @@ public class MeshBuilder {
         for (int z = 0; z < SIZE; z++) {
             for (int y = 0; y < SIZE; y++) {
                 for (int x = 0; x < SIZE; x++) {
-                    short id = chunk.blocks()[x][y][z];
+                    short id = chunk.getBlocks()[x][y][z];
                     if (id == 0) continue;
 
-                    for (RenderBlock.Direction d : RenderBlock.Direction.values()) {
-                        if (d == RenderBlock.Direction.NONE) continue;
-
+                    for (Block.Direction d : Block.Direction.getValues()) {
                         Vector3i n = d.offset();
                         if (isSolidWorld(chunk,x + n.x, y + n.y, z + n.z)) continue;
 
@@ -73,10 +70,10 @@ public class MeshBuilder {
     }
 
     private void emitFace(int bx, int by, int bz,
-                          RenderBlock.Direction d,
+                          Block.Direction d,
                           float[][] corners,
                           float[] uv4,
-                          RenderChunk chunk) {
+                          Chunk chunk) {
 
         float[] aoCorner = computeFaceAO(chunk, bx, by, bz, d, corners);
 
@@ -97,7 +94,7 @@ public class MeshBuilder {
             for (int k = 0; k < 3; k++) {
                 int c = tri[t][k];
                 float[] p = corners[c];
-                float[] pos = new float[]{ p[0] + bx + chunk.getWorldPos().x, p[1] + by + chunk.getWorldPos().y, p[2] + bz };
+                float[] pos = new float[]{ p[0] + bx + chunk.getWorldPosition().x, p[1] + by + chunk.getWorldPosition().y, p[2] + bz };
                 v(pos, uvByCorner[c], aoCorner[c]);
             }
         }
@@ -109,8 +106,8 @@ public class MeshBuilder {
         return a;
     }
 
-    private float[] computeFaceAO(RenderChunk chunk, int x, int y, int z,
-                                  RenderBlock.Direction face, float[][] corners) {
+    private float[] computeFaceAO(Chunk chunk, int x, int y, int z,
+                                  Block.Direction face, float[][] corners) {
         int dir = face.ordinal();
         float[] out = new float[4];
 
@@ -129,14 +126,13 @@ public class MeshBuilder {
     }
 
     private float[][][] getCornersForModel(String modelName) {
-        int LEN = RenderBlock.Direction.values().length;
+        int LEN = Block.Direction.getValues().size();
         float[][][] out = new float[LEN][4][3];
 
         JsonObject model = RenderInit.RESOURCE_MANAGER.getModel("cube_all");
         if (model == null) return out;
 
-        for (RenderBlock.Direction d : RenderBlock.Direction.values()) {
-            if (d == RenderBlock.Direction.NONE) continue;
+        for (Block.Direction d : Block.Direction.getValues()) {
             JsonObject face = model.has(d.name()) && model.get(d.name()).isJsonObject()
                     ? model.getAsJsonObject(d.name())
                     : (model.has(d.name().toLowerCase()) && model.get(d.name().toLowerCase()).isJsonObject()
@@ -149,8 +145,8 @@ public class MeshBuilder {
         return out;
     }
 
-    private boolean isSolidWorld(RenderChunk chunk, int lx, int ly, int lz) {
-        Vector2i base = chunk.getWorldPos();
+    private boolean isSolidWorld(Chunk chunk, int lx, int ly, int lz) {
+        Vector2i base = chunk.getWorldPosition();
         int wx = base.x + lx;
         int wy = base.y + ly;
         int wz = lz;

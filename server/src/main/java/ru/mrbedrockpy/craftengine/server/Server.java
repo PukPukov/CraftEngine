@@ -4,6 +4,8 @@ package ru.mrbedrockpy.craftengine.server;
 import io.netty.channel.*;
 import lombok.RequiredArgsConstructor;
 import org.joml.Vector3f;
+import ru.mrbedrockpy.craftengine.core.world.World;
+import ru.mrbedrockpy.craftengine.core.world.generator.PerlinChunkGenerator;
 import ru.mrbedrockpy.craftengine.server.network.ConcurrentQueue;
 import ru.mrbedrockpy.craftengine.server.network.NetworkManager;
 import ru.mrbedrockpy.craftengine.server.network.packet.*;
@@ -11,9 +13,7 @@ import ru.mrbedrockpy.craftengine.server.network.packet.custom.BlockBreakC2S;
 import ru.mrbedrockpy.craftengine.server.network.packet.custom.BlockUpdatePacketS2C;
 import ru.mrbedrockpy.craftengine.server.network.packet.custom.ClientLoginPacketC2S;
 import ru.mrbedrockpy.craftengine.server.world.TickSystem;
-import ru.mrbedrockpy.craftengine.server.world.World;
 import ru.mrbedrockpy.craftengine.server.world.entity.ServerPlayerEntity;
-import ru.mrbedrockpy.craftengine.server.world.generator.PerlinChunkGenerator;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,7 +37,7 @@ public abstract class Server {
 
     public static final int MAX_PACKETS_PER_TICK = 500;
     private NetworkManager network;
-    public final World world = new World(100, new PerlinChunkGenerator(0l, 5, 5, 5));
+    public final World world = new World(100, PerlinChunkGenerator.DEFAULT);
 
     public void start() {
         onInit();

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.lwjgl.opengl.GL46C.*;
-public class Mesh {
+public class Mesh implements AutoCloseable {
     private int vaoId;
     private int vboId;
     private int uvboId;
@@ -81,15 +81,16 @@ public class Mesh {
         glBindVertexArray(0);
     }
 
-    public void cleanup() {
+    private boolean isArrayEmpty(float[] arr){
+        return arr == null || arr.length == 0;
+    }
+
+    @Override
+    public void close() throws Exception {
         glDeleteVertexArrays(vaoId);
         if (vboId  != 0) glDeleteBuffers(vboId);
         if (uvboId != 0) glDeleteBuffers(uvboId);
         if (aoboId != 0) glDeleteBuffers(aoboId);
-    }
-
-    private boolean isArrayEmpty(float[] arr){
-        return arr == null || arr.length == 0;
     }
 
     public record Data(float[] vertices, float[] uvs, float[] aos){}

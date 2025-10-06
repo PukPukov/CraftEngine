@@ -1,11 +1,11 @@
 package ru.mrbedrockpy.craftengine.server;
 
 import ru.mrbedrockpy.craftengine.core.world.block.Block;
+import ru.mrbedrockpy.craftengine.core.world.block.Blocks;
 import ru.mrbedrockpy.craftengine.server.network.packet.*;
 import ru.mrbedrockpy.craftengine.server.network.packet.custom.BlockBreakC2S;
 import ru.mrbedrockpy.craftengine.server.network.packet.custom.BlockUpdatePacketS2C;
 import ru.mrbedrockpy.craftengine.server.network.packet.custom.ClientLoginPacketC2S;
-import ru.mrbedrockpy.craftengine.server.world.block.Blocks;
 import ru.mrbedrockpy.craftengine.server.world.entity.ServerPlayerEntity;
 
 import javax.swing.plaf.IconUIResource;

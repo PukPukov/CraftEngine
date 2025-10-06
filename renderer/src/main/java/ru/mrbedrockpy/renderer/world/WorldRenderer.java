@@ -2,8 +2,8 @@ package ru.mrbedrockpy.renderer.world;
 
 import org.joml.Matrix4f;
 import org.joml.Vector2i;
+import ru.mrbedrockpy.craftengine.core.world.chunk.Chunk;
 import ru.mrbedrockpy.renderer.RenderInit;
-import ru.mrbedrockpy.renderer.api.RenderChunk;
 import ru.mrbedrockpy.renderer.graphics.*;
 import ru.mrbedrockpy.renderer.util.FileLoader;
 import ru.mrbedrockpy.renderer.util.graphics.ShaderUtil;
@@ -18,14 +18,14 @@ public class WorldRenderer {
     private final TextureAtlas atlas;
     private final Texture texture;
 
-    private final Map<RenderChunk, Mesh> posMeshes = new HashMap<>();
-    private final Map<Vector2i, RenderChunk> chunksByPos = new HashMap<>();
+    private final Map<Chunk, Mesh> posMeshes = new HashMap<>();
+    private final Map<Vector2i, Chunk> chunksByPos = new HashMap<>();
 
     private final BlockReader blockReader = new BlockReader() {
         @Override public boolean isSolid(int wx, int wy, int wz) {
             int cx = Math.floorDiv(wx, CHUNK_SIZE);
             int cy = Math.floorDiv(wy, CHUNK_SIZE);
-            RenderChunk ch = chunksByPos.get(new Vector2i(cx, cy));
+            Chunk ch = chunksByPos.get(new Vector2i(cx, cy));
             if (ch == null) return false;
 
             int lx = Math.floorMod(wx, CHUNK_SIZE);
@@ -33,7 +33,7 @@ public class WorldRenderer {
             int lz = wz;
             if (lz < 0 || lz >= CHUNK_SIZE) return true;
 
-            return ch.blocks()[lx][ly][lz] != 0;
+            return ch.getBlocks()[lx][ly][lz] != 0;
         }
     };
 
@@ -58,8 +58,8 @@ public class WorldRenderer {
         shader.setUniformMatrix4f("projection", proj);
         shader.setUniformMatrix4f("view", view);
         texture.use();
-        for (RenderChunk chunk : posMeshes.keySet()) {
-            if (distanceByAxis(playerPos, chunk.pos()) > RenderInit.CONFIG.getInt("render.distance")
+        for (Chunk chunk : posMeshes.keySet()) {
+            if (distanceByAxis(playerPos, chunk.getPosition()) > RenderInit.CONFIG.getInt("render.distance")
                     || !culler.isBoxVisible(chunk.getAABB())) continue;
             posMeshes.get(chunk).render();
         }
@@ -67,18 +67,17 @@ public class WorldRenderer {
         texture.unbind();
     }
 
-    public void createChunk(RenderChunk chunk){
+    public void createChunk(Chunk chunk){
         deleteChunk(chunk);
-        chunksByPos.put(chunk.pos(), chunk);
+        chunksByPos.put(chunk.getPosition(), chunk);
 
         Mesh.Data meshData = new MeshBuilder(atlas, blockReader).createChunk(chunk);
         posMeshes.put(chunk, new Mesh().data(meshData));
     }
 
-    public void deleteChunk(RenderChunk chunk){
-        Mesh mesh = posMeshes.remove(chunk);
-        if (mesh != null) mesh.cleanup();
-        chunksByPos.remove(chunk.pos());
+    public void deleteChunk(Chunk chunk){
+        posMeshes.remove(chunk);
+        chunksByPos.remove(chunk.getPosition());
     }
 
     private int distanceByAxis(Vector2i pos1, Vector2i pos2) {

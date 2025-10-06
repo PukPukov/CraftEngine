@@ -7,13 +7,13 @@ import org.joml.Vector3i;
 import ru.mrbedrockpy.craftengine.client.CraftEngineClient;
 import ru.mrbedrockpy.craftengine.client.keybind.KeyBindings;
 import ru.mrbedrockpy.craftengine.client.window.Camera;
+import ru.mrbedrockpy.craftengine.core.world.World;
+import ru.mrbedrockpy.craftengine.core.world.block.Blocks;
+import ru.mrbedrockpy.craftengine.core.world.entity.PlayerEntity;
+import ru.mrbedrockpy.craftengine.core.world.item.ItemStack;
 import ru.mrbedrockpy.craftengine.server.network.packet.custom.BlockBreakC2S;
 import ru.mrbedrockpy.craftengine.server.util.Util;
-import ru.mrbedrockpy.craftengine.server.world.World;
-import ru.mrbedrockpy.craftengine.server.world.block.Blocks;
-import ru.mrbedrockpy.craftengine.server.world.entity.PlayerEntity;
-import ru.mrbedrockpy.craftengine.server.world.item.ItemStack;
-import ru.mrbedrockpy.craftengine.server.world.raycast.BlockRaycastResult;
+import ru.mrbedrockpy.craftengine.core.world.raycast.BlockRaycastResult;
 import ru.mrbedrockpy.renderer.window.Input;
 
 public class ClientPlayerEntity extends PlayerEntity {
