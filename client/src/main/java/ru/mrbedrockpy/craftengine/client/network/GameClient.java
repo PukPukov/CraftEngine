@@ -1,26 +1,15 @@
 package ru.mrbedrockpy.craftengine.client.network;
 
-import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.Setter;
 import ru.mrbedrockpy.craftengine.client.CraftEngineClient;
-import ru.mrbedrockpy.craftengine.client.event.ClientConnectEvent;
+import ru.mrbedrockpy.craftengine.client.event.evt.ClientConnectEvent;
 import ru.mrbedrockpy.craftengine.client.network.aut.GameProfile;
-import ru.mrbedrockpy.craftengine.client.network.game.GameClientListener;
 import ru.mrbedrockpy.craftengine.server.Server;
 import ru.mrbedrockpy.craftengine.server.network.ConcurrentQueue;
 import ru.mrbedrockpy.craftengine.server.network.NetworkManager;
-import ru.mrbedrockpy.craftengine.server.network.codec.PacketCodec;
 import ru.mrbedrockpy.craftengine.server.network.packet.*;
 import ru.mrbedrockpy.craftengine.server.network.packet.custom.ClientLoginPacketC2S;
-import ru.mrbedrockpy.craftengine.server.network.packet.util.*;
-import ru.mrbedrockpy.craftengine.server.world.entity.ServerPlayerEntity;
-
-import java.util.Arrays;
 
 import static ru.mrbedrockpy.craftengine.server.Server.MAX_PACKETS_PER_TICK;
 

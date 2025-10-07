@@ -59,4 +59,12 @@ public class Layout {
             }
         }
     }
+
+    public void onMouseScroll(double scrollX, double scrollY) {
+        for(AbstractWidget w : widgets.values()){
+            if(w.isVisible()){
+                w.onMouseScroll(scrollX, scrollY);
+            }
+        }
+    }
 }

@@ -21,6 +21,9 @@ public class Input {
 
     private static long current = 0;
 
+    @Getter private static double scrollX = 0.0;
+    @Getter private static double scrollY = 0.0;
+
     @Getter private static double deltaX = 0f;
     @Getter private static double deltaY = 0f;
 
@@ -32,6 +35,15 @@ public class Input {
     public static Map<Integer, Runnable> onPress = new ConcurrentHashMap<>();
     public static Map<Integer, Runnable> onRelease = new ConcurrentHashMap<>();
     public static List<Consumer<KeyCallback>> onPressAny = new ArrayList<>();
+    public static List<Consumer<ScrollCallback>> onScrollAny = new ArrayList<>();
+
+    private static final Map<Layer, List<Consumer<ScrollCallback>>> onScrollByLayer = new ConcurrentHashMap<>();
+
+    public static void onScroll(Layer layer, Consumer<ScrollCallback> cb) {
+        onScrollByLayer.computeIfAbsent(layer, l -> new ArrayList<>()).add(cb);
+    }
+
+    public record ScrollCallback(double xoffset, double yoffset) {}
 
     public enum Layer {
         GAME      (   0, true,  true,  true),
@@ -68,6 +80,8 @@ public class Input {
         current++;
         deltaX = 0f;
         deltaY = 0f;
+        scrollX = 0f;
+        scrollY = 0f;
         glfwPollEvents();
     }
 
@@ -155,6 +169,25 @@ public class Input {
         }
     }
 
+    private static void scrollCallback(long window, double xoffset, double yoffset) {
+        Layer top = currentLayer();
+        boolean deliverToGlobal = (top == null || !top.captureMouse);
+
+        scrollX += xoffset;
+        scrollY += yoffset;
+
+        ScrollCallback evt = new ScrollCallback(xoffset, yoffset);
+
+        if (!deliverToGlobal) {
+            for (Consumer<ScrollCallback> cb : onScrollByLayer.getOrDefault(top, List.of())) {
+                cb.accept(evt);
+            }
+        }
+        for (Consumer<ScrollCallback> cb : onScrollAny) {
+            cb.accept(evt);
+        }
+    }
+
     private static void cursorPosCallback(long window, double xpos, double ypos) {
         if (cursorStarted) {
             deltaX += xpos - x;
@@ -177,6 +210,7 @@ public class Input {
         glfwSetMouseButtonCallback(window, Input::mouseButtonCallback);
         glfwSetCursorPosCallback(window, Input::cursorPosCallback);
         glfwSetWindowSizeCallback(window, Input::windowSizeCallback);
+        glfwSetScrollCallback(window, Input::scrollCallback);
 
         pushLayer(Layer.GAME);
     }

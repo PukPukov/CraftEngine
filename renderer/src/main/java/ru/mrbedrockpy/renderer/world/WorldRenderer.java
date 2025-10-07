@@ -17,6 +17,7 @@ public class WorldRenderer {
     private final Shader shader;
     private final TextureAtlas atlas;
     private final Texture texture;
+    private final SkyboxRenderer skyboxRenderer;
 
     private final Map<Chunk, Mesh> posMeshes = new HashMap<>();
     private final Map<Vector2i, Chunk> chunksByPos = new HashMap<>();
@@ -42,6 +43,14 @@ public class WorldRenderer {
         this.atlas = new TextureAtlas(CHUNK_SIZE);
         try { loadTextures(); } catch (IOException e) { e.printStackTrace(); }
         texture = atlas.buildAtlas();
+        skyboxRenderer = new SkyboxRenderer(new String[]{
+                "skybox_faces/right.png",   // GL_TEXTURE_CUBE_MAP_POSITIVE_X
+                "skybox_faces/left.png",    // GL_TEXTURE_CUBE_MAP_NEGATIVE_X
+                "skybox_faces/front.png",   // GL_TEXTURE_CUBE_MAP_POSITIVE_Z
+                "skybox_faces/back.png",     // GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
+                "skybox_faces/top.png",     // GL_TEXTURE_CUBE_MAP_POSITIVE_Y
+                "skybox_faces/bottom.png",  // GL_TEXTURE_CUBE_MAP_NEGATIVE_Y
+        });
     }
 
     private void loadTextures() throws IOException {
@@ -52,6 +61,7 @@ public class WorldRenderer {
     private final FrustumCuller culler = new FrustumCuller();
 
     public void render(Vector2i playerPos, Matrix4f proj, Matrix4f view) {
+        skyboxRenderer.render(proj, view);
         Matrix4f projView = new Matrix4f(proj).mul(view);
         culler.update(projView);
         shader.use();
