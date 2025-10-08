@@ -43,14 +43,7 @@ public class WorldRenderer {
         this.atlas = new TextureAtlas(CHUNK_SIZE);
         try { loadTextures(); } catch (IOException e) { e.printStackTrace(); }
         texture = atlas.buildAtlas();
-        skyboxRenderer = new SkyboxRenderer(new String[]{
-                "skybox_faces/right.png",   // GL_TEXTURE_CUBE_MAP_POSITIVE_X
-                "skybox_faces/left.png",    // GL_TEXTURE_CUBE_MAP_NEGATIVE_X
-                "skybox_faces/front.png",   // GL_TEXTURE_CUBE_MAP_POSITIVE_Z
-                "skybox_faces/back.png",     // GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
-                "skybox_faces/top.png",     // GL_TEXTURE_CUBE_MAP_POSITIVE_Y
-                "skybox_faces/bottom.png",  // GL_TEXTURE_CUBE_MAP_NEGATIVE_Y
-        });
+        skyboxRenderer = new SkyboxRenderer("skybox.png");
     }
 
     private void loadTextures() throws IOException {

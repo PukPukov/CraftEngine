@@ -23,63 +23,6 @@ public class TextureUtil{
         return new Texture(buf, image.getWidth(), image.getHeight());
     }
 
-    public static int loadCubemap(String[] faces) {
-        int texId = glGenTextures();
-        glBindTexture(GL_TEXTURE_CUBE_MAP, texId);
-
-        for (int i = 0; i < faces.length; i++) {
-            BufferedImage img;
-            try {
-                img = ImageUtil.load(faces[i]); // твой загрузчик
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to load cubemap face: " + faces[i], e);
-            }
-
-            // гарантируем совместимый формат для операций
-//            img = toARGB(img);
-
-            img = switch (i) {
-                case 0 -> // +X → right
-                        rotateCCW(img); // +90°
-                case 2 -> // +Y → top
-                        rotateCW(rotateCW(img)); // норм
-                case 3 -> // -Y → bottom
-                        img; // норм
-                case 4 -> // +Z → front
-                        rotateCW(img); // +90°
-                case 5 -> // -Z → back
-                        rotateCW(img); // +90°
-                default -> // left (-X)
-                        rotateCW(img); // норм
-            };
-
-
-            ByteBuffer buffer = ImageUtil.toByteBuffer(img); // твоя функция
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA8,
-                    img.getWidth(), img.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-        }
-
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-        return texId;
-    }
-
-    // ---------- вспомогалки (можно положить в ImageUtil, если хочешь) ----------
-    private static BufferedImage toARGB(BufferedImage src) {
-        if (src.getType() == BufferedImage.TYPE_INT_ARGB) return src;
-        BufferedImage dst = new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = dst.createGraphics();
-        g.setComposite(AlphaComposite.Src);
-        g.drawImage(src, 0, 0, null);
-        g.dispose();
-        return dst;
-    }
-
     private static BufferedImage rotateCW(BufferedImage src) { // +90°
         int w = src.getWidth(), h = src.getHeight();
         BufferedImage dst = new BufferedImage(h, w, BufferedImage.TYPE_INT_ARGB);
@@ -100,6 +43,91 @@ public class TextureUtil{
         g.drawImage(src, 0, 0, null);
         g.dispose();
         return dst;
+    }
+
+    private static BufferedImage rotate180(BufferedImage src) {
+        int w = src.getWidth(), h = src.getHeight();
+        BufferedImage dst = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = dst.createGraphics();
+        g.translate(w, h);
+        g.rotate(Math.toRadians(180));
+        g.drawImage(src, 0, 0, null);
+        g.dispose();
+        return dst;
+    }
+
+    public static int loadCubemapFromAtlas3x2(String atlasPath) {
+        BufferedImage atlas;
+        try {
+            atlas = ImageUtil.load(atlasPath);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load atlas: " + atlasPath, e);
+        }
+
+        int W = atlas.getWidth();
+        int H = atlas.getHeight();
+
+        int tile = Math.min(W / 3, H / 2);
+
+        // 3x2, row-major: (0,0)=tile0, (1,0)=tile1, (2,0)=tile2, (0,1)=tile3, ...
+        BufferedImage[] tiles = new BufferedImage[6];
+        int idx = 0;
+        for (int row = 0; row < 2; row++) {
+            for (int col = 0; col < 3; col++) {
+                int x = col * tile;
+                int y = row * tile;
+                tiles[idx++] = atlas.getSubimage(x, y, tile, tile);
+            }
+        }
+
+        // Сопоставляем тайлы с OpenGL-гранями: +X, -X, +Y, -Y, +Z, -Z
+        // Ниже предполагается наиболее распространённая раскладка атласа:
+        // [0]=right, [1]=left, [2]=top, [3]=bottom, [4]=front, [5]=back
+        BufferedImage[] faces = new BufferedImage[6];
+        faces[0] = tiles[5]; // +X right
+        faces[1] = tiles[3]; // -X left
+        faces[2] = tiles[4]; // +Y front
+        faces[3] = tiles[2]; // -Y back
+        faces[4] = tiles[1]; // +Z top
+        faces[5] = tiles[0]; // -Z bottom
+
+
+        // Поправки ориентации под Z-up (результат наших прошлых правок):
+        for (int i = 0; i < 6; i++) {
+            BufferedImage img = faces[i];
+            switch (i) {
+                case 0: // +X right — был перевёрнут → 180°
+                    img = flipHorizontal(rotateCW(img));
+                    break;
+                case 1: // -X left — ок
+                    img = flipHorizontal(rotate180(rotateCW(img)));
+                    break;
+                case 2: // +Y top — ок
+                    img = flipHorizontal(rotate180(img));
+                    break;
+                case 3: // -Y bottom — ок
+                    img = flipHorizontal(img);
+                    break;
+                case 4: // +Z front — нужно +90°
+                    img = flipHorizontal(rotate180(img));
+                    break;
+                case 5: // -Z back — нужно +90°
+                    img = flipHorizontal(img);
+                    break;
+            }
+            faces[i] = img;
+        }
+
+        // Загрузка в cubemap
+        int texId = glGenTextures();
+        glBindTexture(GL_TEXTURE_CUBE_MAP, texId);
+        for (int i = 0; i < 6; i++) {
+            ByteBuffer buffer = ImageUtil.toByteBuffer(faces[i]); // твой существующий метод
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA8,
+                    faces[i].getWidth(), faces[i].getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+        }
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+        return texId;
     }
 
     private static BufferedImage flipHorizontal(BufferedImage src) {

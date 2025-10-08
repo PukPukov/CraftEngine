@@ -16,7 +16,6 @@ import java.nio.FloatBuffer;
 import static org.lwjgl.opengl.ARBVertexArrayObject.glGenVertexArrays;
 import static org.lwjgl.opengl.GL46C.*;
 
-
 public class SkyboxRenderer {
 
     private final int vao;
@@ -24,25 +23,42 @@ public class SkyboxRenderer {
     private final Shader shader;
     private final int cubemapId;
 
-    // Куб из 36 вершин
     private static final float[] SKYBOX_VERTS = {
-            -1,  1, -1,  -1, -1, -1,   1, -1, -1,
-             1, -1, -1,   1,  1, -1,  -1,  1, -1,
-            -1, -1,  1,  -1, -1, -1,  -1,  1, -1,
-            -1,  1, -1,  -1,  1,  1,  -1, -1,  1,
+            // back (-Y)
+            -1, -1, -1,  -1, -1,  1,   1, -1,  1,
+             1, -1,  1,   1, -1, -1,  -1, -1, -1,
+            // left (-X)
+            -1, -1,  1,  -1,  1,  1,  -1,  1, -1,
+            -1,  1, -1,  -1, -1, -1,  -1, -1,  1,
+            // right (+X)
              1, -1, -1,   1, -1,  1,   1,  1,  1,
              1,  1,  1,   1,  1, -1,   1, -1, -1,
+            // front (+Y)
+            -1,  1, -1,  -1,  1,  1,   1,  1,  1,
+             1,  1,  1,   1,  1, -1,  -1,  1, -1,
+            // top (+Z)
             -1, -1,  1,  -1,  1,  1,   1,  1,  1,
              1,  1,  1,   1, -1,  1,  -1, -1,  1,
-            -1,  1, -1,   1,  1, -1,   1,  1,  1,
-             1,  1,  1,  -1,  1,  1,  -1,  1, -1,
-            -1, -1, -1,  -1, -1,  1,   1, -1,  1,
-             1, -1,  1,   1, -1, -1,  -1, -1, -1
+            // bottom (-Z)
+            -1, -1, -1,   1, -1, -1,   1,  1, -1,
+             1,  1, -1,  -1,  1, -1,  -1, -1, -1
     };
 
-    public SkyboxRenderer(String[] faces) {
+
+    public SkyboxRenderer(String atlas3x2Path) {
         shader = ShaderUtil.load("skybox_vert.glsl", "skybox_frag.glsl");
-        cubemapId = TextureUtil.loadCubemap(faces);
+        cubemapId = TextureUtil.loadCubemapFromAtlas3x2(atlas3x2Path);
+
+        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapId);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
         vao = glGenVertexArrays();
         vbo = glGenBuffers();
@@ -58,9 +74,6 @@ public class SkyboxRenderer {
         glBindVertexArray(0);
     }
 
-    /**
-     * Рендер skybox
-     */
     public void render(Matrix4f projection, Matrix4f view) {
         glDepthFunc(GL_LEQUAL);
         glDepthMask(false);
@@ -89,5 +102,4 @@ public class SkyboxRenderer {
         glDepthMask(true);
         glDepthFunc(GL_LESS);
     }
-
 }
