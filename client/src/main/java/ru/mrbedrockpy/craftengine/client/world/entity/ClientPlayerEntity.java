@@ -71,7 +71,8 @@ public class ClientPlayerEntity extends PlayerEntity {
 
     private void handleMouseActions(World world) {
         if (KeyBindings.ATTACK.wasPressed()) {
-            BlockRaycastResult hit = world.raycast(camera.getPosition(), camera.getFront(), 4.5f);
+            BlockRaycastResult hit = world.raycast(new Vector3f(camera.getPosition()), camera.getFront(), 4.5f);
+            System.out.println(currentEyeOffset);
             if (hit != null){
                 world.setBlock(hit.x, hit.y, hit.z, Blocks.AIR);
                 CraftEngineClient.INSTANCE.gameClient.send(new BlockBreakC2S(new Vector3i(hit.x, hit.y, hit.z)));
