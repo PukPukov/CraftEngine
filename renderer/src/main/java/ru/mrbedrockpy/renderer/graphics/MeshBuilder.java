@@ -39,14 +39,18 @@ public class MeshBuilder {
         aoValues.clear();
 
         // Готовим углы юнит-грани (или возьми из getCornersForModel(modelName))
+        final float[][][] baseFaceCorners = getCornersForModel("cube_all");
 
+        // 1) Грузим модель для блока (пример: все блоки кубические)
         final String modelName = "cube_all";
         final Model model = RenderInit.RESOURCE_MANAGER.getModelLoader().loadOrNull(modelName);
 
-        final float atlasW = 32;     // или 1, если уже [0..1];
-        final float atlasH = 32;    // или 1;
+        // 2) Нормализация UV: размеры атласа и flipV под твой рендер
+        final float atlasW = 32 * 16;     // или 1, если уже [0..1];
+        final float atlasH = 32 * 16;    // или 1;
         final boolean flipV = false;
 
+        // 3) Кэшируем uv4 по направлению, чтобы не дергать модель в каждом блоке
         final float[][] modelUv4 = new float[6][];
         if (model != null) {
             for (Block.Direction d : Block.Direction.getValues()) {
@@ -63,14 +67,13 @@ public class MeshBuilder {
                     for (Block.Direction d : Block.Direction.getValues()) {
                         Vector3i n = d.offset();
                         if (isSolidWorld(chunk, x + n.x, y + n.y, z + n.z)) continue;
-                        String tile = RenderInit.BLOCKS.getName(RenderInit.BLOCKS.get(id));
 
-                        final float[][][] baseFaceCorners = getCornersForModel(tile);
                         float[][] corners = baseFaceCorners[d.ordinal()];
-                        float[] tileUv = atlas.normalizedUv(tile);
-                        float[] tileRect = tileRectFromUv4(tileUv);
-                        float[] uv4 = composeUv4(tileRect, modelUv4[d.ordinal()]);
 
+                        // 4) UV из модели на грань; если нет — фоллбек к атласу по имени тайла
+                        float[] uv4 = (modelUv4[d.ordinal()] != null)
+                                ? modelUv4[d.ordinal()]
+                                : atlas.normalizedUv(RenderInit.BLOCKS.getName(RenderInit.BLOCKS.get(id)));
 
                         emitFace(x, y, z, d, corners, uv4, chunk);
                     }
@@ -84,6 +87,7 @@ public class MeshBuilder {
                 toFloatArray(aoValues)
         );
     }
+
 
 
     private void v(float[] pos, float[] uv, float ao) {
