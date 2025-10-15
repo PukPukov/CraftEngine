@@ -1,13 +1,11 @@
 package ru.mrbedrockpy.craftengine.client.gui.screen;
 
-import ru.mrbedrockpy.craftengine.client.event.evt.MouseScrollEvent;
+import ru.mrbedrockpy.craftengine.client.event.client.input.MouseScrollEvent;
 import ru.mrbedrockpy.craftengine.client.gui.screen.layout.Layout;
 import ru.mrbedrockpy.craftengine.client.gui.screen.layout.VerticalCenterStackLayout;
 import ru.mrbedrockpy.craftengine.client.gui.screen.widget.BindingWidget;
 import ru.mrbedrockpy.craftengine.client.keybind.KeyBind;
 import ru.mrbedrockpy.craftengine.client.keybind.KeyBindingsHelper;
-import ru.mrbedrockpy.renderer.gui.DrawContext;
-import ru.mrbedrockpy.renderer.window.Input;
 import ru.mrbedrockpy.renderer.window.Window;
 
 public class OptionsScreen extends Screen {

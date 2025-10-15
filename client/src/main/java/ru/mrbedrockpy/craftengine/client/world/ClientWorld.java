@@ -70,13 +70,15 @@ public class ClientWorld extends World {
 
     private void createRenderChunk(Vector2i pos) {
         if (pos.x >= 0 && pos.y >= 0) {
-            worldRenderer.createChunk(new Chunk(pos, getChunk(pos).getBlocks()));
+            Chunk chunk = getChunk(pos);
+            if (chunk != null) worldRenderer.createChunk(chunk);
         }
     }
 
     private void removeRenderChunk(Vector2i pos) {
         if (pos.x >= 0 && pos.y >= 0) {
-            worldRenderer.deleteChunk(new Chunk(pos, getChunk(pos).getBlocks()));
+            Chunk chunk = getChunk(pos);
+            if (chunk != null) worldRenderer.deleteChunk(chunk);
         }
     }
 }

@@ -36,6 +36,7 @@ public class HudRenderer {
             hotbarSlots[i] = w;
         }
     }
+
     public void slotClick(SlotWidget slot) {}
 
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {

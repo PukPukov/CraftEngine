@@ -35,6 +35,10 @@ shadowJar {
     archiveVersion.set('1.0')
 }
 
+tasks {
+
+}
+
 jar {
     manifest {
         attributes(

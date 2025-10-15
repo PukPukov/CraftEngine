@@ -8,7 +8,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.Getter;
-import ru.mrbedrockpy.craftengine.server.Logger;
+import ru.mrbedrockpy.craftengine.core.util.Logger;
 import ru.mrbedrockpy.craftengine.server.Server;
 import ru.mrbedrockpy.craftengine.server.network.packet.Packet;
 import ru.mrbedrockpy.craftengine.server.network.packet.PacketDirection;

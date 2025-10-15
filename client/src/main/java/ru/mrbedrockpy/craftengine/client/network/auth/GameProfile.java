@@ -1,4 +1,4 @@
-package ru.mrbedrockpy.craftengine.client.network.aut;
+package ru.mrbedrockpy.craftengine.client.network.auth;
 
 public record GameProfile(String name) {
     public static GameProfile debug() {

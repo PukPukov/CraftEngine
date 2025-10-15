@@ -11,7 +11,7 @@ import ru.mrbedrockpy.craftengine.core.world.World;
 import ru.mrbedrockpy.craftengine.core.world.block.Blocks;
 import ru.mrbedrockpy.craftengine.core.world.entity.PlayerEntity;
 import ru.mrbedrockpy.craftengine.core.world.item.ItemStack;
-import ru.mrbedrockpy.craftengine.server.network.packet.custom.BlockBreakC2S;
+import ru.mrbedrockpy.craftengine.server.network.packet.custom.BlockBreakPacketC2S;
 import ru.mrbedrockpy.craftengine.server.util.Util;
 import ru.mrbedrockpy.craftengine.core.world.raycast.BlockRaycastResult;
 import ru.mrbedrockpy.renderer.window.Input;
@@ -74,7 +74,7 @@ public class ClientPlayerEntity extends PlayerEntity {
             BlockRaycastResult hit = world.raycast(new Vector3f(camera.getPosition()), camera.getFront(), 4.5f);
             if (hit != null){
                 world.setBlock(hit.x, hit.y, hit.z, Blocks.AIR);
-                CraftEngineClient.INSTANCE.gameClient.send(new BlockBreakC2S(new Vector3i(hit.x, hit.y, hit.z)));
+                CraftEngineClient.INSTANCE.gameClient.send(new BlockBreakPacketC2S(new Vector3i(hit.x, hit.y, hit.z)));
             }
         } else if (KeyBindings.BUILD.wasPressed()) {
             ItemStack selected = inventory.getSelectedStack();
