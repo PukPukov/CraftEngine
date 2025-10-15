@@ -1,12 +1,13 @@
 package ru.mrbedrockpy.renderer.resource;
 
-import com.google.gson.JsonObject;
+import lombok.Getter;
 import ru.mrbedrockpy.renderer.api.IResourceManager;
 import ru.mrbedrockpy.renderer.api.ResourceHandle;
 import ru.mrbedrockpy.renderer.api.ResourceSource;
 
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -16,7 +17,8 @@ import java.util.*;
 
 public class CompositeResourceManager implements IResourceManager {
     private final List<ResourceSource> sourceList = new ArrayList<>();
-    private final ModelManager modelLoader = new ModelManager(this);
+    @Getter
+    private final ModelLoader modelLoader = new ModelLoader(this);
 
     @Override
     public synchronized InputStream open(String path) {
@@ -90,7 +92,7 @@ public class CompositeResourceManager implements IResourceManager {
         List<String> errors = new ArrayList<>();
 
         try {
-            modelLoader.load();
+           modelLoader.loadAllUnder("assets/models/");
         } catch (Exception e) {
             errors.add("ModelLoader.load() failed: " + e.getMessage());
         }
@@ -136,10 +138,6 @@ public class CompositeResourceManager implements IResourceManager {
     @Override
     public synchronized void close() {
         clear();
-    }
-
-    public JsonObject getModel(String path){
-        return modelLoader.getModel(path);
     }
 
     private static String normalize(String path) {

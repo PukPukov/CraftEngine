@@ -34,7 +34,7 @@ public class DrawContext {
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
 
-        uiShader   = ShaderUtil.load("ui_vertex.glsl", "ui_fragment.glsl");
+        uiShader = ShaderUtil.load("ui_vertex.glsl", "ui_fragment.glsl");
 
         matrices.set(new Matrix4f().ortho(0.0f, screenWidth, screenHeight, 0.0f, -1.0f, 1.0f));
 
@@ -57,7 +57,7 @@ public class DrawContext {
         }
     }
 
-    public void enableGL(){
+    public void enableGL() {
         glDisable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -67,7 +67,7 @@ public class DrawContext {
         uiShader.setUniformMatrix4f("projection", matrices.matrix());
     }
 
-    public void disableGL(){
+    public void disableGL() {
         glDisable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
         uiShader.unbind();
@@ -78,22 +78,46 @@ public class DrawContext {
         drawTexture(x - width / 2, y - height / 2, width, height, texture);
     }
 
-
     public void drawTexture(int x, int y, int w, int h, String texturePath) {
-        if(!atlas.contains(texturePath)) {
+        this.drawTexture(x, y, w, h, 0, 0, w, h, texturePath);
+    }
+
+    public void drawTexture(int x, int y, int w, int h, int u, int v,String texturePath) {
+       this.drawTexture(x, y, w, h, u, v, w, h, texturePath);
+    }
+
+    public void drawTexture(int x, int y, int w, int h,
+                            int u, int v, int tw, int th,
+                            String texturePath) {
+        if (!atlas.contains(texturePath)) {
             BufferedImage img = FileLoader.loadImage(texturePath);
             atlas.addTexture(texturePath, img);
         }
 
         float[] uv = atlas.getNormalizedUvs(texturePath);
-        float[] verts = {
-                x,   y,   uv[0], uv[1],
-                x+w, y,   uv[2], uv[3],
-                x+w, y+h, uv[4], uv[5],
+        // порядок: 0:(x0,y0), 1:(x1,y0), 2:(x1,y1), 3:(x0,y1)
+        float uL = uv[0], vT = uv[1];
+        float uR = uv[4], vB = uv[5];
+        float du = uR - uL;
+        float dv = vB - vT;
 
-                x,   y,   uv[0], uv[1],
-                x+w, y+h, uv[4], uv[5],
-                x,   y+h, uv[6], uv[7],
+        // нормализуем координаты относительно размеров текстуры
+        float su0 = uL + (u / (float) tw) * du;
+        float sv0 = vT + (v / (float) th) * dv;
+        float su1 = uL + ((u + w) / (float) tw) * du;
+        float sv1 = vT + ((v + h) / (float) th) * dv;
+
+        // если ось V перевёрнута
+        // float tmp = sv0; sv0 = sv1; sv1 = tmp;
+
+        float[] verts = {
+                x, y, su0, sv0,
+                x + w, y, su1, sv0,
+                x + w, y + h, su1, sv1,
+
+                x, y, su0, sv0,
+                x + w, y + h, su1, sv1,
+                x, y + h, su0, sv1,
         };
 
         glBindBuffer(GL_ARRAY_BUFFER, vboId);
@@ -158,10 +182,10 @@ public class DrawContext {
             float w = (g.x1() - g.x0()) * scale;
             float h = (g.y1() - g.y0()) * scale;
 
-            float lu0 = g.x0() / (float)FontRenderer.BITMAP_W;
-            float lv0 = g.y0() / (float)FontRenderer.BITMAP_H;
-            float lu1 = g.x1() / (float)FontRenderer.BITMAP_W;
-            float lv1 = g.y1() / (float)FontRenderer.BITMAP_H;
+            float lu0 = g.x0() / (float) FontRenderer.BITMAP_W;
+            float lv0 = g.y0() / (float) FontRenderer.BITMAP_H;
+            float lu1 = g.x1() / (float) FontRenderer.BITMAP_W;
+            float lv1 = g.y1() / (float) FontRenderer.BITMAP_H;
 
             float u0 = fontRenderer.u(lu0);
             float v0 = fontRenderer.v(lv0);
@@ -211,16 +235,5 @@ public class DrawContext {
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
         glBindVertexArray(0);
-    }
-
-    private static int scale(int v){
-        return (int) (v * Window.scaledWidth() / (float) Window.getWidth());
-    }
-
-    public void cleanup() {
-        glDeleteVertexArrays(vaoId);
-        glDeleteBuffers(vboId);
-        uiShader.dispose();
-        fontRenderer.getCharData().free();
     }
 }

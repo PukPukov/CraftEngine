@@ -40,7 +40,7 @@ public class HudRenderer {
 
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         context.drawTextureCentred(width / 2, height / 2, 10, 10, "cursor.png");
-        context.drawTexture(width / 2 - 182 / 2 - 1, height - 22, 184, 22, "hotbar.png");
+        context.drawTexture(width / 2 - 182 / 2 - 1, height - 36, 184, 32, 0, 144, 256, 256,  "inventory.png");
         context.drawText(String.valueOf(CraftEngineClient.INSTANCE.getFpsCounter().getFps()), 5, 5, 0.5f);
         context.drawText(positionToString(CraftEngineClient.INSTANCE.getPlayer().getPosition()), 5, 10, 0.5f);
         context.drawText(CraftEngineClient.INSTANCE.getPlayer().getCamera().getAngle().toString(), 5, 15, 0.5f);

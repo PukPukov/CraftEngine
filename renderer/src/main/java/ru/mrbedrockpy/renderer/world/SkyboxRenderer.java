@@ -18,39 +18,15 @@ import static org.lwjgl.opengl.GL46C.*;
 
 public class SkyboxRenderer {
 
-    private final int vao;
-    private final int vbo;
     private final Shader shader;
     private final int cubemapId;
-
-    private static final float[] SKYBOX_VERTS = {
-            // back (-Y)
-            -1, -1, -1,  -1, -1,  1,   1, -1,  1,
-             1, -1,  1,   1, -1, -1,  -1, -1, -1,
-            // left (-X)
-            -1, -1,  1,  -1,  1,  1,  -1,  1, -1,
-            -1,  1, -1,  -1, -1, -1,  -1, -1,  1,
-            // right (+X)
-             1, -1, -1,   1, -1,  1,   1,  1,  1,
-             1,  1,  1,   1,  1, -1,   1, -1, -1,
-            // front (+Y)
-            -1,  1, -1,  -1,  1,  1,   1,  1,  1,
-             1,  1,  1,   1,  1, -1,  -1,  1, -1,
-            // top (+Z)
-            -1, -1,  1,  -1,  1,  1,   1,  1,  1,
-             1,  1,  1,   1, -1,  1,  -1, -1,  1,
-            // bottom (-Z)
-            -1, -1, -1,   1, -1, -1,   1,  1, -1,
-             1,  1, -1,  -1,  1, -1,  -1, -1, -1
-    };
-
+    private final int vao;
 
     public SkyboxRenderer(String atlas3x2Path) {
         shader = ShaderUtil.load("skybox_vert.glsl", "skybox_frag.glsl");
         cubemapId = TextureUtil.loadCubemapFromAtlas3x2(atlas3x2Path);
 
         glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-
         glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapId);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -61,16 +37,7 @@ public class SkyboxRenderer {
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
         vao = glGenVertexArrays();
-        vbo = glGenBuffers();
         glBindVertexArray(vao);
-
-        FloatBuffer buf = BufferUtils.createFloatBuffer(SKYBOX_VERTS.length);
-        buf.put(SKYBOX_VERTS).flip();
-
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, buf, GL_STATIC_DRAW);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, 3 * Float.BYTES, 0);
         glBindVertexArray(0);
     }
 
@@ -84,15 +51,19 @@ public class SkyboxRenderer {
         shader.use();
 
         Matrix4f viewNoPos = new Matrix4f(view).m30(0).m31(0).m32(0);
-        shader.setUniformMatrix4f("projection", projection);
-        shader.setUniformMatrix4f("view", viewNoPos);
+
+        Matrix4f invProj = new Matrix4f(projection).invert();
+        Matrix4f invView = new Matrix4f(viewNoPos).invert();
+
+        shader.setUniformMatrix4f("uInvProj", invProj);
+        shader.setUniformMatrix4f("uInvView", invView);
         shader.setUniform1i("skybox", 0);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapId);
 
         glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
         glBindVertexArray(0);
 
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);

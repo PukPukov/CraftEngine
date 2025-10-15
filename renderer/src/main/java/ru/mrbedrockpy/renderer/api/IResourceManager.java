@@ -1,14 +1,12 @@
 package ru.mrbedrockpy.renderer.api;
 
-import com.google.gson.JsonObject;
+import ru.mrbedrockpy.renderer.resource.ModelLoader;
 
 import java.awt.image.BufferedImage;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Predicate;
 
 public interface IResourceManager extends Closeable {
@@ -32,5 +30,5 @@ public interface IResourceManager extends Closeable {
 
     default void reload() throws IOException {}
 
-    JsonObject getModel(String path);
+    ModelLoader getModelLoader();
 }

@@ -3,7 +3,6 @@ package ru.mrbedrockpy.craftengine.client;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import ru.mrbedrockpy.craftengine.client.event.evt.KeyPressEvent;
@@ -11,11 +10,10 @@ import ru.mrbedrockpy.craftengine.client.event.evt.MouseScrollEvent;
 import ru.mrbedrockpy.craftengine.client.keybind.KeyBindings;
 import ru.mrbedrockpy.craftengine.client.network.ClientPacketHandler;
 import ru.mrbedrockpy.craftengine.client.network.aut.GameProfile;
-import ru.mrbedrockpy.craftengine.client.serial.CompoundTag;
 import ru.mrbedrockpy.craftengine.client.serial.WorldIO;
 import ru.mrbedrockpy.craftengine.client.world.entity.ClientPlayerEntity;
-import ru.mrbedrockpy.craftengine.core.config.ConfigVars;
-import ru.mrbedrockpy.craftengine.core.config.CraftEngineConfiguration;
+import ru.mrbedrockpy.craftengine.core.cfg.ConfigVars;
+import ru.mrbedrockpy.craftengine.core.cfg.CraftEngineConfiguration;
 import ru.mrbedrockpy.craftengine.client.event.EventManager;
 import ru.mrbedrockpy.craftengine.client.event.evt.MouseClickEvent;
 import ru.mrbedrockpy.craftengine.client.gui.screen.InventoryScreen;
@@ -24,8 +22,6 @@ import ru.mrbedrockpy.craftengine.core.world.block.Blocks;
 import ru.mrbedrockpy.craftengine.server.network.packet.PacketRegistry;
 import ru.mrbedrockpy.craftengine.server.network.packet.Packets;
 import ru.mrbedrockpy.craftengine.server.network.packet.custom.BlockUpdatePacketS2C;
-import ru.mrbedrockpy.craftengine.core.world.chunk.Chunk;
-import ru.mrbedrockpy.craftengine.core.world.generator.SimpleChunkGenerator;
 import ru.mrbedrockpy.craftengine.core.world.item.ItemStack;
 import ru.mrbedrockpy.renderer.resource.CompositeResourceManager;
 import ru.mrbedrockpy.craftengine.core.world.item.Items;
@@ -228,10 +224,10 @@ public class CraftEngineClient {
     public void play() {
         player = new ClientPlayerEntity(new Vector3f(0, 0, 0), null);
         try {
-            clientWorld = new ClientWorld(WorldIO.deserialize(CompoundTag.fromBytes(Files.readAllBytes(Paths.get("world.msgpack")))), player);
-            Chunk chunk = new Chunk(new Vector2i());
-            new SimpleChunkGenerator().generate(chunk);
-//            clientWorld = new ClientWorld(100, player);
+//            clientWorld = new ClientWorld(WorldIO.deserialize(CompoundTag.fromBytes(Files.readAllBytes(Paths.get("world.msgpack")))), player);
+//            Chunk chunk = new Chunk(new Vector2i());
+//            new SimpleChunkGenerator().generate(chunk);
+            clientWorld = new ClientWorld(10, player);
         } catch (Exception e) {
             e.printStackTrace();
         }

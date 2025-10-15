@@ -5,7 +5,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import ru.mrbedrockpy.craftengine.server.util.Util;
-import ru.mrbedrockpy.craftengine.core.config.ConfigVars;
+import ru.mrbedrockpy.craftengine.core.cfg.ConfigVars;
 
 public class Camera {
     

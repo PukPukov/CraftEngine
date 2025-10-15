@@ -6,7 +6,7 @@ import org.joml.Vector2i;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
-import ru.mrbedrockpy.craftengine.core.config.ConfigVars;
+import ru.mrbedrockpy.craftengine.core.cfg.ConfigVars;
 import ru.mrbedrockpy.craftengine.core.phys.AABB;
 import ru.mrbedrockpy.craftengine.core.world.block.Block;
 import ru.mrbedrockpy.craftengine.core.world.block.Blocks;

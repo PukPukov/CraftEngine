@@ -1,14 +1,8 @@
 #version 330 core
-layout(location = 0) in vec3 aPos;
-
-out vec3 TexCoords;
-
-uniform mat4 projection;
-uniform mat4 view;
-
+const vec2 V[3] = vec2[3]( vec2(-1,-1), vec2(3,-1), vec2(-1,3) );
+out vec2 v_ndc; // [-1..1]
 void main() {
-    TexCoords = aPos;
-    // убираем перенос (камера всегда в центре)
-    vec4 pos = projection * mat4(mat3(view)) * vec4(aPos, 1.0);
-    gl_Position = pos.xyww; // "притягиваем" к бесконечности
+    vec2 p = V[gl_VertexID];
+    v_ndc = p;
+    gl_Position = vec4(p, 0.0, 1.0);
 }
