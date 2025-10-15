@@ -44,3 +44,5 @@ bin/
 #### CraftEngine ###
 config
 screenshots
+
+world.msgpack
