@@ -1,0 +1,14 @@
+{
+  "render.distance": 12,
+  "window.settings": {
+    "width": 2560,
+    "height": 1440,
+    "title": "CraftEngine",
+    "vsync": true,
+    "fullscreen": true
+  },
+  "fov.dynamic_multiplier": 0.0,
+  "fov": 110,
+  "gui.scale": 5,
+  "fov.dinamic_multiplier": 1.0
+}

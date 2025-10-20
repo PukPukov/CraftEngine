@@ -1,0 +1,43 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+group = 'ru.mrbedrockpy.craftengine'
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
+    maven { url 'https://projectlombok.org/edge-releases' }
+}
+
+def lombok = "org.projectlombok:lombok:1.18.38";
+dependencies {
+    compileOnly lombok
+    annotationProcessor lombok
+    implementation project(':renderer')
+    implementation project(':server')
+    implementation project(':core')
+    implementation("io.netty:netty-all:4.1.124.Final")
+
+    implementation 'org.msgpack:msgpack-core:0.9.8'
+}
+
+jar {
+    from {
+        project(':renderer').sourceSets.main.output
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest {
+        attributes(
+                'Main-Class': 'ru.mrbedrockpy.craftengine.client.Main',
+                'Implementation-Title': 'CraftEngine Client',
+        )
+    }
+}
+
+shadowJar {
+    archiveBaseName.set('client')
+    archiveVersion.set('1.0.0')
+    archiveClassifier.set('')
+}
