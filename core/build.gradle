@@ -13,6 +13,7 @@ project.ext.jomlVersion = "1.10.8"
 
 def lombok = "org.projectlombok:lombok:1.18.38";
 dependencies {
+    implementation 'org.yaml:snakeyaml:2.5'
     compileOnly lombok
     annotationProcessor lombok
     testImplementation platform('org.junit:junit-bom:5.10.0')
@@ -20,7 +21,6 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     api "org.joml:joml:${jomlVersion}"
-    api "com.google.code.gson:gson:2.10.1"
 }
 
 test {
