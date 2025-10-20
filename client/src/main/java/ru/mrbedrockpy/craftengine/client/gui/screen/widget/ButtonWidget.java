@@ -26,7 +26,7 @@ public class ButtonWidget extends AbstractWidget{
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        context.drawTexture(x, y, width, height, "button.png");
+        context.drawTexture(x, y, width, height, "gui/button.png");
         context.drawCentredText(text, x + width / 2 - 5, y + height / 2);
     }
 }

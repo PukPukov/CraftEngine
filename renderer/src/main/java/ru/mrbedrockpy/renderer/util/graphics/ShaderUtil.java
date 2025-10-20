@@ -8,16 +8,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.IntBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.lwjgl.opengl.GL46C.*;
 
 public class ShaderUtil {
+    private static final Map<String, Shader> cache = new HashMap<>();
 
     public static Shader load(String vertexPath, String fragmentPath) {
-        int v = ShaderUtil.compileShader(vertexPath, GL_VERTEX_SHADER);
-        int f = ShaderUtil.compileShader(fragmentPath, GL_FRAGMENT_SHADER);
-        int programID = ShaderUtil.linkProgram(v, f);
-        return new Shader(programID);
+        String key = vertexPath + "|" + fragmentPath;
+        return cache.computeIfAbsent(key, k -> {
+            int v = ShaderUtil.compileShader(vertexPath, GL_VERTEX_SHADER);
+            int f = ShaderUtil.compileShader(fragmentPath, GL_FRAGMENT_SHADER);
+            int programID = ShaderUtil.linkProgram(v, f);
+            return new Shader(programID);
+        });
     }
 
     public static int compileShader(String resourcePath, int shaderType) {

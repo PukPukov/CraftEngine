@@ -1,6 +1,5 @@
 package ru.mrbedrockpy.renderer.graphics;
 
-import com.google.gson.JsonObject;
 import org.joml.Matrix4f;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
@@ -11,7 +10,6 @@ import ru.mrbedrockpy.renderer.RenderInit;
 import ru.mrbedrockpy.renderer.graphics.model.Bone;
 import ru.mrbedrockpy.renderer.graphics.model.Cuboid;
 import ru.mrbedrockpy.renderer.graphics.model.Model;
-import ru.mrbedrockpy.renderer.util.graphics.MeshUtil;
 import ru.mrbedrockpy.renderer.world.BlockReader;
 
 import java.util.*;
@@ -50,13 +48,6 @@ public class MeshBuilder {
         final float atlasH = 32 * 16;    // или 1;
         final boolean flipV = false;
 
-        // 3) Кэшируем uv4 по направлению, чтобы не дергать модель в каждом блоке
-        final float[][] modelUv4 = new float[6][];
-        if (model != null) {
-            for (Block.Direction d : Block.Direction.getValues()) {
-                modelUv4[d.ordinal()] = uv4FromModelFace(model, d, atlasW, atlasH, flipV);
-            }
-        }
 
         for (int z = 0; z < SIZE; z++) {
             for (int y = 0; y < SIZE; y++) {
@@ -70,10 +61,7 @@ public class MeshBuilder {
 
                         float[][] corners = baseFaceCorners[d.ordinal()];
 
-                        // 4) UV из модели на грань; если нет — фоллбек к атласу по имени тайла
-                        float[] uv4 = (modelUv4[d.ordinal()] != null)
-                                ? modelUv4[d.ordinal()]
-                                : atlas.normalizedUv(RenderInit.BLOCKS.getName(RenderInit.BLOCKS.get(id)));
+                        float[] uv4 = atlas.getNormalizedUvs("block/" + RenderInit.BLOCKS.getName(RenderInit.BLOCKS.get(id)));
 
                         emitFace(x, y, z, d, corners, uv4, chunk);
                     }

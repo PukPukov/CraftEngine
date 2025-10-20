@@ -1,9 +1,7 @@
 package ru.mrbedrockpy.renderer.resource;
 
 import com.google.gson.*;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Synchronized;
 import org.joml.Vector3f;
 import ru.mrbedrockpy.craftengine.core.world.block.Block;
 import ru.mrbedrockpy.renderer.api.IResourceManager;
@@ -12,12 +10,9 @@ import ru.mrbedrockpy.renderer.graphics.model.Bone;
 import ru.mrbedrockpy.renderer.graphics.model.Cuboid;
 import ru.mrbedrockpy.renderer.graphics.model.Model;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 
 @RequiredArgsConstructor
@@ -28,13 +23,6 @@ public class ModelLoader {
 
     private final ThreadLocal<Deque<String>> stackTL = ThreadLocal.withInitial(ArrayDeque::new);
 
-    private String pathOf(String id) {
-        // id уже без ".json" и без ведущего "/"
-        // Пример: id="models/entity/zombie" -> "models/entity/zombie.json"
-        return id + ".json";
-    }
-
-    /** Загрузить модель по id (лениво, с кэшем). id без ".json". */
     public Model load(String id) {
         id = normalizeId(id);
         if (cache.containsKey(id)) return cache.get(id);
@@ -141,8 +129,8 @@ public class ModelLoader {
         return result;
     }
 
-    public synchronized Map<String, Model> loadAllUnder(String dirNoSlash) {
-        String dir = dirNoSlash.endsWith("/") ? dirNoSlash : dirNoSlash + "/";
+    public Map<String, Model> loadAll(String base) {
+        String dir = base.endsWith("/") ? base : base + "/";
         List<ResourceHandle> list = rm.list(dir, name -> name.endsWith(".json"));
         for (ResourceHandle h : list) {
             String full = h.path();

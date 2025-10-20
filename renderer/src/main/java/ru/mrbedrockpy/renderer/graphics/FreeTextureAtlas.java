@@ -1,6 +1,8 @@
 package ru.mrbedrockpy.renderer.graphics;
 
 import lombok.Getter;
+import ru.mrbedrockpy.renderer.graphics.tex.Atlas;
+import ru.mrbedrockpy.renderer.graphics.tex.UvProvider;
 import ru.mrbedrockpy.renderer.util.ImageUtil;
 
 import javax.imageio.ImageIO;
@@ -15,15 +17,19 @@ import java.util.List;
 
 import static org.lwjgl.opengl.GL46C.*;
 
-public class FreeTextureAtlas {
+public class FreeTextureAtlas implements UvProvider {
     @Getter
-    private int widthPx, heightPx;              // больше не final — растём динамически
+    private int widthPx, heightPx;
     private BufferedImage atlasImage;
     private final int glTexId;
     @Getter
     private final Map<String, Rectangle> uvMap = new HashMap<>();
     private final List<Shelf> shelves = new ArrayList<>();
     private int usedHeight = 0;
+
+    public int getTextureId() {
+        return glTexId;
+    }
 
     private static class Shelf {
         int y;

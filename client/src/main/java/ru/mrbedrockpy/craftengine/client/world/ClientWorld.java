@@ -1,5 +1,6 @@
 package ru.mrbedrockpy.craftengine.client.world;
 
+import lombok.Getter;
 import org.joml.Vector2i;
 import ru.mrbedrockpy.craftengine.client.world.entity.ClientPlayerEntity;
 import ru.mrbedrockpy.craftengine.core.world.block.Block;
@@ -10,6 +11,7 @@ import ru.mrbedrockpy.renderer.world.WorldRenderer;
 
 public class ClientWorld extends World {
 
+    @Getter
     private final WorldRenderer worldRenderer = new WorldRenderer();
     private final ClientPlayerEntity player;
 
@@ -69,14 +71,18 @@ public class ClientWorld extends World {
     }
 
     private void createRenderChunk(Vector2i pos) {
+        Chunk chunk = getChunk(pos);
+        if(chunk == null) return;
         if (pos.x >= 0 && pos.y >= 0) {
-            worldRenderer.createChunk(new Chunk(pos, getChunk(pos).getBlocks()));
+            worldRenderer.createChunk(chunk);
         }
     }
 
     private void removeRenderChunk(Vector2i pos) {
+        Chunk chunk = getChunk(pos);
+        if(chunk == null) return;
         if (pos.x >= 0 && pos.y >= 0) {
-            worldRenderer.deleteChunk(new Chunk(pos, getChunk(pos).getBlocks()));
+            worldRenderer.deleteChunk(chunk);
         }
     }
 }

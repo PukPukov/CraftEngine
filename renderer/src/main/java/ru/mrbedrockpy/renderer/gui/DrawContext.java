@@ -5,37 +5,38 @@ import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.lwjgl.stb.STBTTPackedchar;
+import ru.mrbedrockpy.renderer.RenderInit;
 import ru.mrbedrockpy.renderer.font.FontRenderer;
 import ru.mrbedrockpy.renderer.graphics.*;
+import ru.mrbedrockpy.renderer.graphics.tex.Atlas;
+import ru.mrbedrockpy.renderer.graphics.tex.GlTexture;
 import ru.mrbedrockpy.renderer.util.FileLoader;
 import ru.mrbedrockpy.renderer.util.graphics.ShaderUtil;
+import ru.mrbedrockpy.renderer.util.graphics.TextureUtil;
 import ru.mrbedrockpy.renderer.window.Window;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Map;
 
 import static org.lwjgl.opengl.GL46C.*;
 
+// TODO: сделать DrawContext интерфейсом, написать реализацию уменьшив бойлерплейт и оптимизировав
 public class DrawContext {
-    private final Shader uiShader;
-    private final int screenWidth;
-    private final int screenHeight;
     private final int vaoId;
     private final int vboId;
+    private int GUI_ATLAS = -1;
 
     private final FreeTextureAtlas atlas = new FreeTextureAtlas();
 
     @Getter
     private final MatrixStack matrices = new MatrixStack();
     private final FontRenderer fontRenderer;
+    private final Shader shader;
 
-    public DrawContext(int screenWidth, int screenHeight) {
-        this.screenWidth = screenWidth;
-        this.screenHeight = screenHeight;
-
-        uiShader = ShaderUtil.load("ui_vertex.glsl", "ui_fragment.glsl");
-
+    public DrawContext(Shader shader, int screenWidth, int screenHeight) {
+        this.shader = shader;
         matrices.set(new Matrix4f().ortho(0.0f, screenWidth, screenHeight, 0.0f, -1.0f, 1.0f));
 
         vaoId = glGenVertexArrays();
@@ -55,6 +56,15 @@ public class DrawContext {
         } catch (IOException e) {
             throw new RuntimeException("Font load error", e);
         }
+
+        for (Map.Entry<String, Texture> texture : RenderInit.RESOURCE_MANAGER.getTextureLoader().getAll()) {
+            if (!texture.getKey().startsWith("gui/")) continue;
+            atlas.addTexture(texture.getKey(), TextureUtil.toBufferedImage(texture.getValue()));
+        }
+
+        GlTexture guiTex = new GlTexture(atlas.getTextureId());
+        Atlas ui = new Atlas("gui", guiTex, atlas);
+        GUI_ATLAS = RenderInit.ATLAS_MANAGER.register(ui);
     }
 
     public void enableGL() {
@@ -62,15 +72,16 @@ public class DrawContext {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glDisable(GL_CULL_FACE);
-        atlas.use();
-        uiShader.use();
-        uiShader.setUniformMatrix4f("projection", matrices.matrix());
+        shader.use();
+        shader.setUniformMatrix4f("projection", matrices.matrix());
+        shader.setUniform1b("useView", false);
+        RenderInit.ATLAS_MANAGER.uploadToShader(shader.getId(), "atlases");
     }
 
     public void disableGL() {
         glDisable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
-        uiShader.unbind();
+        shader.unbind();
     }
 
 
@@ -79,21 +90,18 @@ public class DrawContext {
     }
 
     public void drawTexture(int x, int y, int w, int h, String texturePath) {
+//        Texture texture = TextureUtil.fromBufferedImage();
         this.drawTexture(x, y, w, h, 0, 0, w, h, texturePath);
     }
 
-    public void drawTexture(int x, int y, int w, int h, int u, int v,String texturePath) {
-       this.drawTexture(x, y, w, h, u, v, w, h, texturePath);
+    public void drawTexture(int x, int y, int w, int h, int u, int v, String texturePath) {
+        this.drawTexture(x, y, w, h, u, v, w, h, texturePath);
     }
 
     public void drawTexture(int x, int y, int w, int h,
                             int u, int v, int tw, int th,
                             String texturePath) {
-        if (!atlas.contains(texturePath)) {
-            BufferedImage img = FileLoader.loadImage(texturePath);
-            atlas.addTexture(texturePath, img);
-        }
-
+        texturePath = texturePath.endsWith(".png") ? texturePath.substring(0, texturePath.length() - 4) : texturePath;
         float[] uv = atlas.getNormalizedUvs(texturePath);
         // порядок: 0:(x0,y0), 1:(x1,y0), 2:(x1,y1), 3:(x0,y1)
         float uL = uv[0], vT = uv[1];
@@ -123,12 +131,16 @@ public class DrawContext {
         glBindBuffer(GL_ARRAY_BUFFER, vboId);
         glBufferSubData(GL_ARRAY_BUFFER, 0, verts);
 
-        uiShader.setUniform1i("uiTexture", 0);
-        uiShader.setUniform1b("useUniformColor", false);
-        uiShader.setUniform1b("useMask", false);
+
+        shader.setUniform1b("useUniformColor", false);
+        shader.setUniform1b("useMask", false);
+
+        glBindVertexArray(vaoId);
 
         glVertexAttrib4f(2, 1f, 1f, 1f, 1f);
-        glBindVertexArray(vaoId);
+        glDisableVertexAttribArray(3);
+        glVertexAttribI1i(3, GUI_ATLAS);
+
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
     }
@@ -161,9 +173,9 @@ public class DrawContext {
 
         glBindVertexArray(vaoId);
 
-        uiShader.setUniform1b("useUniformColor", true);
-        uiShader.setUniform1b("useMask", true);
-        uiShader.setUniform4f("uniformColor", 1.0f, 1.0f, 1.0f, 1.0f);
+        shader.setUniform1b("useUniformColor", true);
+        shader.setUniform1b("useMask", true);
+        shader.setUniform4f("uniformColor", 1.0f, 1.0f, 1.0f, 1.0f);
         float cursorX = x;
         STBTTPackedchar.Buffer chars = fontRenderer.getCharData();
 
@@ -204,6 +216,9 @@ public class DrawContext {
             System.arraycopy(vtx, 0, vertices, i * 24, 24);
             cursorX += g.xadvance() * scale;
         }
+        glDisableVertexAttribArray(3);
+        glVertexAttribI1i(3, GUI_ATLAS);
+
         glBindBuffer(GL_ARRAY_BUFFER, vboId);
         glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
         glDrawArrays(GL_TRIANGLES, 0, text.length() * 6);
@@ -213,9 +228,9 @@ public class DrawContext {
     }
 
     public void drawRect(int x, int y, float width, float height, Color color) {
-        uiShader.setUniform1b("useUniformColor", true);
-        uiShader.setUniform1b("useMask", false);
-        uiShader.setUniform4f("uniformColor", color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
+        shader.setUniform1b("useUniformColor", true);
+        shader.setUniform1b("useMask", false);
+        shader.setUniform4f("uniformColor", color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
 
         glBindVertexArray(vaoId);
         glVertexAttrib4f(2, 1.0f, 1.0f, 1.0f, 1.0f);
@@ -235,5 +250,11 @@ public class DrawContext {
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
         glBindVertexArray(0);
+    }
+
+    public void drawTextureNineSlice(int x, int y, int w, int h,
+                                     int u, int v, int tw, int th,
+                                     String texturePath) {
+
     }
 }

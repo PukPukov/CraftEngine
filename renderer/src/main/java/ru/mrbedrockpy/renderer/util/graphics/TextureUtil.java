@@ -23,6 +23,31 @@ public class TextureUtil{
         return new Texture(buf, image.getWidth(), image.getHeight());
     }
 
+    public static BufferedImage toBufferedImage(Texture texture) {
+        int width = texture.getWidth();
+        int height = texture.getHeight();
+        ByteBuffer buffer = texture.getBuffer();
+
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        int[] pixels = new int[width * height];
+
+        // предполагаем, что байты в порядке RGBA
+        for (int i = 0; i < width * height; i++) {
+            int r = buffer.get() & 0xFF;
+            int g = buffer.get() & 0xFF;
+            int b = buffer.get() & 0xFF;
+            int a = buffer.get() & 0xFF;
+            pixels[i] = ((a & 0xFF) << 24) |
+                    ((r & 0xFF) << 16) |
+                    ((g & 0xFF) << 8)  |
+                    (b & 0xFF);
+        }
+
+        image.setRGB(0, 0, width, height, pixels, 0, width);
+        buffer.rewind();
+        return image;
+    }
+
     private static BufferedImage rotateCW(BufferedImage src) { // +90°
         int w = src.getWidth(), h = src.getHeight();
         BufferedImage dst = new BufferedImage(h, w, BufferedImage.TYPE_INT_ARGB);

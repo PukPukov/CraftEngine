@@ -1,14 +1,19 @@
 package ru.mrbedrockpy.renderer.graphics;
 
-import java.util.ArrayList;
-import java.util.List;
+import lombok.Getter;
+
+import java.util.function.Consumer;
 
 import static org.lwjgl.opengl.GL46C.*;
+
 public class Mesh implements AutoCloseable {
+    @Getter
     private int vaoId;
+    @Getter
     private int vboId;
     private int uvboId;
     private int aoboId;
+    @Getter
     private int vertexCount;
 
     public Mesh() {
@@ -66,18 +71,20 @@ public class Mesh implements AutoCloseable {
         glDrawArrays(GL_TRIANGLES, 0, vertexCount);
         unbind();
     }
+    public void render(Consumer<Mesh> drawCall) {
+        use();
+        try {
+            drawCall.accept(this);
+        } finally {
+            unbind();
+        }
+    }
 
     public void use() {
         glBindVertexArray(vaoId);
-        glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
-        glEnableVertexAttribArray(2);
     }
 
     public void unbind() {
-        glDisableVertexAttribArray(0);
-        glDisableVertexAttribArray(1);
-        glDisableVertexAttribArray(2);
         glBindVertexArray(0);
     }
 
@@ -92,6 +99,7 @@ public class Mesh implements AutoCloseable {
         if (uvboId != 0) glDeleteBuffers(uvboId);
         if (aoboId != 0) glDeleteBuffers(aoboId);
     }
+
 
     public record Data(float[] vertices, float[] uvs, float[] aos){}
 }

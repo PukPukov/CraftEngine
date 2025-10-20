@@ -2,6 +2,7 @@ package ru.mrbedrockpy.renderer.graphics;
 
 import lombok.AccessLevel;
 import lombok.Getter;
+import ru.mrbedrockpy.renderer.graphics.tex.UvProvider;
 import ru.mrbedrockpy.renderer.util.graphics.TextureUtil;
 
 import java.awt.*;
@@ -9,7 +10,7 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TextureAtlas {
+public class TextureAtlas implements UvProvider {
     private final int tileSize = 32;
     @Getter(AccessLevel.PUBLIC)
     private final int atlasSize;
@@ -52,7 +53,7 @@ public class TextureAtlas {
     }
 
 
-    public float[] normalizedUv(String name) {
+    public float[] getNormalizedUvs(String name) {
         Rectangle r = uv(name);
         try {
             if(r == null){

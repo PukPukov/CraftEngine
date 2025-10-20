@@ -4,10 +4,10 @@ import lombok.Getter;
 import ru.mrbedrockpy.renderer.api.IResourceManager;
 import ru.mrbedrockpy.renderer.api.ResourceHandle;
 import ru.mrbedrockpy.renderer.api.ResourceSource;
+import ru.mrbedrockpy.renderer.util.graphics.TextureUtil;
 
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -19,6 +19,8 @@ public class CompositeResourceManager implements IResourceManager {
     private final List<ResourceSource> sourceList = new ArrayList<>();
     @Getter
     private final ModelLoader modelLoader = new ModelLoader(this);
+    @Getter
+    private final TextureLoader textureLoader = new TextureLoader(this);
 
     @Override
     public synchronized InputStream open(String path) {
@@ -64,26 +66,61 @@ public class CompositeResourceManager implements IResourceManager {
 
     @Override
     public synchronized List<ResourceHandle> list(String directory, Predicate<String> nameFilter) {
-        String dir = normalizeDir(directory);
-        Set<String> dedup = new LinkedHashSet<>();
-        List<ResourceHandle> out = new ArrayList<>();
+        String root = normalizeDir(directory);
+        LinkedHashSet<String> dedup = new LinkedHashSet<>();    // дедуп по полному пути
+        ArrayList<ResourceHandle> out = new ArrayList<>();
+        HashSet<String> visitedDirs = new HashSet<>();          // защитимся от повторов директорий
 
         for (ResourceSource s : sourceList) {
             try {
-                List<String> names = s.list(dir);
-                if (names == null || names.isEmpty()) continue;
-
-                for (String name : names) {
-                    if (name == null || name.isEmpty()) continue;
-                    if (nameFilter != null && !nameFilter.test(name)) continue;
-
-                    if (dedup.add(name)) {
-                        out.add(new ResourceHandle(dir + name, s));
-                    }
-                }
+                recurseList(s, root, nameFilter, dedup, out, visitedDirs);
             } catch (Exception ignored) {}
         }
         return out;
+    }
+
+    private void recurseList(ResourceSource s,
+                             String dir,
+                             Predicate<String> nameFilter,
+                             Set<String> dedup,
+                             List<ResourceHandle> out,
+                             Set<String> visitedDirs) {
+        String normDir = normalizeDir(dir);
+
+        String dirKey = System.identityHashCode(s) + ":" + normDir;
+        if (!visitedDirs.add(dirKey)) return;
+
+        List<String> names;
+        try {
+            names = s.list(normDir);
+        } catch (Exception e) {
+            return;
+        }
+        if (names == null || names.isEmpty()) return;
+
+        for (String name : names) {
+            if (name == null || name.isEmpty()) continue;
+
+            String childPath = normDir + name;
+            String childDir  = normalizeDir(childPath);
+
+            boolean isDir = false;
+            try {
+                List<String> sub = s.list(childDir);
+                isDir = (sub != null && !sub.isEmpty());
+            } catch (Exception ignored) {
+            }
+
+            if (isDir) {
+                recurseList(s, childDir, nameFilter, dedup, out, visitedDirs);
+            } else {
+                if (nameFilter != null && !nameFilter.test(name)) continue;
+
+                if (dedup.add(childPath)) {
+                    out.add(new ResourceHandle(childPath, s));
+                }
+            }
+        }
     }
 
     public void load() {
@@ -91,18 +128,10 @@ public class CompositeResourceManager implements IResourceManager {
         int[] counters = new int[2];
         List<String> errors = new ArrayList<>();
 
-        try {
-           modelLoader.loadAllUnder("assets/models/");
-        } catch (Exception e) {
-            errors.add("ModelLoader.load() failed: " + e.getMessage());
-        }
+        modelLoader.loadAll("assets/models/");
+        textureLoader.loadAll("assets/textures/");
 
         long ms = (System.nanoTime() - t0) / 1_000_000L;
-        System.out.println("[CompositeResourceManager] Loaded: sources=" + sourceList.size()
-                + ", files=" + counters[0]
-                + ", models=" + counters[1]
-                + ", time=" + ms + " ms"
-                + (errors.isEmpty() ? "" : ", errors=" + errors.size()));
         if (!errors.isEmpty()) {
             for (String err : errors) System.err.println("[CompositeResourceManager] " + err);
         }

@@ -35,6 +35,7 @@ import ru.mrbedrockpy.craftengine.client.window.*;
 import ru.mrbedrockpy.craftengine.client.world.ClientWorld;
 import ru.mrbedrockpy.craftengine.server.world.TickSystem;
 import ru.mrbedrockpy.renderer.resource.UrlResourceSource;
+import ru.mrbedrockpy.renderer.util.graphics.ShaderUtil;
 import ru.mrbedrockpy.renderer.window.Input;
 import ru.mrbedrockpy.renderer.window.Window;
 import ru.mrbedrockpy.renderer.window.WindowSettings;
@@ -74,12 +75,11 @@ public class CraftEngineClient {
         Packets.register();
         packetHandler.register(BlockUpdatePacketS2C.class, (ctx, pkt) -> clientWorld.setBlock(pkt.pos(), pkt.block()));
         tickSystem.addListener(this::tick);
-        RenderInit.CONFIG = ConfigVars.INSTANCE;
         CraftEngineConfiguration.register();
         Window.initialize(WindowSettings.DEFAULT);
+        RenderInit.CONFIG = ConfigVars.INSTANCE;
 
         Input.initialize();
-        context = new DrawContext(Window.scaledWidth(), Window.scaledHeight());
 
         eventManager.addListener(MouseClickEvent.class, this::onMouseClick);
         eventManager.addListener(KeyPressEvent.class, this::onKeyPress);
@@ -95,6 +95,9 @@ public class CraftEngineClient {
         resourceManager.load();
 
         RenderInit.RESOURCE_MANAGER = resourceManager;
+        
+        context = new DrawContext(ShaderUtil.load("vertex.glsl", "fragment.glsl"), Window.scaledWidth(), Window.scaledHeight());
+
         RenderInit.BLOCKS = Registries.BLOCKS;
         KeyBindings.register();
         setScreen(new MainMenuScreen());
@@ -152,31 +155,31 @@ public class CraftEngineClient {
             eventManager.callEvent(ev);
         }
         if (KeyBindings.S1.wasPressed()) {
-            player.getInventory().selectedHotbarSlot(0);
+            player.getInventory().setSelectedHotbarSlot(0);
         }
         if (KeyBindings.S2.wasPressed()) {
-            player.getInventory().selectedHotbarSlot(1);
+            player.getInventory().setSelectedHotbarSlot(1);
         }
         if (KeyBindings.S3.wasPressed()) {
-            player.getInventory().selectedHotbarSlot(2);
+            player.getInventory().setSelectedHotbarSlot(2);
         }
         if (KeyBindings.S4.wasPressed()) {
-            player.getInventory().selectedHotbarSlot(3);
+            player.getInventory().setSelectedHotbarSlot(3);
         }
         if (KeyBindings.S5.wasPressed()) {
-            player.getInventory().selectedHotbarSlot(4);
+            player.getInventory().setSelectedHotbarSlot(4);
         }
         if (KeyBindings.S6.wasPressed()) {
-            player.getInventory().selectedHotbarSlot(5);
+            player.getInventory().setSelectedHotbarSlot(5);
         }
         if (KeyBindings.S7.wasPressed()) {
-            player.getInventory().selectedHotbarSlot(6);
+            player.getInventory().setSelectedHotbarSlot(6);
         }
         if (KeyBindings.S8.wasPressed()) {
-            player.getInventory().selectedHotbarSlot(7);
+            player.getInventory().setSelectedHotbarSlot(7);
         }
         if (KeyBindings.S9.wasPressed()) {
-            player.getInventory().selectedHotbarSlot(8);
+            player.getInventory().setSelectedHotbarSlot(8);
         }
 
         if (player != null) player.update(deltaTime, tickSystem.partialTick());
@@ -234,7 +237,8 @@ public class CraftEngineClient {
         player.setPosition(new Vector3f(0, 0, clientWorld.getTopZ(0, 0) + 1));
         setScreen(null);
         player.getInventory().slot(0, new ItemStack(Items.STONE_BLOCK_ITEM));
-        for (int i = 1; i < 9; i++) {
+        player.getInventory().slot(1, new ItemStack(Items.DIRT_BLOCK_ITEM));
+        for (int i = 2; i < 9; i++) {
             player.getInventory().slot(i, new ItemStack(Items.GOLDEN_APPLE));
         }
         hudRenderer = new HudRenderer(Window.scaledWidth(), Window.scaledHeight());
@@ -275,6 +279,8 @@ public class CraftEngineClient {
         if (currentScreen != null && Input.currentLayer() == Input.Layer.UI) {
            currentScreen.onMouseScrolled(event);
         }
+        int nextSlot = (player.getInventory().getSelectedHotbarSlot() - (int) ((event.getScrollY() / Math.abs(event.getScrollY())))) % 9;
+        player.getInventory().setSelectedHotbarSlot(nextSlot < 0 ? 8 : nextSlot);
     }
 
     // Я хз как адекватно сделать масштабирование, поэтому просто делаю так

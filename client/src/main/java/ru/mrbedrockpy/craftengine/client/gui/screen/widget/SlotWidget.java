@@ -38,7 +38,7 @@ public class SlotWidget extends AbstractWidget {
 
         ItemStack s = stack();
         if (s != null && !s.isEmpty()) {
-            String path = Registries.ITEMS.getName(s.item()) + ".png";
+            String path = "gui/" + Registries.ITEMS.getName(s.item()) + ".png";
             ctx.drawTexture(x + 1, y + 1, 16, 16, path);
         }
 

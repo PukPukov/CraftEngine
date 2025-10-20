@@ -13,21 +13,13 @@ import ru.mrbedrockpy.craftengine.core.world.item.ItemStack;
 public class PlayerInventory extends Inventory {
     public static final int HOTBAR_SIZE = 9;
     private final ItemStack[] armorSlots = new ItemStack[4];
+    @Getter @Setter
     private int selectedHotbarSlot = 0;
     @Getter @Setter
     private ItemStack cursorStack = ItemStack.EMPTY;
 
     public PlayerInventory() {
         super(36);
-    }
-
-    public int selectedHotbarSlot() {
-        return selectedHotbarSlot;
-    }
-
-    public void selectedHotbarSlot(int index) {
-        if (index < 0 || index >= HOTBAR_SIZE) throw new IndexOutOfBoundsException();
-        selectedHotbarSlot = index;
     }
 
     public void setSelectedSlotStack(ItemStack stack){

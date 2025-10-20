@@ -24,8 +24,8 @@ public class HudRenderer {
         this.height = height;
         PlayerInventory inventory = CraftEngineClient.INSTANCE.getPlayer().getInventory();
         for (int i = 0; i < hotbarSlots.length; i++) {
-            int x = width / 2 + i * 20 - 182 / 2 + 2;
-            int y = height - 22 + 2;
+            int x = width / 2 + i * 18 - 182 / 2 + 6;
+            int y = height - 29;
             final int slotIndex = i;
             SlotWidget w = new SlotWidget(
                     x, y,
@@ -39,8 +39,8 @@ public class HudRenderer {
     public void slotClick(SlotWidget slot) {}
 
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        context.drawTextureCentred(width / 2, height / 2, 10, 10, "cursor.png");
-        context.drawTexture(width / 2 - 182 / 2 - 1, height - 36, 184, 32, 0, 144, 256, 256,  "inventory.png");
+        context.drawTextureCentred(width / 2, height / 2, 10, 10, "gui/cursor.png");
+        context.drawTexture(width / 2 - 182 / 2 - 1, height - 36, 184, 32, 0, 144, 256, 256,  "gui/inventory.png");
         context.drawText(String.valueOf(CraftEngineClient.INSTANCE.getFpsCounter().getFps()), 5, 5, 0.5f);
         context.drawText(positionToString(CraftEngineClient.INSTANCE.getPlayer().getPosition()), 5, 10, 0.5f);
         context.drawText(CraftEngineClient.INSTANCE.getPlayer().getCamera().getAngle().toString(), 5, 15, 0.5f);
@@ -53,8 +53,8 @@ public class HudRenderer {
         for (SlotWidget slot : hotbarSlots) {
             slot.render(context, mouseX, mouseY, delta);
         }
-        SlotWidget w = hotbarSlots[player.getInventory().selectedHotbarSlot()];
-        context.drawTexture(w.getX() - 3, w.getY() - 2, 22, 22, "selected_slot.png");
+        SlotWidget w = hotbarSlots[player.getInventory().getSelectedHotbarSlot()];
+        context.drawTexture(w.getX() - 2, w.getY() - 2, 22, 22, "gui/selected_slot.png");
     }
     
     public String positionToString(Vector3f position) {

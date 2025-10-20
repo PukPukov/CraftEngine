@@ -1,6 +1,7 @@
 package ru.mrbedrockpy.renderer.api;
 
 import ru.mrbedrockpy.renderer.resource.ModelLoader;
+import ru.mrbedrockpy.renderer.resource.TextureLoader;
 
 import java.awt.image.BufferedImage;
 import java.io.Closeable;
@@ -31,4 +32,5 @@ public interface IResourceManager extends Closeable {
     default void reload() throws IOException {}
 
     ModelLoader getModelLoader();
+    TextureLoader getTextureLoader();
 }

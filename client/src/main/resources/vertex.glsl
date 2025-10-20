@@ -1,17 +1,25 @@
 #version 460 core
+#extension GL_ARB_bindless_texture : require
 
-layout(location=0) in vec3 aPos;
-layout(location=1) in vec2 aUV;
-layout(location=2) in float aAO;
+layout(location = 0) in vec3 inPos;
+layout(location = 1) in vec2 inUV;
+layout(location = 2) in vec4 inColor;
+layout(location = 3) in int  inAtlas;
 
 uniform mat4 projection;
 uniform mat4 view;
+uniform bool useView;
 
-out vec2 vUV;
-out float vAO;
+out vec2 fragUV;
+out vec4 vertColor;
+flat out int atlasIndex;
 
 void main() {
-    gl_Position = projection * view * vec4(aPos, 1.0);
-    vUV = aUV;
-    vAO = clamp(aAO, 0.4, 1.0);
+    fragUV = inUV;
+    vertColor = inColor;
+    atlasIndex = inAtlas;
+
+    vec4 pos = vec4(inPos.xy, inPos.z, 1.0);
+    gl_Position = useView ? (projection * view * pos)
+    : (projection * pos);
 }
