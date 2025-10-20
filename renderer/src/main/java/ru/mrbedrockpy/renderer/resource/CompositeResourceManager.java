@@ -1,6 +1,7 @@
 package ru.mrbedrockpy.renderer.resource;
 
 import lombok.Getter;
+import ru.mrbedrockpy.craftengine.core.util.Logger;
 import ru.mrbedrockpy.renderer.api.IResourceManager;
 import ru.mrbedrockpy.renderer.api.ResourceHandle;
 import ru.mrbedrockpy.renderer.api.ResourceSource;
@@ -19,6 +20,7 @@ public class CompositeResourceManager implements IResourceManager {
     private final List<ResourceSource> sourceList = new ArrayList<>();
     @Getter
     private final ModelLoader modelLoader = new ModelLoader(this);
+    private final Logger logger = Logger.getLogger(CompositeResourceManager.class);
 
     @Override
     public synchronized InputStream open(String path) {
@@ -98,13 +100,13 @@ public class CompositeResourceManager implements IResourceManager {
         }
 
         long ms = (System.nanoTime() - t0) / 1_000_000L;
-        System.out.println("[CompositeResourceManager] Loaded: sources=" + sourceList.size()
+        logger.info("[CompositeResourceManager] Loaded: sources=" + sourceList.size()
                 + ", files=" + counters[0]
                 + ", models=" + counters[1]
                 + ", time=" + ms + " ms"
                 + (errors.isEmpty() ? "" : ", errors=" + errors.size()));
         if (!errors.isEmpty()) {
-            for (String err : errors) System.err.println("[CompositeResourceManager] " + err);
+            for (String err : errors) logger.error("[CompositeResourceManager] " + err);
         }
     }
 

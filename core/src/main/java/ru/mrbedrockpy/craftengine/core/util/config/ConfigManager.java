@@ -51,11 +51,13 @@ public final class ConfigManager {
             if (!Modifier.isStatic(field.getModifiers())) continue;
             ConfigField fieldAnnotation = field.getAnnotation(ConfigField.class);
             if (fieldAnnotation != null) {
-                initConfigField(fields, fieldAnnotation, field);
+                ConfigFieldData<?> configFieldData = initConfigField(fields, fieldAnnotation, field);
+                if (configFieldData != null) fields.add(configFieldData);
             } else {
                 ListField listAnnotation = field.getAnnotation(ListField.class);
                 if (listAnnotation == null) continue;
-                initListField(listAnnotation, field);
+                ListFieldData<?> listFieldData = initListField(listAnnotation, field);
+                if (listFieldData != null) listFields.add(listFieldData);
             }
         }
         return new ConfigData(

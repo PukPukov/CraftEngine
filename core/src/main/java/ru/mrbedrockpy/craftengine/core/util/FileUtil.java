@@ -16,8 +16,9 @@ public class FileUtil {
             BufferedReader reader = new BufferedReader(new FileReader(file));
             while (reader.ready()) sb.append(reader.readLine()).append("\n");
             return sb.toString();
-        }   catch (Exception e) {
+        } catch (Exception e) {
             Logger.getLogger(FileUtil.class).error(e);
+            return "";
         }
     }
 

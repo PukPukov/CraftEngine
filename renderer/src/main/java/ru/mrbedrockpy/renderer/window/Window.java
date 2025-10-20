@@ -6,7 +6,7 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
-import ru.mrbedrockpy.renderer.RenderInit;
+import ru.mrbedrockpy.craftengine.core.config.CraftEngineConfig;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
@@ -119,8 +119,8 @@ public class Window {
         glfwSwapInterval(flag ? 1 : 0);
     }
 
-    public static int scaledWidth()  { return Math.ceilDiv(getWidth(),  Math.max(RenderInit.CONFIG.getInt("gui.scale"), 1)); }
-    public static int scaledHeight() { return Math.ceilDiv(getHeight(), Math.max(RenderInit.CONFIG.getInt("gui.scale"), 1)); }
+    public static int scaledWidth()  { return Math.ceilDiv(getWidth(),  Math.max(CraftEngineConfig.guiScale, 1)); }
+    public static int scaledHeight() { return Math.ceilDiv(getHeight(), Math.max(CraftEngineConfig.guiScale, 1)); }
 
     public static void setFullscreen(boolean enable) {
         if (fullscreen == enable) return;

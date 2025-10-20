@@ -12,12 +12,12 @@ import ru.mrbedrockpy.craftengine.client.network.ClientPacketHandler;
 import ru.mrbedrockpy.craftengine.client.network.auth.GameProfile;
 import ru.mrbedrockpy.craftengine.client.serial.WorldIO;
 import ru.mrbedrockpy.craftengine.client.world.entity.ClientPlayerEntity;
-import ru.mrbedrockpy.craftengine.core.cfg.ConfigVars;
-import ru.mrbedrockpy.craftengine.core.cfg.CraftEngineConfiguration;
 import ru.mrbedrockpy.craftengine.client.event.EventManager;
 import ru.mrbedrockpy.craftengine.client.event.client.input.MouseClickEvent;
 import ru.mrbedrockpy.craftengine.client.gui.screen.InventoryScreen;
 import ru.mrbedrockpy.craftengine.client.network.GameClient;
+import ru.mrbedrockpy.craftengine.core.config.CraftEngineConfig;
+import ru.mrbedrockpy.craftengine.core.util.config.ConfigManager;
 import ru.mrbedrockpy.craftengine.core.world.block.Blocks;
 import ru.mrbedrockpy.craftengine.server.network.packet.PacketRegistry;
 import ru.mrbedrockpy.craftengine.server.network.packet.Packets;
@@ -39,6 +39,7 @@ import ru.mrbedrockpy.renderer.window.Input;
 import ru.mrbedrockpy.renderer.window.Window;
 import ru.mrbedrockpy.renderer.window.WindowSettings;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -69,13 +70,17 @@ public class CraftEngineClient {
     private final TickSystem tickSystem = new TickSystem(20);
     private final ClientPacketHandler packetHandler = new ClientPacketHandler(PacketRegistry.INSTANCE);
     public final GameClient gameClient = new GameClient(PacketRegistry.INSTANCE, packetHandler);
+    @Getter
+    private final ConfigManager configManager;
 
     private CraftEngineClient() {
         Packets.register();
         packetHandler.register(BlockUpdatePacketS2C.class, (ctx, pkt) -> clientWorld.setBlock(pkt.pos(), pkt.block()));
         tickSystem.addListener(this::tick);
-        RenderInit.CONFIG = ConfigVars.INSTANCE;
-        CraftEngineConfiguration.register();
+        this.configManager = ConfigManager.builder()
+                .setParentFolder(new File("."))
+                .setConfigs(CraftEngineConfig.class)
+                .build();
         Window.initialize(WindowSettings.DEFAULT);
 
         Input.initialize();
@@ -115,6 +120,7 @@ public class CraftEngineClient {
             Window.swapBuffers();
         }
 
+        this.configManager.saveConfigs();
         gameClient.close();
         Window.terminate();
     }

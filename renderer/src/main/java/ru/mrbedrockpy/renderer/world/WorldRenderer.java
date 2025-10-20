@@ -2,8 +2,8 @@ package ru.mrbedrockpy.renderer.world;
 
 import org.joml.Matrix4f;
 import org.joml.Vector2i;
+import ru.mrbedrockpy.craftengine.core.config.CraftEngineConfig;
 import ru.mrbedrockpy.craftengine.core.world.chunk.Chunk;
-import ru.mrbedrockpy.renderer.RenderInit;
 import ru.mrbedrockpy.renderer.graphics.*;
 import ru.mrbedrockpy.renderer.util.FileLoader;
 import ru.mrbedrockpy.renderer.util.graphics.ShaderUtil;
@@ -62,7 +62,7 @@ public class WorldRenderer {
         shader.setUniformMatrix4f("view", view);
         texture.use();
         for (Chunk chunk : posMeshes.keySet()) {
-            if (distanceByAxis(playerPos, chunk.getPosition()) > RenderInit.CONFIG.getInt("render.distance")
+            if (distanceByAxis(playerPos, chunk.getPosition()) > CraftEngineConfig.RENDER_DISTANCE
                     || !culler.isBoxVisible(chunk.getAABB())) continue;
             posMeshes.get(chunk).render();
         }
