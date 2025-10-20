@@ -1,4 +1,4 @@
-package ru.mrbedrockpy.craftengine.client.event.evt;
+package ru.mrbedrockpy.craftengine.client.event.server;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

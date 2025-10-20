@@ -76,8 +76,6 @@ public class MeshBuilder {
         );
     }
 
-
-
     private void v(float[] pos, float[] uv, float ao) {
         vertices.add(pos[0]); vertices.add(pos[1]); vertices.add(pos[2]);
         texCoords.add(uv[0]); texCoords.add(uv[1]);

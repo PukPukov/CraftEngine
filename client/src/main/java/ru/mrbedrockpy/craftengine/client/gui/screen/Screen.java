@@ -1,8 +1,8 @@
 package ru.mrbedrockpy.craftengine.client.gui.screen;
 
-import ru.mrbedrockpy.craftengine.client.event.evt.KeyPressEvent;
-import ru.mrbedrockpy.craftengine.client.event.evt.MouseClickEvent;
-import ru.mrbedrockpy.craftengine.client.event.evt.MouseScrollEvent;
+import ru.mrbedrockpy.craftengine.client.event.client.input.KeyPressEvent;
+import ru.mrbedrockpy.craftengine.client.event.client.input.MouseClickEvent;
+import ru.mrbedrockpy.craftengine.client.event.client.input.MouseScrollEvent;
 import ru.mrbedrockpy.craftengine.client.gui.screen.layout.Layout;
 import ru.mrbedrockpy.renderer.gui.DrawContext;
 import ru.mrbedrockpy.craftengine.client.gui.screen.widget.AbstractWidget;

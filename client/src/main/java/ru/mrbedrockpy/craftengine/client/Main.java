@@ -1,6 +1,6 @@
 package ru.mrbedrockpy.craftengine.client;
 
-import ru.mrbedrockpy.craftengine.client.network.aut.GameProfile;
+import ru.mrbedrockpy.craftengine.client.network.auth.GameProfile;
 
 public class Main {
 
