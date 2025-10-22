@@ -3,6 +3,7 @@ package ru.mrbedrockpy.craftengine.client;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import ru.mrbedrockpy.craftengine.client.event.client.input.KeyPressEvent;
@@ -10,10 +11,9 @@ import ru.mrbedrockpy.craftengine.client.event.client.input.MouseScrollEvent;
 import ru.mrbedrockpy.craftengine.client.keybind.KeyBindings;
 import ru.mrbedrockpy.craftengine.client.network.ClientPacketHandler;
 import ru.mrbedrockpy.craftengine.client.network.auth.GameProfile;
+import ru.mrbedrockpy.craftengine.client.serial.CompoundTag;
 import ru.mrbedrockpy.craftengine.client.serial.WorldIO;
 import ru.mrbedrockpy.craftengine.client.world.entity.ClientPlayerEntity;
-import ru.mrbedrockpy.craftengine.core.cfg.ConfigVars;
-import ru.mrbedrockpy.craftengine.core.cfg.CraftEngineConfiguration;
 import ru.mrbedrockpy.craftengine.client.event.EventManager;
 import ru.mrbedrockpy.craftengine.client.event.client.input.MouseClickEvent;
 import ru.mrbedrockpy.craftengine.client.gui.screen.InventoryScreen;
@@ -75,9 +75,7 @@ public class CraftEngineClient {
         Packets.register();
         packetHandler.register(BlockUpdatePacketS2C.class, (ctx, pkt) -> clientWorld.setBlock(pkt.pos(), pkt.block()));
         tickSystem.addListener(this::tick);
-        CraftEngineConfiguration.register();
         Window.initialize(WindowSettings.DEFAULT);
-        RenderInit.CONFIG = ConfigVars.INSTANCE;
 
         Input.initialize();
 
@@ -114,7 +112,7 @@ public class CraftEngineClient {
             this.update(deltaSeconds);
             Window.clear();
             this.render();
-            this.renderUI();
+            this.renderUI(deltaSeconds);
             Window.swapBuffers();
         }
 
@@ -196,13 +194,13 @@ public class CraftEngineClient {
         }
     }
 
-    private void renderUI() {
+    private void renderUI(double deltaTime) {
         context.enableGL();
         if (clientWorld != null && player != null) {
-            hudRenderer.render(context, scale((int) Input.getX()), scale((int) Input.getY()), (float) tickSystem.partialTick());
+            hudRenderer.render(context, scale((int) Input.getX()), scale((int) Input.getY()), (float) deltaTime);
         }
         if (currentScreen != null) {
-            currentScreen.render(context, scale((int) Input.getX()), scale((int) Input.getY()), (float) tickSystem.partialTick());
+            currentScreen.render(context, scale((int) Input.getX()), scale((int) Input.getY()), (float) deltaTime);
         }
         context.disableGL();
     }
@@ -223,22 +221,19 @@ public class CraftEngineClient {
             screen.init();
         }
     }
-
+    // TODO: вынести вход и выход из мира
     public void play() {
         player = new ClientPlayerEntity(new Vector3f(0, 0, 0), null);
         try {
-//            clientWorld = new ClientWorld(WorldIO.deserialize(CompoundTag.fromBytes(Files.readAllBytes(Paths.get("world.msgpack")))), player);
-//            Chunk chunk = new Chunk(new Vector2i());
-//            new SimpleChunkGenerator().generate(chunk);
-            clientWorld = new ClientWorld(10, player);
+            clientWorld = new ClientWorld(WorldIO.deserialize(CompoundTag.fromBytes(Files.readAllBytes(Paths.get("world.msgpack")))), player);
         } catch (Exception e) {
-            e.printStackTrace();
+            clientWorld = new ClientWorld(10, player);
         }
         player.setPosition(new Vector3f(0, 0, clientWorld.getTopZ(0, 0) + 1));
         setScreen(null);
         player.getInventory().slot(0, new ItemStack(Items.STONE_BLOCK_ITEM));
         player.getInventory().slot(1, new ItemStack(Items.DIRT_BLOCK_ITEM));
-        for (int i = 2; i < 9; i++) {
+        for (int i = 2; i < 36; i++) {
             player.getInventory().slot(i, new ItemStack(Items.GOLDEN_APPLE));
         }
         hudRenderer = new HudRenderer(Window.scaledWidth(), Window.scaledHeight());

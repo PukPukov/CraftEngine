@@ -6,8 +6,8 @@ import org.joml.Vector2i;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
-import ru.mrbedrockpy.craftengine.core.config.CraftEngineConfig;
 import ru.mrbedrockpy.craftengine.core.phys.AABB;
+import ru.mrbedrockpy.craftengine.core.util.config.CraftEngineConfig;
 import ru.mrbedrockpy.craftengine.core.world.block.Block;
 import ru.mrbedrockpy.craftengine.core.world.block.Blocks;
 import ru.mrbedrockpy.craftengine.core.world.chunk.Chunk;
@@ -23,7 +23,7 @@ import java.util.List;
 
 public class World {
 
-    protected final ChunkLoadManager chunkLoadManager = new ChunkLoadManager(Chunk.SIZE, CraftEngineConfig.RENDER_DISTANCE, 0);
+    protected final ChunkLoadManager chunkLoadManager = new ChunkLoadManager(Chunk.SIZE, CraftEngineConfig.RENDER_DISTANCE, 0);;
     
     @Getter
     private final Chunk[][] chunks;

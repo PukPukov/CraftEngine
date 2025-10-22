@@ -4,7 +4,7 @@ import lombok.Getter;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
-import ru.mrbedrockpy.craftengine.core.config.CraftEngineConfig;
+import ru.mrbedrockpy.craftengine.core.util.config.CraftEngineConfig;
 import ru.mrbedrockpy.craftengine.server.util.Util;
 
 public class Camera {

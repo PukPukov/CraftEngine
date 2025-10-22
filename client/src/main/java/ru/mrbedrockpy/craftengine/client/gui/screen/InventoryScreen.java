@@ -7,6 +7,7 @@ import ru.mrbedrockpy.craftengine.core.registry.Registries;
 import ru.mrbedrockpy.craftengine.core.world.inventory.PlayerInventory;
 import ru.mrbedrockpy.craftengine.core.world.item.ItemStack;
 import ru.mrbedrockpy.renderer.gui.DrawContext;
+import ru.mrbedrockpy.renderer.window.Window;
 
 public class InventoryScreen extends Screen {
 
@@ -25,11 +26,11 @@ public class InventoryScreen extends Screen {
                 .gap(0, 0)
                 .padding(0)
                 .align(GridLayout.Align.FILL, GridLayout.Align.CENTER)
-                .bounds(0, 0, 9 * 18 + 8 * 0, 3 * 18 + 2 * 0) // ширина/высота сетки под 9×3 слота по 18px
+                .bounds(0, 0, 9 * 18, 3 * 18) // ширина/высота сетки под 9×3 слота по 18px
                 .moveToCenter();
 
         // Привязываем каждый слот к своему индексу i
-        for (int i = 0; i < 27; i++) {
+        for (int i = 9; i < 36; i++) {
             final int slotIndex = i;
             SlotWidget w = new SlotWidget(
                     0, 0,
@@ -101,16 +102,18 @@ public class InventoryScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        // Сначала рисуем все лэйауты/виджеты
-        super.render(context, mouseX, mouseY, delta);
+        int width = Window.scaledWidth();
+        int height = Window.scaledHeight();
+        context.drawTexture(width / 2 - 90, height / 2 - 70, 180, 140, 0, 0, 256, 256, "gui/inventory.png");
 
+        super.render(context, mouseX, mouseY, delta);
         // Потом — курсор поверх
         ItemStack cursorStack = inventory.getCursorStack();
         if (cursorStack != null && !cursorStack.isEmpty()) {
             int sx = mouseX;
             int sy = mouseY;
             context.drawTexture(sx - 9, sy - 9, 17, 17,
-                    Registries.ITEMS.getName(cursorStack.item()) + ".png");
+                    "gui/" + Registries.ITEMS.getName(cursorStack.item()) + ".png");
         }
     }
 }

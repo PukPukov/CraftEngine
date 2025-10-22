@@ -10,6 +10,7 @@ import ru.mrbedrockpy.renderer.font.FontRenderer;
 import ru.mrbedrockpy.renderer.graphics.*;
 import ru.mrbedrockpy.renderer.graphics.tex.Atlas;
 import ru.mrbedrockpy.renderer.graphics.tex.GlTexture;
+import ru.mrbedrockpy.renderer.resource.TextureLoader;
 import ru.mrbedrockpy.renderer.util.FileLoader;
 import ru.mrbedrockpy.renderer.util.graphics.ShaderUtil;
 import ru.mrbedrockpy.renderer.util.graphics.TextureUtil;
@@ -90,7 +91,7 @@ public class DrawContext {
     }
 
     public void drawTexture(int x, int y, int w, int h, String texturePath) {
-//        Texture texture = TextureUtil.fromBufferedImage();
+//        Texture texture = ;
         this.drawTexture(x, y, w, h, 0, 0, w, h, texturePath);
     }
 

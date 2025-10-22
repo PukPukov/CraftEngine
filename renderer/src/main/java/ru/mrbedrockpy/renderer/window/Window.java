@@ -6,7 +6,7 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
-import ru.mrbedrockpy.craftengine.core.config.CraftEngineConfig;
+import ru.mrbedrockpy.craftengine.core.util.config.CraftEngineConfig;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
