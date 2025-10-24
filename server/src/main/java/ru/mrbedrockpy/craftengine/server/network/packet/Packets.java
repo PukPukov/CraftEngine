@@ -7,9 +7,9 @@ import ru.mrbedrockpy.craftengine.server.network.packet.custom.ClientLoginPacket
 public class Packets {
 
     public static void register() {
-        PacketRegistry.INSTANCE.register(PacketDirection.C2S, BlockBreakPacketC2S.class);
-        PacketRegistry.INSTANCE.register(PacketDirection.C2S, ClientLoginPacketC2S.class);
+        PacketRegistry.INSTANCE.register(BlockBreakPacketC2S.class);
+        PacketRegistry.INSTANCE.register(ClientLoginPacketC2S.class);
 
-        PacketRegistry.INSTANCE.register(PacketDirection.S2C, BlockUpdatePacketS2C.class);
+        PacketRegistry.INSTANCE.register(BlockUpdatePacketS2C.class);
     }
 }

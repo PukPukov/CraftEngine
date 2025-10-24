@@ -6,6 +6,7 @@ import ru.mrbedrockpy.craftengine.server.network.codec.PacketCodecs;
 
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -51,6 +52,23 @@ public final class PacketRegistry {
         classToId.put(new Key(dir, cls), currentId);
         currentId++;
     }
+
+    public <P extends Packet> void register(Class<P> cls) {
+        String name = cls.getSimpleName().toUpperCase(Locale.ROOT);
+
+        PacketDirection dir;
+        if (name.endsWith("C2S")) {
+            dir = PacketDirection.C2S;
+        } else if (name.endsWith("S2C")) {
+            dir = PacketDirection.S2C;
+        } else {
+            throw new IllegalArgumentException(
+                    "Invalid packet name: " + cls.getName() +
+                            " — must end with C2S or S2C"
+            );
+        }
+    }
+
 
     public PacketCodec<? extends Packet> byId(PacketDirection dir, int id) {
         return (dir == PacketDirection.C2S) ? idToCodecClient.get(id) : idToCodecServer.get(id);
