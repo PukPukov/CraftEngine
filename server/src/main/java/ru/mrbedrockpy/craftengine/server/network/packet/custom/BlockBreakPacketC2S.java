@@ -5,9 +5,4 @@ import ru.mrbedrockpy.craftengine.server.network.codec.PacketCodec;
 import ru.mrbedrockpy.craftengine.server.network.codec.PacketCodecs;
 import ru.mrbedrockpy.craftengine.server.network.packet.Packet;
 
-public record BlockBreakPacketC2S(Vector3i pos) implements Packet {
-    public static final PacketCodec<BlockBreakPacketC2S> CODEC = PacketCodec.of(
-            (pkt, buf) -> PacketCodecs.POS_CODEC.encode(pkt.pos, buf),
-            (buf) -> new BlockBreakPacketC2S(PacketCodecs.POS_CODEC.decode(buf))
-    );
-}
+public record BlockBreakPacketC2S(Vector3i pos) implements Packet {}

@@ -237,7 +237,7 @@ public class CraftEngineClient {
             player.getInventory().slot(i, new ItemStack(Items.GOLDEN_APPLE));
         }
         hudRenderer = new HudRenderer(Window.scaledWidth(), Window.scaledHeight());
-//        gameClient.connect("", 8080);
+//        gameClient.connect("", 25566);
     }
 
     public void stop() {
