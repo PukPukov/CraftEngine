@@ -3,9 +3,11 @@ package ru.mrbedrockpy.renderer.window;
 import lombok.Getter;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
+import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 import ru.mrbedrockpy.craftengine.core.util.config.CraftEngineConfig;
 
 import java.awt.image.BufferedImage;
@@ -41,25 +43,40 @@ public class Window {
         if (System.getProperty("os.name").toLowerCase().contains("linux")) {
             glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
         }
-
+        
+        GLFWErrorCallback errorCallback = GLFWErrorCallback.create((error, descriptionPtr) -> {
+            String description = MemoryUtil.memASCII(descriptionPtr);
+            System.err.println("GLFW Error " + error + ": " + description);
+        });
+        errorCallback.set();
+        
+        try {
+            initialize0(settings);
+        } finally {
+            errorCallback.free();
+            glfwTerminate();
+        }
+    }
+    
+    private static void initialize0(WindowSettings settings) {
         if (!glfwInit()) throw new IllegalStateException("Unable to initialize GLFW");
-
+        
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
-
+        
         window = glfwCreateWindow(width, height, title, NULL, NULL);
         if (window == NULL) throw new IllegalStateException("Failed to create the GLFW window");
-
+        
         centerOnPrimaryMonitor();
-
+        
         glfwMakeContextCurrent(window);
         setVsync(vsync);
         GL.createCapabilities();
-
+        
         glfwSetFramebufferSizeCallback(window, (win, w, h) -> {
             if (w <= 0 || h <= 0) return;
             glViewport(0, 0, w, h);
@@ -72,7 +89,7 @@ public class Window {
         glfwSetWindowPosCallback(window, (win, x, y) -> {
             if (!fullscreen) { windowedX = x; windowedY = y; }
         });
-
+        
         try (MemoryStack stack = stackPush()) {
             IntBuffer pw = stack.mallocInt(1);
             IntBuffer ph = stack.mallocInt(1);
@@ -85,15 +102,15 @@ public class Window {
             windowedX = px.get(0);
             windowedY = py.get(0);
         }
-
+        
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
         glFrontFace(GL_CCW);
-
+        
         glfwShowWindow(window);
-
+        
         if (settings.isFullscreen()) {
             setFullscreen(true);
         }
