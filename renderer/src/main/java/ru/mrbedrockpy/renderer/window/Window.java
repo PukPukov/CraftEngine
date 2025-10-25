@@ -50,12 +50,7 @@ public class Window {
         });
         errorCallback.set();
         
-        try {
-            initialize0(settings);
-        } finally {
-            errorCallback.free();
-            glfwTerminate();
-        }
+        initialize0(settings);
     }
     
     private static void initialize0(WindowSettings settings) {
