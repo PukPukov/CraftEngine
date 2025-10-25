@@ -2,9 +2,7 @@ package ru.mrbedrockpy.craftengine.server.network.packet;
 
 
 import ru.mrbedrockpy.craftengine.server.network.codec.PacketCodec;
-import ru.mrbedrockpy.craftengine.server.network.codec.PacketCodecs;
 
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -67,6 +65,7 @@ public final class PacketRegistry {
                             " — must end with C2S or S2C"
             );
         }
+        register(dir, cls);
     }
 
 
