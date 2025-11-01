@@ -1,6 +1,7 @@
 package ru.mrbedrockpy.renderer.resource;
 
 import lombok.RequiredArgsConstructor;
+import ru.mrbedrockpy.craftengine.core.util.id.RL;
 import ru.mrbedrockpy.renderer.api.IResourceManager;
 import ru.mrbedrockpy.renderer.api.ResourceHandle;
 import ru.mrbedrockpy.renderer.graphics.Texture;
@@ -11,50 +12,96 @@ import java.util.*;
 @RequiredArgsConstructor
 public class TextureLoader {
     private final IResourceManager rm;
-    private final Map<String, Texture> cache = new HashMap<>();
+    private final Map<RL, Texture> cache = new HashMap<>();
 
-    private static final String TEXTURES_ROOT = "assets/textures/";
+    private static final String ASSETS_PREFIX   = "assets/";
+    private static final String TEXTURES_DIR    = "textures/";
 
-    public Map<String, Texture> loadAll(String base) {
-        String root = normalizeDir(base);
-        List<ResourceHandle> list = rm.list(root, name -> name.endsWith(".png"));
-        for (ResourceHandle h : list) {
-            String full = normalizePath(h.path());
-            String relative = stripPrefix(full, TEXTURES_ROOT);
-            if (relative.equals(full)) {
-                relative = stripPrefix(full, root);
-            }
+    public Map<RL, Texture> loadAll(RL base) {
+        final String root = toTexturesDir(base); // "assets/ns/textures/<basePath>/"
 
-            if (relative.endsWith(".png")) {
-                relative = relative.substring(0, relative.length() - 4);
-            }
+        // 1) берём всё, без преждевременного фильтра
+        List<ResourceHandle> raw = rm.list(root, name -> true);
 
-            String id = normalizeId(relative);
+        System.out.println("[TextureLoader] root=" + root + " handles=" + raw.size());
+        for (ResourceHandle h : raw) {
+            String p = normalizePath(h.path());
+            String pLower = p.toLowerCase(Locale.ROOT);
+
+            // 2) пропускаем только png (проверяем по ПУТИ, а не по "name")
+            if (!pLower.endsWith(".png")) continue;
+
+            // 3) строим RL устойчиво к абсолютным и относительным путям
+            RL id = rlFromAnyPath(p, base);
+
+            // 4) грузим
             cache.put(id, load(id));
         }
-
         return Collections.unmodifiableMap(cache);
     }
 
-    public Texture load(String id) {
-        id = normalizeId(id);
-        if (cache.containsKey(id)) return cache.get(id);
-        return TextureUtil.fromBufferedImage(rm.readImage(TEXTURES_ROOT + id + ".png"));
+    private static RL rlFromAnyPath(String path, RL base) {
+        String s = normalizePath(path);
+
+        // Абсолютный?
+        if (s.startsWith("assets/")) {
+            s = s.substring("assets/".length());
+            int slash = s.indexOf('/');
+            if (slash < 0) throw new IllegalArgumentException("Invalid absolute path: " + path);
+            String ns = s.substring(0, slash);
+            s = s.substring(slash + 1);
+            if (s.startsWith("textures/")) s = s.substring("textures/".length());
+            if (s.endsWith(".png")) s = s.substring(0, s.length() - 4);
+            return RL.of(ns, s);
+        }
+
+        // Относительный: считаем относительно "base"
+        String basePath = normalizePath(base.path());
+        String ns = base.namespace();
+
+        // склеиваем: <base.path>/<relative> и чистим "textures/" + ".png" на всякий
+        String merged = (basePath.isEmpty() ? s : (basePath + "/" + s));
+        if (merged.startsWith("textures/")) merged = merged.substring("textures/".length());
+        if (merged.endsWith(".png")) merged = merged.substring(0, merged.length() - 4);
+
+        return RL.of(ns, merged);
     }
 
-    public Set<Map.Entry<String, Texture>> getAll() {
+    public Texture load(RL id) {
+        Texture cached = cache.get(id);
+        if (cached != null) return cached;
+
+        String filePath = ASSETS_PREFIX + id.namespace() + "/" + TEXTURES_DIR + id.path() + ".png";
+        var v = rm.readImage(filePath);
+        if(v == null) throw new NullPointerException("texture: " + id + " is null");
+        Texture tex = TextureUtil.fromBufferedImage(v);
+        cache.put(id, tex);
+        return tex;
+    }
+
+    public Set<Map.Entry<RL, Texture>> getAll() {
         return cache.entrySet();
     }
 
-    private String normalizeId(String id) {
-        String s = normalizePath(id);
+    private static String toTexturesDir(RL baseDir) {
+        String ns = baseDir.namespace();
+        String p  = normalizePath(baseDir.path());
 
-        s = stripPrefix(s, TEXTURES_ROOT);
-        s = stripPrefix(s, "textures/");
-        s = stripPrefix(s, "assets/");
+        // убираем возможные лишние префиксы в любом порядке
+        p = stripPrefixIfStarts(p, "assets/");
+        p = stripPrefixIfStarts(p, ns + "/");
+        p = stripPrefixIfStarts(p, "textures/");
 
-        if (s.endsWith(".png")) s = s.substring(0, s.length() - 4);
-        return s;
+        // уберём конечный '/'
+        if (p.endsWith("/")) p = p.substring(0, p.length() - 1);
+
+        // итоговый корень без обязательного слэша в конце (так совместимее с разными RM)
+        return ASSETS_PREFIX + ns + "/" + TEXTURES_DIR + (p.isEmpty() ? "" : "/" + p);
+    }
+
+    private static String stripPrefixIfStarts(String s, String prefix) {
+        String p = normalizePath(prefix);
+        return s.startsWith(p) ? s.substring(p.length()) : s;
     }
 
     private static String normalizePath(String p) {
@@ -63,14 +110,8 @@ public class TextureLoader {
         return s;
     }
 
-    private static String normalizeDir(String p) {
-        String s = normalizePath(p);
-        if (!s.endsWith("/")) s = s + "/";
-        return s;
-    }
-
-    private static String stripPrefix(String s, String prefix) {
-        String p = normalizePath(prefix);
+    private static String stripPrefixDir(String s, String prefixDir) {
+        String p = normalizePath(prefixDir);
         if (!p.endsWith("/")) p = p + "/";
         return s.startsWith(p) ? s.substring(p.length()) : s;
     }

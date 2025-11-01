@@ -1,6 +1,7 @@
 package ru.mrbedrockpy.renderer.resource;
 
 import lombok.Getter;
+import ru.mrbedrockpy.craftengine.core.util.id.RL;
 import ru.mrbedrockpy.renderer.api.IResourceManager;
 import ru.mrbedrockpy.renderer.api.ResourceHandle;
 import ru.mrbedrockpy.renderer.api.ResourceSource;
@@ -129,7 +130,7 @@ public class CompositeResourceManager implements IResourceManager {
         List<String> errors = new ArrayList<>();
 
         modelLoader.loadAll("assets/models/");
-        textureLoader.loadAll("assets/textures/");
+        textureLoader.loadAll(RL.of("assets/textures/"));
 
         long ms = (System.nanoTime() - t0) / 1_000_000L;
         if (!errors.isEmpty()) {

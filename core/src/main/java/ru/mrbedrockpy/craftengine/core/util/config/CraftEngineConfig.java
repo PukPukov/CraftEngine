@@ -10,12 +10,12 @@ public class CraftEngineConfig {
     public static int RENDER_DISTANCE = 8;
     
     @ConfigField(name = "fov")
-    public static float FOV = 70.0f;
+    public static float FOV = 110.0f;
     
     @ConfigField(name = "fov-dynamic-multiplier")
     public static float FOV_DYNAMIC_MULTIPLIER = 1.0f;
     
     @ConfigField(name = "gui-scale")
-    public static int guiScale = 6;
+    public static int guiScale = 5;
     
 }

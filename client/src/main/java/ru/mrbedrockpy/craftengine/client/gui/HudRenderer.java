@@ -3,6 +3,7 @@ package ru.mrbedrockpy.craftengine.client.gui;
 import org.joml.Vector3f;
 import ru.mrbedrockpy.craftengine.client.CraftEngineClient;
 import ru.mrbedrockpy.craftengine.client.gui.screen.widget.SlotWidget;
+import ru.mrbedrockpy.craftengine.core.util.id.RL;
 import ru.mrbedrockpy.craftengine.core.world.entity.PlayerEntity;
 import ru.mrbedrockpy.craftengine.core.world.inventory.PlayerInventory;
 import ru.mrbedrockpy.renderer.gui.DrawContext;
@@ -40,8 +41,8 @@ public class HudRenderer {
     public void slotClick(SlotWidget slot) {}
 
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        context.drawTextureCentred(width / 2, height / 2, 10, 10, "gui/cursor.png");
-        context.drawTexture(width / 2 - 182 / 2 - 1, height - 36, 184, 32, 0, 144, 256, 256,  "gui/inventory.png");
+        context.drawTextureCentred(width / 2, height / 2, 10, 10, RL.of("gui/cursor.png"));
+        context.drawTexture(width / 2 - 182 / 2 - 1, height - 36, 184, 32, 0, 144, RL.of("gui/inventory"));
         context.drawText(String.valueOf(CraftEngineClient.INSTANCE.getFpsCounter().getFps()), 5, 5, 0.5f);
         context.drawText(positionToString(CraftEngineClient.INSTANCE.getPlayer().getPosition()), 5, 10, 0.5f);
         context.drawText(CraftEngineClient.INSTANCE.getPlayer().getCamera().getAngle().toString(), 5, 15, 0.5f);
@@ -55,7 +56,7 @@ public class HudRenderer {
             slot.render(context, mouseX, mouseY, delta);
         }
         SlotWidget w = hotbarSlots[player.getInventory().getSelectedHotbarSlot()];
-        context.drawTexture(w.getX() - 2, w.getY() - 2, 22, 22, "gui/selected_slot.png");
+        context.drawTexture(w.getX() - 2, w.getY() - 2, 22, 22, RL.of("gui/selected_slot.png"));
     }
     
     public String positionToString(Vector3f position) {

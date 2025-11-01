@@ -1,6 +1,7 @@
 package ru.mrbedrockpy.craftengine.core.world.item;
 
 import ru.mrbedrockpy.craftengine.core.registry.Registries;
+import ru.mrbedrockpy.craftengine.core.util.id.RL;
 import ru.mrbedrockpy.craftengine.core.world.block.Blocks;
 
 public class Items {
@@ -9,7 +10,7 @@ public class Items {
     public static Item DIRT_BLOCK_ITEM = regItem("dirt", new BlockItem("dirt", 64, Blocks.DIRT));
     public static Item STONE_BLOCK_ITEM = regItem("stone", new BlockItem("stone", 64, Blocks.STONE));
     private static <T extends Item> T regItem(String id, T item) {
-        Registries.ITEMS.register(id, item);
+        Registries.ITEMS.register(RL.of(id), item);
         return item;
     }
 

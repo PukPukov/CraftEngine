@@ -2,19 +2,21 @@ package ru.mrbedrockpy.renderer.graphics;
 
 import lombok.AccessLevel;
 import lombok.Getter;
+import ru.mrbedrockpy.craftengine.core.util.id.RL;
 import ru.mrbedrockpy.renderer.graphics.tex.UvProvider;
 import ru.mrbedrockpy.renderer.util.graphics.TextureUtil;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class TextureAtlas implements UvProvider {
     private final int tileSize = 32;
     @Getter(AccessLevel.PUBLIC)
     private final int atlasSize;
-    private final Map<String, Rectangle> uvMap = new HashMap<>();
+    private final Map<RL, Rectangle> uvMap = new HashMap<>();
     private int currentX = 0;
     private int currentY = 0;
 
@@ -26,34 +28,40 @@ public class TextureAtlas implements UvProvider {
 
     }
 
-    public void addTile(String name, BufferedImage tile) {
-        if (currentY >= atlasSize) {
-            throw new RuntimeException("TextureAtlas overflow");
+    public void addTile(RL name, BufferedImage tile) {
+
+        if (currentY >= atlasSize) throw new RuntimeException("TextureAtlas overflow");
+
+        int w = tile.getWidth();
+        int h = tile.getHeight();
+
+        int px = currentX * tileSize;
+        int py = currentY * tileSize;
+
+        Graphics2D g = atlasImage.createGraphics();
+        try {
+            g.setComposite(AlphaComposite.Src);
+            g.drawImage(tile, px, py, null);
+        } finally {
+            g.dispose();
         }
 
-        Graphics g = atlasImage.getGraphics();
-        g.drawImage(tile, currentX * tileSize, currentY * tileSize, null);
-        g.dispose();
-
-        uvMap.put(name, new Rectangle(currentX * tileSize, currentY * tileSize, tile.getTileWidth(), tile.getTileHeight()));
+        uvMap.put(name, new Rectangle(px, py, w, h));
 
         currentX++;
-        if (currentX >= atlasSize) {
-            currentX = 0;
-            currentY++;
-        }
+        if (currentX >= atlasSize) { currentX = 0; currentY++; }
     }
 
     public Texture buildAtlas() {
         return TextureUtil.fromBufferedImage(atlasImage);
     }
 
-    public Rectangle uv(String name) {
+    public Rectangle uv(RL name) {
         return uvMap.get(name);
     }
 
 
-    public float[] getNormalizedUvs(String name) {
+    public float[] getNormalizedUvs(RL name) {
         Rectangle r = uv(name);
         try {
             if(r == null){
@@ -70,4 +78,5 @@ public class TextureAtlas implements UvProvider {
         float v0 = y1 / atlasPix, v1 = y0 / atlasPix;
         return new float[]{u0,v0, u1,v0, u1,v1, u0,v1};
     }
+
 }

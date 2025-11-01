@@ -1,7 +1,7 @@
 package ru.mrbedrockpy.renderer.graphics;
 
 import lombok.Getter;
-import ru.mrbedrockpy.renderer.graphics.tex.Atlas;
+import ru.mrbedrockpy.craftengine.core.util.id.RL;
 import ru.mrbedrockpy.renderer.graphics.tex.UvProvider;
 import ru.mrbedrockpy.renderer.util.ImageUtil;
 
@@ -23,7 +23,7 @@ public class FreeTextureAtlas implements UvProvider {
     private BufferedImage atlasImage;
     private final int glTexId;
     @Getter
-    private final Map<String, Rectangle> uvMap = new HashMap<>();
+    private final Map<RL, Rectangle> uvMap = new HashMap<>();
     private final List<Shelf> shelves = new ArrayList<>();
     private int usedHeight = 0;
 
@@ -53,60 +53,73 @@ public class FreeTextureAtlas implements UvProvider {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     }
 
-    /** Биндит атлас в активный текстурный юнит */
-    public void use() { glBindTexture(GL_TEXTURE_2D, glTexId); }
+    public boolean contains(RL name) { return uvMap.containsKey(name); }
 
-    /** Проверяет, есть ли уже тайл в атласе */
-    public boolean contains(String name) { return uvMap.containsKey(name); }
-
-    /**
-     * Добавляет тайл. Если не влезает — атлас увеличится ровно настолько, насколько нужно.
-     * Возвращает прямоугольник размещения в пикселях.
-     */
-    public Rectangle addTexture(String name, BufferedImage tile) {
-        if (uvMap.containsKey(name)) return uvMap.get(name);
+    public void addTexture(RL name, BufferedImage tile) {
+        RL key = normalize(name);                   // единообразный ключ
+        Rectangle cached = uvMap.get(key);
+        if (cached != null) return;
 
         int w = tile.getWidth();
         int h = tile.getHeight();
-        if (w <= 0 || h <= 0) throw new IllegalArgumentException("Tile has invalid size: " + w + "x" + h);
+        if (w <= 0 || h <= 0) {
+            throw new IllegalArgumentException("Tile has invalid size: " + w + "x" + h + " for " + key);
+        }
 
-        // 1) Попробуем найти полку, куда поместится (по высоте и ширине)
+        // 1) Находим «полку» (shelf), куда поместится
         Shelf shelf = findShelfToFit(w, h);
 
-        // 2) Если не нашли — обеспечим вместимость (минимально возможным ростом) и повторим поиск
+        // 2) Если не нашли — растим атлас и повторяем
         if (shelf == null) {
             ensureCapacityFor(w, h);
             shelf = findShelfToFit(w, h);
             if (shelf == null) {
-                // на всякий случай, но по логике ensureCapacityFor() мы обязаны были создать возможность
-                throw new IllegalStateException("Failed to fit texture after resize");
+                throw new IllegalStateException("Failed to fit texture after resize for " + key);
             }
         }
 
         // 3) Рисуем в RAM-изображение
-        int x0 = shelf.x;
-        int y0 = shelf.y;
-        Graphics g = atlasImage.getGraphics();
-        g.drawImage(tile, x0, y0, null);
-        g.dispose();
+        final int x0 = shelf.x;
+        final int y0 = shelf.y;
 
-        // 4) Заливаем в GPU (частично)
-        ByteBuffer data = ImageUtil.toByteBuffer(tile);
-        use();
+        Graphics2D g = atlasImage.createGraphics();
+        try {
+            g.setComposite(AlphaComposite.Src);     // без лишнего бленда
+            g.drawImage(tile, x0, y0, null);
+        } finally {
+            g.dispose();
+        }
+
+        // 4) Заливаем изменившийся блок в GPU
+        ByteBuffer data = ImageUtil.toByteBuffer(tile); // RGBA 8bit
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);          // на случай «не-кратно-4» ширины
         glTexSubImage2D(GL_TEXTURE_2D, 0, x0, y0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
         // 5) Обновляем метаданные
         Rectangle rect = new Rectangle(x0, y0, w, h);
-        uvMap.put(name, rect);
+        uvMap.put(key, rect);
         shelf.x += w;
 
-        return rect;
     }
 
+    private static RL normalize(RL id) {
+        String ns = id.namespace();
+        String p  = id.path().replace('\\', '/');
+
+        if (p.startsWith("textures/")) p = p.substring("textures/".length());
+        if (p.endsWith(".png")) p = p.substring(0, p.length() - 4);
+
+        return RL.of(ns, p.toLowerCase(Locale.ROOT));
+    }
+
+
     /** Возвращает UV-координаты: [u0,v1, u1,v1, u1,v0, u0,v0] (нижний левый = (0,0)). */
-    public float[] getNormalizedUvs(String name) {
+    public float[] getNormalizedUvs(RL name) {
         Rectangle r = uvMap.get(name);
-        if (r == null) throw new IllegalArgumentException("Нет тайла: " + name);
+        if (r == null) {
+            System.err.println("Texture not found: " + name);
+            return new float[8];
+        }
 
         float u0 = r.x         / (float) widthPx;
         float v1 = r.y         / (float) heightPx;
@@ -117,8 +130,8 @@ public class FreeTextureAtlas implements UvProvider {
     }
 
     /** Сохраняет атлас в PNG-файл для отладки */
-    public void saveAsPng(String path) throws IOException {
-        File out = new File(Paths.get(path).toUri());
+    public void saveAsPng(RL path) throws IOException {
+        File out = new File(Paths.get(path.toString()).toUri());
         File parent = out.getParentFile();
         if (parent != null) parent.mkdirs();
         ImageIO.write(atlasImage, "PNG", out);
@@ -208,7 +221,6 @@ public class FreeTextureAtlas implements UvProvider {
         atlasImage = newImg;
 
         // 2) GPU: переинициализируем текстуру и зальём весь снимок
-        use();
         ByteBuffer all = ImageUtil.toByteBuffer(atlasImage);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, newW, newH, 0, GL_RGBA, GL_UNSIGNED_BYTE, all);
         // фильтры уже выставлены в конструкторе; повторять не обязательно

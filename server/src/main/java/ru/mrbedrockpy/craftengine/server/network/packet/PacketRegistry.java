@@ -2,7 +2,9 @@ package ru.mrbedrockpy.craftengine.server.network.packet;
 
 
 import ru.mrbedrockpy.craftengine.server.network.codec.PacketCodec;
+import ru.mrbedrockpy.craftengine.server.network.codec.PacketCodecs;
 
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -45,10 +47,7 @@ public final class PacketRegistry {
 
     public <P extends Packet> void register(PacketDirection dir, Class<P> cls) {
         PacketCodec<P> codec = PacketCodec.forRecord(cls);
-        if (dir == PacketDirection.C2S) idToCodecClient.put(currentId, codec);
-        else idToCodecServer.put(currentId, codec);
-        classToId.put(new Key(dir, cls), currentId);
-        currentId++;
+        register(dir, cls, codec);
     }
 
     public <P extends Packet> void register(Class<P> cls) {

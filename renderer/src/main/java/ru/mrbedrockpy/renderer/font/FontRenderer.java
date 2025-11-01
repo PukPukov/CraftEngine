@@ -8,6 +8,7 @@ import org.lwjgl.stb.STBTTFontinfo;
 import org.lwjgl.stb.STBTTPackContext;
 import org.lwjgl.stb.STBTTPackedchar;
 import org.lwjgl.system.MemoryStack;
+import ru.mrbedrockpy.craftengine.core.util.id.RL;
 import ru.mrbedrockpy.renderer.graphics.FreeTextureAtlas;
 import ru.mrbedrockpy.renderer.gui.DrawContext;
 import ru.mrbedrockpy.renderer.window.Window;
@@ -31,7 +32,7 @@ public class FontRenderer {
     private static final int FONT_SIZE = 32;
 
     private final FreeTextureAtlas atlas;
-    private final String atlasKey;
+    private final RL atlasKey;
     private Rectangle atlasRect;
 
     // было final -> убрал
@@ -41,18 +42,24 @@ public class FontRenderer {
     private float scale;
     private int ascent;
 
-    public FontRenderer(FreeTextureAtlas atlas, String atlasKey) {
+    public FontRenderer(FreeTextureAtlas atlas, RL atlasKey) {
         this.atlas = atlas;
         this.atlasKey = atlasKey;
     }
 
-    public void init(String resourcePath) throws IOException {
-        // если уже инициализировано — аккуратно очистим
+    public void init(RL fontId) throws IOException {
         if (fontInfo != null || charData != null) dispose();
 
-        // грузим TTF в persistent direct ByteBuffer (НЕ stack!)
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream(resourcePath)) {
-            if (is == null) throw new IOException("Font not found: " + resourcePath);
+        // Построим classpath-путь: assets/<ns>/fonts/<path>.ttf
+        String cp = toFontClasspath(fontId);
+
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        if (cl == null) cl = getClass().getClassLoader();
+
+        try (InputStream is = cl.getResourceAsStream(cp)) {
+            if (is == null) {
+                throw new IOException("Font not found on classpath: " + cp + " (from " + fontId + ")");
+            }
             byte[] bytes = is.readAllBytes();
             fontData = BufferUtils.createByteBuffer(bytes.length);
             fontData.put(bytes).flip();
@@ -96,7 +103,23 @@ public class FontRenderer {
             atlas.addTexture(atlasKey, img);
         }
         atlasRect = atlas.getUvMap().get(atlasKey);
-        if (atlasRect == null) throw new IllegalStateException("Atlas did not record rect for key: " + atlasKey);
+        if (atlasRect == null) {
+            throw new IllegalStateException("Atlas did not record rect for key: " + atlasKey);
+        }
+    }
+
+    /** Превращает логический RL(ns:path) в classpath: assets/<ns>/fonts/<path>.ttf */
+    private static String toFontClasspath(RL id) {
+        String ns = id.namespace();
+        String p  = id.path().replace('\\', '/');
+
+        // допускаем, что могли передать «лишнее» — аккуратно уберём
+        if (p.startsWith("assets/")) p = p.substring("assets/".length());
+        if (p.startsWith(ns + "/")) p = p.substring(ns.length() + 1);
+        if (p.startsWith("fonts/")) p = p.substring("fonts/".length());
+        if (p.endsWith(".ttf"))     p = p.substring(0, p.length() - 4);
+
+        return "assets/" + ns + "/fonts/" + p + ".ttf";
     }
 
     public Vector2f measureTextPx(String text) {

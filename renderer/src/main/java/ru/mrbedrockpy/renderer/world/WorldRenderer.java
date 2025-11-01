@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.joml.Matrix4f;
 import org.joml.Vector2i;
 import ru.mrbedrockpy.craftengine.core.util.config.CraftEngineConfig;
+import ru.mrbedrockpy.craftengine.core.util.id.RL;
 import ru.mrbedrockpy.craftengine.core.world.chunk.Chunk;
 import ru.mrbedrockpy.renderer.RenderInit;
 import ru.mrbedrockpy.renderer.graphics.*;
@@ -54,15 +55,15 @@ public class WorldRenderer {
             e.printStackTrace();
         }
         texture = atlas.buildAtlas();
-        GlTexture blocksGl = new GlTexture(texture.getId());
-        Atlas blocks = new Atlas("blocks", blocksGl, atlas);
+        GlTexture blocksGl = new GlTexture(texture.getId(), texture.getWidth(), texture.getHeight());
+        Atlas blocks = new Atlas(RL.of("blocks"), blocksGl, atlas);
         BLOCKS_ATLAS = RenderInit.ATLAS_MANAGER.register(blocks);
         skyboxRenderer = new SkyboxRenderer("skybox.png");
     }
 
     private void loadTextures() throws IOException {
-        for (Map.Entry<String, Texture> texture : RenderInit.RESOURCE_MANAGER.getTextureLoader().getAll()) {
-            if (!texture.getKey().startsWith("block/")) continue;
+        for (Map.Entry<RL, Texture> texture : RenderInit.RESOURCE_MANAGER.getTextureLoader().getAll()) {
+            if (!texture.getKey().path().startsWith("block/")) continue;
             atlas.addTile(texture.getKey(), TextureUtil.toBufferedImage(texture.getValue()));
         }
     }

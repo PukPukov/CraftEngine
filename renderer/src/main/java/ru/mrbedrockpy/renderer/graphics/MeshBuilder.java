@@ -4,6 +4,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
+import ru.mrbedrockpy.craftengine.core.util.id.RL;
 import ru.mrbedrockpy.craftengine.core.world.block.Block;
 import ru.mrbedrockpy.craftengine.core.world.chunk.Chunk;
 import ru.mrbedrockpy.renderer.RenderInit;
@@ -60,8 +61,8 @@ public class MeshBuilder {
                         if (isSolidWorld(chunk, x + n.x, y + n.y, z + n.z)) continue;
 
                         float[][] corners = baseFaceCorners[d.ordinal()];
-
-                        float[] uv4 = atlas.getNormalizedUvs("block/" + RenderInit.BLOCKS.getName(RenderInit.BLOCKS.get(id)));
+                        RL block = RenderInit.BLOCKS.getRL(RenderInit.BLOCKS.get(id));
+                        float[] uv4 = atlas.getNormalizedUvs(RL.of(block.namespace(), "block/" + block.path()));
 
                         emitFace(x, y, z, d, corners, uv4, chunk);
                     }

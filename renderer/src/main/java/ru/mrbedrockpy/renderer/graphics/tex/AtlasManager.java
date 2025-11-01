@@ -1,6 +1,7 @@
 package ru.mrbedrockpy.renderer.graphics.tex;
 
 import lombok.Getter;
+import ru.mrbedrockpy.craftengine.core.util.id.RL;
 
 import static org.lwjgl.opengl.ARBBindlessTexture.*;
 import static org.lwjgl.opengl.GL46C.*;
@@ -24,9 +25,11 @@ public final class AtlasManager implements AutoCloseable {
     public Atlas get(int index) { return atlases.get(index); }
     public int size() { return atlases.size(); }
 
-    public TextureRegion findRegion(String key) {
+    // Какая то баганая вайб хуйня
+    public TextureRegion findRegion(RL key) {
+        RL norm = RL.of(key.namespace(), key.path().endsWith(".png") ? key.path().substring(0, key.path().length() - ".png".length()) : key.path());
         for (int i = 0; i < atlases.size(); i++) {
-            TextureRegion r = atlases.get(i).region(i, key);
+            TextureRegion r = atlases.get(i).region(i, norm);
             if (r != null) return r;
         }
         return null;

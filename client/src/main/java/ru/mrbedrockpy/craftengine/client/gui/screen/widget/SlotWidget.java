@@ -1,6 +1,7 @@
 package ru.mrbedrockpy.craftengine.client.gui.screen.widget;
 
 import ru.mrbedrockpy.craftengine.core.registry.Registries;
+import ru.mrbedrockpy.craftengine.core.util.id.RL;
 import ru.mrbedrockpy.craftengine.core.world.item.ItemStack;
 import ru.mrbedrockpy.renderer.gui.DrawContext;
 
@@ -49,7 +50,8 @@ public class SlotWidget extends AbstractWidget {
 
         ItemStack s = stack();
         if (s != null && !s.isEmpty()) {
-            String path = "gui/" + Registries.ITEMS.getName(s.item()) + ".png";
+            RL item = Registries.ITEMS.getRL(s.item());
+            RL path = RL.of(item.namespace(), "gui/" + item.path() + ".png");
             int yoff = Math.round(lift);  // плавный подъём
             ctx.drawTexture(x + 1, y + 1 - yoff, 16, 16, path);
         }

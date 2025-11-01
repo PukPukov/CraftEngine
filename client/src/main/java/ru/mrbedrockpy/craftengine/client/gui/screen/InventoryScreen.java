@@ -4,6 +4,7 @@ import ru.mrbedrockpy.craftengine.client.CraftEngineClient;
 import ru.mrbedrockpy.craftengine.client.gui.screen.layout.GridLayout;
 import ru.mrbedrockpy.craftengine.client.gui.screen.widget.SlotWidget;
 import ru.mrbedrockpy.craftengine.core.registry.Registries;
+import ru.mrbedrockpy.craftengine.core.util.id.RL;
 import ru.mrbedrockpy.craftengine.core.world.inventory.PlayerInventory;
 import ru.mrbedrockpy.craftengine.core.world.item.ItemStack;
 import ru.mrbedrockpy.renderer.gui.DrawContext;
@@ -104,7 +105,7 @@ public class InventoryScreen extends Screen {
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         int width = Window.scaledWidth();
         int height = Window.scaledHeight();
-        context.drawTexture(width / 2 - 90, height / 2 - 70, 180, 140, 0, 0, 256, 256, "gui/inventory.png");
+        context.drawTexture(width / 2 - 90, height / 2 - 70, 180, 140, 0, 0, 256, 256, RL.of("gui/inventory.png"));
 
         super.render(context, mouseX, mouseY, delta);
         // Потом — курсор поверх
@@ -113,7 +114,7 @@ public class InventoryScreen extends Screen {
             int sx = mouseX;
             int sy = mouseY;
             context.drawTexture(sx - 9, sy - 9, 17, 17,
-                    "gui/" + Registries.ITEMS.getName(cursorStack.item()) + ".png");
+                    RL.of("gui/" + Registries.ITEMS.getRL(cursorStack.item()) + ".png"));
         }
     }
 }

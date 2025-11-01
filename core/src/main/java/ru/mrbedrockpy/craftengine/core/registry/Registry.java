@@ -1,16 +1,18 @@
 package ru.mrbedrockpy.craftengine.core.registry;
 
 
+import ru.mrbedrockpy.craftengine.core.util.id.RL;
+
 import java.util.*;
 
 public class Registry<T> {
-    private final Map<String, T> nameToObject = new HashMap<>();
-    private final Map<T, String> objectToName = new HashMap<>();
+    private final Map<RL, T> nameToObject = new HashMap<>();
+    private final Map<T, RL> objectToName = new HashMap<>();
     private final Map<T, Integer> objectToId = new HashMap<>();
     private final List<T> idToObject = new ArrayList<>();
     private boolean frozen = false;
 
-    public <U extends T>U register(String name, U value) {
+    public <U extends T>U register(RL name, U value) {
         if (frozen) throw new IllegalStateException("Registry is frozen");
         if (nameToObject.containsKey(name)) throw new IllegalArgumentException("Already registered: " + name);
 
@@ -22,7 +24,7 @@ public class Registry<T> {
         return value;
     }
 
-    public T get(String name) {
+    public T get(RL name) {
         return nameToObject.get(name);
     }
 
@@ -36,7 +38,7 @@ public class Registry<T> {
         return entry;
     }
 
-    public String getName(T value) {
+    public RL getRL(T value) {
         return objectToName.get(value);
     }
 

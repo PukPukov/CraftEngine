@@ -5,11 +5,13 @@ import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.lwjgl.stb.STBTTPackedchar;
+import ru.mrbedrockpy.craftengine.core.util.id.RL;
 import ru.mrbedrockpy.renderer.RenderInit;
 import ru.mrbedrockpy.renderer.font.FontRenderer;
 import ru.mrbedrockpy.renderer.graphics.*;
 import ru.mrbedrockpy.renderer.graphics.tex.Atlas;
 import ru.mrbedrockpy.renderer.graphics.tex.GlTexture;
+import ru.mrbedrockpy.renderer.graphics.tex.TextureRegion;
 import ru.mrbedrockpy.renderer.resource.TextureLoader;
 import ru.mrbedrockpy.renderer.util.FileLoader;
 import ru.mrbedrockpy.renderer.util.graphics.ShaderUtil;
@@ -51,20 +53,20 @@ public class DrawContext {
         glEnableVertexAttribArray(1);
         glBindVertexArray(0);
 
-        fontRenderer = new FontRenderer(atlas, "ui_font_main");
+        fontRenderer = new FontRenderer(atlas, RL.of("ui_font_main"));
         try {
-            fontRenderer.init("minecraft.ttf");
+            fontRenderer.init(RL.of("minecraft.ttf"));
         } catch (IOException e) {
             throw new RuntimeException("Font load error", e);
         }
 
-        for (Map.Entry<String, Texture> texture : RenderInit.RESOURCE_MANAGER.getTextureLoader().getAll()) {
-            if (!texture.getKey().startsWith("gui/")) continue;
+        for (Map.Entry<RL, Texture> texture : RenderInit.RESOURCE_MANAGER.getTextureLoader().getAll()) {
+            if (!texture.getKey().path().startsWith("gui/")) continue;
             atlas.addTexture(texture.getKey(), TextureUtil.toBufferedImage(texture.getValue()));
         }
 
-        GlTexture guiTex = new GlTexture(atlas.getTextureId());
-        Atlas ui = new Atlas("gui", guiTex, atlas);
+        GlTexture guiTex = new GlTexture(atlas.getTextureId(), atlas.getWidthPx(), atlas.getHeightPx());
+        Atlas ui = new Atlas(RL.of("gui"), guiTex, atlas);
         GUI_ATLAS = RenderInit.ATLAS_MANAGER.register(ui);
     }
 
@@ -86,62 +88,79 @@ public class DrawContext {
     }
 
 
-    public void drawTextureCentred(int x, int y, int width, int height, String texture) {
+    public void drawTextureCentred(int x, int y, int width, int height, RL texture) {
         drawTexture(x - width / 2, y - height / 2, width, height, texture);
     }
 
-    public void drawTexture(int x, int y, int w, int h, String texturePath) {
-//        Texture texture = ;
+    public void drawTexture(int x, int y, int w, int h, RL texturePath) {
         this.drawTexture(x, y, w, h, 0, 0, w, h, texturePath);
     }
 
-    public void drawTexture(int x, int y, int w, int h, int u, int v, String texturePath) {
-        this.drawTexture(x, y, w, h, u, v, w, h, texturePath);
+    public void drawTexture(int x, int y, int w, int h, int u, int v, RL texturePath) {
+        TextureRegion r = RenderInit.ATLAS_MANAGER.findRegion(texturePath);
+        if (r == null) return;
+        drawTexture(x, y, w, h, u, v, r.texW, r.texH, texturePath);
     }
 
     public void drawTexture(int x, int y, int w, int h,
                             int u, int v, int tw, int th,
-                            String texturePath) {
-        texturePath = texturePath.endsWith(".png") ? texturePath.substring(0, texturePath.length() - 4) : texturePath;
-        float[] uv = atlas.getNormalizedUvs(texturePath);
-        // порядок: 0:(x0,y0), 1:(x1,y0), 2:(x1,y1), 3:(x0,y1)
-        float uL = uv[0], vT = uv[1];
-        float uR = uv[4], vB = uv[5];
-        float du = uR - uL;
-        float dv = vB - vT;
+                            RL texture) {
+        // 1) ищем регион в атласах
+        TextureRegion r = RenderInit.ATLAS_MANAGER.findRegion(texture);
+        if (r == null) return;
 
-        // нормализуем координаты относительно размеров текстуры
-        float su0 = uL + (u / (float) tw) * du;
-        float sv0 = vT + (v / (float) th) * dv;
-        float su1 = uL + ((u + w) / (float) tw) * du;
-        float sv1 = vT + ((v + h) / (float) th) * dv;
+        // 2) реальные размеры региона в пикселях
+        Atlas atlas = RenderInit.ATLAS_MANAGER.get(r.atlasIndex);
+        int atlasPixW = atlas.texture().width();
+        int atlasPixH = atlas.texture().height();
 
-        // если ось V перевёрнута
-        // float tmp = sv0; sv0 = sv1; sv1 = tmp;
+        int regionW = Math.max(1, Math.round((r.u1 - r.u0) * atlasPixW));
+        int regionH = Math.max(1, Math.round((r.v1 - r.v0) * atlasPixH));
 
+        // если tw/th не заданы — использовать реальные размеры региона
+        if (tw <= 0) tw = regionW;
+        if (th <= 0) th = regionH;
+
+        // 3) подстраховка от выхода сабрегиона за рамки исходной текстуры
+        if (u < 0) u = 0;
+        if (v < 0) v = 0;
+        if (u + w > tw) w = Math.max(0, tw - u);
+        if (v + h > th) h = Math.max(0, th - v);
+        if (w == 0 || h == 0) return;
+
+        // 4) пересчёт сабрегиона (u,v,w,h) в нормализованные UV
+        float du = r.u1 - r.u0;
+        float dv = r.v1 - r.v0;
+
+        float su0 = r.u0 + (u       / (float) tw) * du;
+        float sv0 = r.v0 + (v       / (float) th) * dv;
+        float su1 = r.u0 + ((u + w) / (float) tw) * du;
+        float sv1 = r.v0 + ((v + h) / (float) th) * dv;
+
+        // если координата V инвертирована — свопни
+        // float t = sv0; sv0 = sv1; sv1 = t;
+
+        // 5) заливаем в VBO
         float[] verts = {
-                x, y, su0, sv0,
-                x + w, y, su1, sv0,
+                x,     y,     su0, sv0,
+                x + w, y,     su1, sv0,
                 x + w, y + h, su1, sv1,
 
-                x, y, su0, sv0,
+                x,     y,     su0, sv0,
                 x + w, y + h, su1, sv1,
-                x, y + h, su0, sv1,
+                x,     y + h, su0, sv1,
         };
 
         glBindBuffer(GL_ARRAY_BUFFER, vboId);
         glBufferSubData(GL_ARRAY_BUFFER, 0, verts);
 
-
         shader.setUniform1b("useUniformColor", false);
         shader.setUniform1b("useMask", false);
 
         glBindVertexArray(vaoId);
-
         glVertexAttrib4f(2, 1f, 1f, 1f, 1f);
         glDisableVertexAttribArray(3);
-        glVertexAttribI1i(3, GUI_ATLAS);
-
+        glVertexAttribI1i(3, r.atlasIndex);
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
     }
