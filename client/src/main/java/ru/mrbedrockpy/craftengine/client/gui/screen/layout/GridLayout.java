@@ -143,5 +143,5 @@ public class GridLayout extends Layout {
         return this;
     }
 
-    public GridLayout origin(int x, int y) { this.originX=x; this.originY=y; return this; }
+    public GridLayout origin(int x, int y) { this.originX+=x; this.originY+=y; return this; }
 }

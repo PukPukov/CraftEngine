@@ -8,7 +8,7 @@ layout(location = 3) in int  inAtlas;
 
 uniform mat4 projection;
 uniform mat4 view;
-uniform bool useView;
+uniform mat4 model;
 
 out vec2 fragUV;
 out vec4 vertColor;
@@ -20,6 +20,5 @@ void main() {
     atlasIndex = inAtlas;
 
     vec4 pos = vec4(inPos.xy, inPos.z, 1.0);
-    gl_Position = useView ? (projection * view * pos)
-    : (projection * pos);
+    gl_Position = projection * view * model * pos;
 }

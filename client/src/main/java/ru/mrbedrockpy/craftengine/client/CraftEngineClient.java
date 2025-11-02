@@ -3,7 +3,6 @@ package ru.mrbedrockpy.craftengine.client;
 import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import ru.mrbedrockpy.craftengine.client.event.client.input.KeyPressEvent;
@@ -233,8 +232,11 @@ public class CraftEngineClient {
         setScreen(null);
         player.getInventory().slot(0, new ItemStack(Items.STONE_BLOCK_ITEM));
         player.getInventory().slot(1, new ItemStack(Items.DIRT_BLOCK_ITEM));
-        for (int i = 2; i < 36; i++) {
-            player.getInventory().slot(i, new ItemStack(Items.GOLDEN_APPLE));
+        for (int i = 2; i < 37; i++) {
+            player.getInventory().slot(i, Items.GOLDEN_APPLE.defStack());
+        }
+        for(int i = 0; i < 4; i++){
+            player.getInventory().setArmor(i, Items.GOLDEN_APPLE.defStack());
         }
         hudRenderer = new HudRenderer(Window.scaledWidth(), Window.scaledHeight());
 //        gameClient.connect("", 25566);

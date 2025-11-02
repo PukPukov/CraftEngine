@@ -37,10 +37,12 @@ public class DrawContext {
     private final MatrixStack matrices = new MatrixStack();
     private final FontRenderer fontRenderer;
     private final Shader shader;
+    private final int screenWidth, screenHeight;
 
     public DrawContext(Shader shader, int screenWidth, int screenHeight) {
         this.shader = shader;
-        matrices.set(new Matrix4f().ortho(0.0f, screenWidth, screenHeight, 0.0f, -1.0f, 1.0f));
+        this.screenWidth = screenWidth;
+        this.screenHeight = screenHeight;
 
         vaoId = glGenVertexArrays();
         vboId = glGenBuffers();
@@ -76,17 +78,17 @@ public class DrawContext {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glDisable(GL_CULL_FACE);
         shader.use();
-        shader.setUniformMatrix4f("projection", matrices.matrix());
-        shader.setUniform1b("useView", false);
+        shader.setUniformMatrix4f("projection", new Matrix4f().ortho(0.0f, screenWidth, screenHeight, 0.0f, -1.0f, 1.0f));
+        shader.setUniformMatrix4f("view", new Matrix4f());
         RenderInit.ATLAS_MANAGER.uploadToShader(shader.getId(), "atlases");
     }
 
     public void disableGL() {
         glDisable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
+        shader.setUniform1b("useUniformColor", false);
         shader.unbind();
     }
-
 
     public void drawTextureCentred(int x, int y, int width, int height, RL texture) {
         drawTexture(x - width / 2, y - height / 2, width, height, texture);
@@ -105,7 +107,6 @@ public class DrawContext {
     public void drawTexture(int x, int y, int w, int h,
                             int u, int v, int tw, int th,
                             RL texture) {
-        // 1) ищем регион в атласах
         TextureRegion r = RenderInit.ATLAS_MANAGER.findRegion(texture);
         if (r == null) return;
 
@@ -156,6 +157,7 @@ public class DrawContext {
 
         shader.setUniform1b("useUniformColor", false);
         shader.setUniform1b("useMask", false);
+        shader.setUniformMatrix4f("model", matrices.matrix());
 
         glBindVertexArray(vaoId);
         glVertexAttrib4f(2, 1f, 1f, 1f, 1f);
@@ -196,6 +198,8 @@ public class DrawContext {
         shader.setUniform1b("useUniformColor", true);
         shader.setUniform1b("useMask", true);
         shader.setUniform4f("uniformColor", 1.0f, 1.0f, 1.0f, 1.0f);
+        shader.setUniformMatrix4f("model", matrices.matrix());
+
         float cursorX = x;
         STBTTPackedchar.Buffer chars = fontRenderer.getCharData();
 
@@ -251,6 +255,7 @@ public class DrawContext {
         shader.setUniform1b("useUniformColor", true);
         shader.setUniform1b("useMask", false);
         shader.setUniform4f("uniformColor", color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
+        shader.setUniformMatrix4f("model", matrices.matrix());
 
         glBindVertexArray(vaoId);
         glVertexAttrib4f(2, 1.0f, 1.0f, 1.0f, 1.0f);
@@ -276,5 +281,10 @@ public class DrawContext {
                                      int u, int v, int tw, int th,
                                      String texturePath) {
 
+    }
+
+    public void setShaderColor(float v, float v1, float v2, float alpha) {
+        shader.setUniform4f("uniformColor", v, v1, v2, alpha);
+        shader.setUniform1b("useUniformColor", !(v == 1.0f && v1 == 1.0f && v2 == 1.0f && alpha == 1.0f));
     }
 }

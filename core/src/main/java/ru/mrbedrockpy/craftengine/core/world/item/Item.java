@@ -3,7 +3,7 @@ package ru.mrbedrockpy.craftengine.core.world.item;
 import lombok.Getter;
 import ru.mrbedrockpy.craftengine.core.world.entity.PlayerEntity;
 
-public class Item {
+public class Item{
     @Getter
     private final String displayName;
     @Getter
@@ -15,4 +15,8 @@ public class Item {
     }
 
     public void use(PlayerEntity player) {}
+
+    public ItemStack defStack(){
+        return new ItemStack(this);
+    }
 }

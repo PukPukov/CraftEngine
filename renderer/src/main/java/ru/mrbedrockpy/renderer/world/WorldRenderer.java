@@ -75,13 +75,12 @@ public class WorldRenderer {
 
         shader.use();
         shader.setUniformMatrix4f("projection", proj);
-
-        RenderInit.ATLAS_MANAGER.uploadToShader(shader.getId(), "atlases");
         shader.setUniformMatrix4f("view", view);
+        shader.setUniformMatrix4f("model", new Matrix4f());
 
         shader.setUniform1b("useMask", false);
-        shader.setUniform1b("useUniformColor", false);
-        shader.setUniform1b("useView", true);
+
+        RenderInit.ATLAS_MANAGER.uploadToShader(shader.getId(), "atlases");
 
         Matrix4f projView = new Matrix4f(proj).mul(view);
         culler.update(projView);
