@@ -5,8 +5,10 @@ import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
+import ru.mrbedrockpy.craftengine.client.event.client.input.CharTypeEvent;
 import ru.mrbedrockpy.craftengine.client.event.client.input.KeyPressEvent;
 import ru.mrbedrockpy.craftengine.client.event.client.input.MouseScrollEvent;
+import ru.mrbedrockpy.craftengine.client.gui.screen.ChatScreen;
 import ru.mrbedrockpy.craftengine.client.keybind.KeyBindings;
 import ru.mrbedrockpy.craftengine.client.network.ClientPacketHandler;
 import ru.mrbedrockpy.craftengine.client.network.auth.GameProfile;
@@ -17,11 +19,15 @@ import ru.mrbedrockpy.craftengine.client.event.EventManager;
 import ru.mrbedrockpy.craftengine.client.event.client.input.MouseClickEvent;
 import ru.mrbedrockpy.craftengine.client.gui.screen.InventoryScreen;
 import ru.mrbedrockpy.craftengine.client.network.GameClient;
+import ru.mrbedrockpy.craftengine.core.util.config.ConfigManager;
+import ru.mrbedrockpy.craftengine.core.util.config.CraftEngineConfig;
 import ru.mrbedrockpy.craftengine.core.world.block.Blocks;
 import ru.mrbedrockpy.craftengine.server.network.packet.PacketRegistry;
 import ru.mrbedrockpy.craftengine.server.network.packet.Packets;
 import ru.mrbedrockpy.craftengine.server.network.packet.custom.BlockUpdatePacketS2C;
 import ru.mrbedrockpy.craftengine.core.world.item.ItemStack;
+import ru.mrbedrockpy.craftengine.server.network.packet.custom.ChatMessagePacketS2C;
+import ru.mrbedrockpy.craftengine.server.util.chat.ChatManager;
 import ru.mrbedrockpy.renderer.resource.CompositeResourceManager;
 import ru.mrbedrockpy.craftengine.core.world.item.Items;
 import ru.mrbedrockpy.renderer.RenderInit;
@@ -37,8 +43,9 @@ import ru.mrbedrockpy.renderer.resource.UrlResourceSource;
 import ru.mrbedrockpy.renderer.util.graphics.ShaderUtil;
 import ru.mrbedrockpy.renderer.window.Input;
 import ru.mrbedrockpy.renderer.window.Window;
-import ru.mrbedrockpy.renderer.window.WindowSettings;
+import ru.mrbedrockpy.craftengine.core.data.WindowSettings;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -47,7 +54,7 @@ import java.nio.file.StandardOpenOption;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_RIGHT;
 
-public class CraftEngineClient {
+public class CraftEngineClient{
 
     public static final CraftEngineClient INSTANCE = new CraftEngineClient();
 
@@ -57,6 +64,8 @@ public class CraftEngineClient {
     private final DrawContext context;
     @Getter
     private final FPSCounter fpsCounter = new FPSCounter();
+    @Getter
+    public final ChatManager chatManager = new ChatManager();
     @Getter
     @Setter
     private ClientWorld clientWorld;
@@ -69,20 +78,31 @@ public class CraftEngineClient {
     private final TickSystem tickSystem = new TickSystem(20);
     private final ClientPacketHandler packetHandler = new ClientPacketHandler(PacketRegistry.INSTANCE);
     public final GameClient gameClient = new GameClient(PacketRegistry.INSTANCE, packetHandler);
+    @Getter
+    private final ConfigManager configManager;
 
     private CraftEngineClient() {
         Packets.register();
         packetHandler.register(BlockUpdatePacketS2C.class, (ctx, pkt) -> clientWorld.setBlock(pkt.pos(), pkt.block()));
+        packetHandler.register(ChatMessagePacketS2C.class, (ctx, pkt) -> chatManager.onMessage(pkt.name(), pkt.message()));
         tickSystem.addListener(this::tick);
-        Window.initialize(WindowSettings.DEFAULT);
+        this.configManager = ConfigManager.builder()
+                .setParentFolder(new File("."))
+                .setConfigs(CraftEngineConfig.class)
+                .build();
 
+        gameClient.setProfile(new GameProfile(CraftEngineConfig.Network.NAME));
+        Window.initialize(CraftEngineConfig.WINDOW);
         Input.initialize();
 
         eventManager.addListener(MouseClickEvent.class, this::onMouseClick);
         eventManager.addListener(KeyPressEvent.class, this::onKeyPress);
         eventManager.addListener(MouseScrollEvent.class, this::onMouseScroll);
-        Input.onPressAny.add(kc -> eventManager.callEvent(new KeyPressEvent(kc.key())));
+        eventManager.addListener(CharTypeEvent.class, this::onCharTyped);
+
+        Input.onPressAny.add(kc -> eventManager.callEvent(new KeyPressEvent(kc.key(), kc.scancode(), kc.inputAction(), kc.mods())));
         Input.onScrollAny.add(sc -> eventManager.callEvent(new MouseScrollEvent(sc.xoffset(), sc.yoffset())));
+        Input.onCharAny.add(sc -> eventManager.callEvent(new CharTypeEvent(sc.c(), sc.mods())));
 
         Blocks.register();
         Items.register();
@@ -92,17 +112,16 @@ public class CraftEngineClient {
         resourceManager.load();
 
         RenderInit.RESOURCE_MANAGER = resourceManager;
-        
-        context = new DrawContext(ShaderUtil.load("vertex.glsl", "fragment.glsl"), Window.scaledWidth(), Window.scaledHeight());
+
+        context = new DrawContext(ShaderUtil.load("vertex.glsl", "fragment.glsl"));
 
         RenderInit.BLOCKS = Registries.BLOCKS;
         KeyBindings.register();
         setScreen(new MainMenuScreen());
     }
 
-    public void run(GameProfile profile) {
+    public void run() {
         long lastTime = System.currentTimeMillis();
-        gameClient.setProfile(profile);
         while (!Window.isShouldClose()) {
             Input.pullEvents();
             long now = System.currentTimeMillis();
@@ -114,7 +133,7 @@ public class CraftEngineClient {
             this.renderUI(deltaSeconds);
             Window.swapBuffers();
         }
-
+        this.configManager.saveConfigs();
         gameClient.close();
         Window.terminate();
     }
@@ -139,9 +158,10 @@ public class CraftEngineClient {
 
         if(Input.wasPressed(GLFW.GLFW_KEY_F2)) Window.takeScreenshot();
 
-        if (Input.wasPressed(Input.Layer.GAME, GLFW.GLFW_KEY_TAB)) {
+        if (KeyBindings.OPEN_INVENTORY.wasPressed()) {
             if (player != null) setScreen(new InventoryScreen(player.getInventory()));
         }
+        if (KeyBindings.CHAT.wasPressed()) setScreen(new ChatScreen());
 
         if (Input.wasClicked(GLFW_MOUSE_BUTTON_LEFT)) {
             MouseClickEvent ev = new MouseClickEvent(Input.currentLayer(), GLFW_MOUSE_BUTTON_LEFT, Input.getX(), Input.getY());
@@ -184,6 +204,7 @@ public class CraftEngineClient {
 
     private void tick() {
         gameClient.tick();
+        if (currentScreen != null) currentScreen.tick();
         if (clientWorld != null) clientWorld.tick();
     }
 
@@ -196,10 +217,10 @@ public class CraftEngineClient {
     private void renderUI(double deltaTime) {
         context.enableGL();
         if (clientWorld != null && player != null) {
-            hudRenderer.render(context, scale((int) Input.getX()), scale((int) Input.getY()), (float) deltaTime);
+            hudRenderer.render(context, scale(Input.getX()), scale(Input.getY()), (float) deltaTime);
         }
         if (currentScreen != null) {
-            currentScreen.render(context, scale((int) Input.getX()), scale((int) Input.getY()), (float) deltaTime);
+            currentScreen.render(context, scale(Input.getX()), scale(Input.getY()), (float) deltaTime);
         }
         context.disableGL();
     }
@@ -239,7 +260,6 @@ public class CraftEngineClient {
             player.getInventory().setArmor(i, Items.GOLDEN_APPLE.defStack());
         }
         hudRenderer = new HudRenderer(Window.scaledWidth(), Window.scaledHeight());
-//        gameClient.connect("", 25566);
     }
 
     public void stop() {
@@ -272,6 +292,12 @@ public class CraftEngineClient {
         }
     }
 
+    private void onCharTyped(CharTypeEvent event) {
+        if (currentScreen != null && Input.currentLayer() == Input.Layer.UI) {
+            currentScreen.charType(event);
+        }
+    }
+
     private void onMouseScroll(MouseScrollEvent event) {
         if (currentScreen != null && Input.currentLayer() == Input.Layer.UI) {
            currentScreen.onMouseScrolled(event);
@@ -280,8 +306,8 @@ public class CraftEngineClient {
         player.getInventory().setSelectedHotbarSlot(nextSlot < 0 ? 8 : nextSlot);
     }
 
-    // Я хз как адекватно сделать масштабирование, поэтому просто делаю так
-    private int scale(int value) {
+    // Необъяснимая магия
+    private int scale(double value) {
         return (int) (value / (float) Window.getWidth() * Window.scaledWidth());
     }
 }

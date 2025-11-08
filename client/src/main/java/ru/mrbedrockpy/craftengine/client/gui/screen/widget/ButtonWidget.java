@@ -2,7 +2,6 @@ package ru.mrbedrockpy.craftengine.client.gui.screen.widget;
 
 import lombok.Setter;
 import ru.mrbedrockpy.craftengine.core.util.id.RL;
-import ru.mrbedrockpy.renderer.font.FontRenderer;
 import ru.mrbedrockpy.renderer.gui.DrawContext;
 import ru.mrbedrockpy.renderer.window.Window;
 
@@ -27,7 +26,7 @@ public class ButtonWidget extends AbstractWidget{
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        context.drawTexture(x, y, width, height, RL.of("gui/button.png"));
-        context.drawCentredText(text, x + width / 2 - 5, y + height / 2);
+        context.drawNineSlice(x, y, width, height, 0, 0, 0, 0, 3, RL.of("gui/button.png"));
+        context.drawCentredText(text, x + width / 2, y + height / 2);
     }
 }

@@ -5,11 +5,11 @@ import lombok.Setter;
 import ru.mrbedrockpy.renderer.gui.DrawContext;
 
 @Getter
-public abstract class AbstractWidget {
+public abstract class AbstractWidget{
     @Setter
     protected int x, y, width, height, zIndex;
     @Setter
-    protected boolean visible = true;
+    protected boolean visible = true, focused = false;
 
     public AbstractWidget(int x, int y, int width, int height) {
         this.x = x;
@@ -22,8 +22,9 @@ public abstract class AbstractWidget {
         return mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
     }
 
-    public abstract void onMouseClick(int mouseX, int mouseY, int button);
-    public void onKeyPressed(int keyCode){}
+    public void onMouseClick(int mouseX, int mouseY, int button){}
+    public void onKeyPressed(int keyCode, int scanCode, int inputAction, int mods){}
+    public void charTyped(int c, int mods){}
 
     public abstract void render(DrawContext context, int mouseX, int mouseY, float delta);
 
@@ -37,9 +38,7 @@ public abstract class AbstractWidget {
         this.y = y - height / 2;
     }
 
-    public void tick() {
-    }
+    public void tick() {}
 
-    public void onMouseScroll(double scrollX, double scrollY) {
-    }
+    public void onMouseScroll(double scrollX, double scrollY) {}
 }

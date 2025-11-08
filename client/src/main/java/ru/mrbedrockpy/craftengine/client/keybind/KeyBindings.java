@@ -22,5 +22,7 @@ public class KeyBindings {
     public static final KeyBind S7 = KeyBindingsHelper.register(new KeyBind(Input.Layer.GAME, "7", "inventory", GLFW.GLFW_KEY_7));
     public static final KeyBind S8 = KeyBindingsHelper.register(new KeyBind(Input.Layer.GAME, "8", "inventory", GLFW.GLFW_KEY_8));
     public static final KeyBind S9 = KeyBindingsHelper.register(new KeyBind(Input.Layer.GAME, "9", "inventory", GLFW.GLFW_KEY_9));
+    public static final KeyBind OPEN_INVENTORY = KeyBindingsHelper.register(new KeyBind(Input.Layer.GAME, "open", "inventory", GLFW.GLFW_KEY_TAB));
+    public static final KeyBind CHAT = KeyBindingsHelper.register(new KeyBind(Input.Layer.GAME, "open", "online", GLFW.GLFW_KEY_T));
     public static void register(){}
 }

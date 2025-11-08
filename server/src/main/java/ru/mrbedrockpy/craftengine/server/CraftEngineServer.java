@@ -4,6 +4,7 @@ import ru.mrbedrockpy.craftengine.server.network.ConcurrentQueue;
 import ru.mrbedrockpy.craftengine.server.network.NetworkManager;
 import ru.mrbedrockpy.craftengine.server.network.packet.PacketRegistry;
 import ru.mrbedrockpy.craftengine.server.network.packet.ServerPacketHandler;
+import ru.mrbedrockpy.craftengine.server.util.chat.ChatManager;
 
 public final class CraftEngineServer extends Server {
 

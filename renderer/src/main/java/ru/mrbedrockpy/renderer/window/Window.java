@@ -8,7 +8,7 @@ import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
-import ru.mrbedrockpy.craftengine.core.util.config.CraftEngineConfig;
+import ru.mrbedrockpy.craftengine.core.data.WindowSettings;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
@@ -23,7 +23,7 @@ import static org.lwjgl.opengl.GL46C.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.*;
 
-public class Window {
+public class Window{
 
     @Getter private static long window;
     @Getter private static int width, height;
@@ -32,6 +32,9 @@ public class Window {
     @Getter private static boolean fullscreen;
 
     private static int windowedX, windowedY, windowedW, windowedH;
+
+    private static final ScaleManager SCALE = new ScaleManager();
+    public static ScaleManager scale() { return SCALE; }
 
     public static void initialize(WindowSettings settings) {
         Window.width  = settings.getWidth();
@@ -49,7 +52,7 @@ public class Window {
             System.err.println("GLFW Error " + error + ": " + description);
         });
         errorCallback.set();
-        
+        SCALE.setFramebufferSize(width, height);
         initialize0(settings);
     }
     
@@ -84,6 +87,7 @@ public class Window {
         glfwSetWindowPosCallback(window, (win, x, y) -> {
             if (!fullscreen) { windowedX = x; windowedY = y; }
         });
+
         
         try (MemoryStack stack = stackPush()) {
             IntBuffer pw = stack.mallocInt(1);
@@ -131,8 +135,8 @@ public class Window {
         glfwSwapInterval(flag ? 1 : 0);
     }
 
-    public static int scaledWidth()  { return Math.ceilDiv(getWidth(),  Math.max(CraftEngineConfig.guiScale, 1)); }
-    public static int scaledHeight() { return Math.ceilDiv(getHeight(), Math.max(CraftEngineConfig.guiScale, 1)); }
+    public static int scaledWidth()  { return SCALE.logicalWidth(); }
+    public static int scaledHeight() { return SCALE.logicalHeight(); }
 
     public static void setFullscreen(boolean enable) {
         if (fullscreen == enable) return;

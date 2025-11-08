@@ -24,7 +24,7 @@ public final class ConfigManager {
     private final Yaml yaml = new Yaml(getDumperOptions());
 
     private final Logger logger = Logger.getLogger(ConfigManager.class);
-    private final List<Serializer<?>> serializers = Serializers.getPrimitiveSerializers();
+    private final List<Serializer<?>> serializers = Serializers.getSerializers();
 
     private final File configFolder;
 

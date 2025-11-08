@@ -2,6 +2,7 @@ package ru.mrbedrockpy.craftengine.client.network;
 
 import lombok.Getter;
 import ru.mrbedrockpy.craftengine.client.CraftEngineClient;
+import ru.mrbedrockpy.craftengine.client.world.entity.ClientPlayerEntity;
 import ru.mrbedrockpy.craftengine.server.network.packet.PacketHandleContext;
 import ru.mrbedrockpy.craftengine.server.network.packet.PacketSender;
 
@@ -29,5 +30,6 @@ public final class ClientHandleContext extends PacketHandleContext {
 
         @Override protected Builder self()        { return this; }
         public ClientHandleContext build()        { return new ClientHandleContext(this); }
+        public ClientPlayerEntity clientPlayer() { return clientExecutor.getPlayer(); }
     }
 }

@@ -28,16 +28,25 @@ public final class GameClient {
         this.handler = handler;
     }
 
-    public void connect(String host, int port) {
-        network = NetworkManager.client(host, port, incomingQueue, registry);
-        network.start();
-        Channel ch = network.connectSync();
-        connection = new PlayerConnection(PacketDirection.C2S, ch, registry);
-        CraftEngineClient.INSTANCE.eventManager.callEvent(new ClientConnectEvent(connection, host, port));
-        connection.send(new ClientLoginPacketC2S(profile.name()));
+    public void connect(String hostport) {
+        String[] hp = hostport.split(":");
+        this.connect(hp[0], Integer.parseInt(hp[1]));
     }
 
-    public void tick(){
+    public void connect(String host, int port) {
+        try {
+            network = NetworkManager.client(host, port, incomingQueue, registry);
+            network.start();
+            Channel ch = network.connectSync();
+            connection = new PlayerConnection(PacketDirection.C2S, ch, registry);
+            CraftEngineClient.INSTANCE.eventManager.callEvent(new ClientConnectEvent(connection, host, port));
+            connection.send(new ClientLoginPacketC2S(profile.name()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void tick() {
         int processed = 0;
         while (processed < MAX_PACKETS_PER_TICK && incomingQueue.size() > 0) {
             Server.IncomingPacket in;
@@ -50,7 +59,7 @@ public final class GameClient {
             if (in == null) break;
 
             Channel ch = in.channel();
-            Packet  packet  = in.packet();
+            Packet packet = in.packet();
 
             try {
                 ClientHandleContext ctx = new ClientHandleContext.Builder().client(CraftEngineClient.INSTANCE).channel(ch).sender(connection).build();
@@ -63,10 +72,10 @@ public final class GameClient {
     }
 
     public void send(Packet packet) {
-        if(connection != null && connection.isOpen()) connection.send(packet);
+        if (connection != null && connection.isOpen()) connection.send(packet);
     }
 
     public void close() {
-        if(network != null) network.shutdown();
+        if (network != null) network.shutdown();
     }
 }

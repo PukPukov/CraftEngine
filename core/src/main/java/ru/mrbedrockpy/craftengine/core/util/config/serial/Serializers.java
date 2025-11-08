@@ -1,11 +1,13 @@
 package ru.mrbedrockpy.craftengine.core.util.config.serial;
 
+import ru.mrbedrockpy.craftengine.core.data.WindowSettings;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Serializers {
 
-    public static List<Serializer<?>> getPrimitiveSerializers() {
+    public static List<Serializer<?>> getSerializers() {
         return new ArrayList<>(List.of(
                 getPrimitiveByteSerializer(),
                 getPrimitiveShortSerializer(),
@@ -23,8 +25,13 @@ public class Serializers {
                 getDoubleSerializer(),
                 getBooleanSerializer(),
                 getCharacterSerializer(),
-                getStringSerializer()
+                getStringSerializer(),
+                getWindowsSettingsSerilizer()
         ));
+    }
+
+    private static Serializer<WindowSettings> getWindowsSettingsSerilizer() {
+        return new Serializer<>(WindowSettings.class, Object::toString, WindowSettings::fromString);
     }
 
     public static Serializer<String> getStringSerializer() {

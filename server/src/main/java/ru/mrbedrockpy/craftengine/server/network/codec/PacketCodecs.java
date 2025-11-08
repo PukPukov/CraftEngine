@@ -2,8 +2,10 @@ package ru.mrbedrockpy.craftengine.server.network.codec;
 
 import io.netty.buffer.ByteBuf;
 import org.joml.Vector3i;
+import ru.mrbedrockpy.craftengine.core.data.WindowSettings;
 import ru.mrbedrockpy.craftengine.core.registry.Registries;
 import ru.mrbedrockpy.craftengine.core.world.block.Block;
+import ru.mrbedrockpy.craftengine.server.network.packet.util.ByteBufUtil;
 import ru.mrbedrockpy.craftengine.server.network.packet.util.VarInt;
 
 import java.nio.charset.StandardCharsets;
@@ -12,11 +14,10 @@ import java.util.Map;
 import java.util.Set;
 
 // Кодеки которые будут повторятся из пакета в пакет и переиспользоватся
-public class PacketCodecs {
+public class PacketCodecs{
     public static final Set<BufCodec<?>> ALL = new HashSet<>();
     private static final Map<Class<?>, BufCodec<?>> BY_CLASS = new java.util.concurrent.ConcurrentHashMap<>();
 
-    // Готовые примеры из твоего кода — переведены на типизированный regT:
     public static final BufCodec<Vector3i> POS_CODEC = regT(
             BufCodec.of(Vector3i.class,
                     (buf, pos) -> { buf.writeInt(pos.x); buf.writeInt(pos.y); buf.writeInt(pos.z); },

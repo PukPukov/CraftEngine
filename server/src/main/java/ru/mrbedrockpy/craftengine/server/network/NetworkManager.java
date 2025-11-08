@@ -19,6 +19,8 @@ import ru.mrbedrockpy.craftengine.server.network.packet.util.*;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 public final class NetworkManager extends Thread {
 
@@ -34,6 +36,10 @@ public final class NetworkManager extends Thread {
     private final String host;
     private final int port;
 
+    private final AtomicBoolean started = new AtomicBoolean(false);
+    private final AtomicBoolean connecting = new AtomicBoolean(false);
+    private final AtomicReference<Channel> chRef = new AtomicReference<>();
+
     private final ConcurrentQueue<Server.IncomingPacket> incomingQueue;
     private final PacketRegistry packetRegistry;
     private final Logger logger = Logger.getLogger(NetworkManager.class);
@@ -45,7 +51,6 @@ public final class NetworkManager extends Thread {
     @Getter
     private Channel channel;
 
-    // Сервер
     public static NetworkManager server(int port,
                                         ConcurrentQueue<Server.IncomingPacket> incomingQueue,
                                         PacketRegistry packetRegistry) {
@@ -109,26 +114,47 @@ public final class NetworkManager extends Thread {
         };
     }
 
+
     public Channel connectSync() {
-        if (mode != Mode.CLIENT) throw new IllegalStateException("Only for client");
-        workerGroup = new NioEventLoopGroup(Math.max(2, Runtime.getRuntime().availableProcessors() / 2));
+        ensureClient();
+        Channel existing = chRef.get();
+        if (existing != null && existing.isActive()) return existing;
+
+        if (!connecting.compareAndSet(false, true)) {
+            throw new IllegalStateException("Already connecting");
+        }
+        initWorkerIfNeeded();
         try {
-            Bootstrap b = new Bootstrap()
+            Channel ch = new Bootstrap()
                     .group(workerGroup)
                     .channel(NioSocketChannel.class)
                     .option(ChannelOption.TCP_NODELAY, true)
                     .option(ChannelOption.SO_KEEPALIVE, true)
-                    .handler(pipeline(Mode.CLIENT));
+                    .handler(pipeline(Mode.CLIENT))
+                    .connect(host, port).sync().channel();
 
-            ChannelFuture cf = b.connect(host, port).sync(); // блокируемся
-            this.channel = cf.channel();
-            return this.channel;
+            Channel prev = chRef.getAndSet(ch);
+            if (prev != null && prev.isOpen() && prev != ch) prev.close();
+
+            this.channel = ch;
+            return ch;
         } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
             throw new RuntimeException("Interrupted while connecting", ie);
-        } catch (Throwable t) {
-            throw new RuntimeException("Failed to connect", t);
+        } finally {
+            connecting.set(false);
         }
+    }
+
+    private void initWorkerIfNeeded() {
+        if (workerGroup == null) {
+            workerGroup = new NioEventLoopGroup(Math.max(2,
+                    Runtime.getRuntime().availableProcessors() / 2));
+        }
+    }
+
+    private void ensureClient() {
+        if (mode != Mode.CLIENT) throw new IllegalStateException("Only for client");
     }
 
     @Override

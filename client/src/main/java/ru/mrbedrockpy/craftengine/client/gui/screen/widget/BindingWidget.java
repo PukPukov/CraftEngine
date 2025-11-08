@@ -50,7 +50,7 @@ public class BindingWidget extends ButtonWidget {
     }
 
     @Override
-    public void onKeyPressed(int keyCode) {
+    public void onKeyPressed(int keyCode, int scanCode, int inputAction, int mods) {
         if (!listening) return;
         if (keyCode == GLFW_KEY_UNKNOWN) return;
 

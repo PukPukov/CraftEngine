@@ -48,7 +48,7 @@ public class InventoryScreen extends Screen {
         Layout layout = new Layout();
         for(int i = 0; i < inventory.getArmorSlots().length; i++){
             final int slotIndex = i;
-            SlotWidget w = new SlotWidget(Window.scaledWidth() / 2 + i * 18 - 83, 170, () -> inventory.getArmor(slotIndex), st -> inventory.setArmor(slotIndex, st), this::slotClick);
+            SlotWidget w = new SlotWidget(Window.scaledWidth() / 2 + i * 18 - 83, 153, () -> inventory.getArmor(slotIndex), st -> inventory.setArmor(slotIndex, st), this::slotClick);
             layout.addWidget("armor_" + slotIndex, w);
         }
         addLayout(layout);

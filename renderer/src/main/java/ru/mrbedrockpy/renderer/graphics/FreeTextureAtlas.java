@@ -38,7 +38,7 @@ public class FreeTextureAtlas implements UvProvider {
         Shelf(int y, int height) { this.y = y; this.height = height; this.x = 0; }
     }
 
-    public FreeTextureAtlas() { this(512, 512); }
+    public FreeTextureAtlas() { this(4096, 4096); }
     public FreeTextureAtlas(int widthPx, int heightPx) {
         this.widthPx  = Math.max(1, widthPx);
         this.heightPx = Math.max(1, heightPx);
@@ -51,12 +51,14 @@ public class FreeTextureAtlas implements UvProvider {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, this.widthPx, this.heightPx, 0, GL_RGBA, GL_UNSIGNED_BYTE, empty);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     }
 
     public boolean contains(RL name) { return uvMap.containsKey(name); }
 
     public void addTexture(RL name, BufferedImage tile) {
-        RL key = normalize(name);                   // единообразный ключ
+        RL key = normalize(name);
         Rectangle cached = uvMap.get(key);
         if (cached != null) return;
 
@@ -99,7 +101,6 @@ public class FreeTextureAtlas implements UvProvider {
         Rectangle rect = new Rectangle(x0, y0, w, h);
         uvMap.put(key, rect);
         shelf.x += w;
-
     }
 
     private static RL normalize(RL id) {
