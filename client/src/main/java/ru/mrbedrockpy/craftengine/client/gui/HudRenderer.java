@@ -60,7 +60,7 @@ public class HudRenderer{
     }
 
     public void renderHotbar(DrawContext context, PlayerEntity player, int mouseX, int mouseY, float delta) {
-        context.drawTexture(width / 2 - 182 / 2 - 1, height - 36, 184, 32, 0, 144, RL.of("gui/inventory"));
+        context.drawTexture(width / 2 - 92, height - 36, 184, 32, 0, 144, RL.of("gui/inventory"));
         for (SlotWidget slot : hotbarSlots) {
             slot.render(context, mouseX, mouseY, delta);
         }

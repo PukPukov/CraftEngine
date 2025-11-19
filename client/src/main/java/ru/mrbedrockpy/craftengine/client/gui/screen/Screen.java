@@ -58,7 +58,6 @@ public class Screen{
     }
 
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackground(context, mouseX, mouseY, delta);
         for (Layout layout : layouts) {
             layout.render(context, mouseX, mouseY, delta);
         }

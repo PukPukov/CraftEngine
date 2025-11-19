@@ -5,11 +5,8 @@ import lombok.Getter;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.awt.*;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.nio.charset.StandardCharsets;
 
 import static org.lwjgl.opengl.GL46C.*;
 
@@ -43,6 +40,10 @@ public class Shader {
             glUniform4f(location, r, g, b, a);
         else
             System.err.println("Uniform not found: " + name);
+    }
+
+    public void setUniform4fColor(String name, Color color) {
+        setUniform4f(name, color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
     }
 
     public void setUniform1b(String name, boolean value) {
