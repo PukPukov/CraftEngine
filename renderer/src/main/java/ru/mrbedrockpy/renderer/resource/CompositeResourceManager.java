@@ -146,7 +146,7 @@ public class CompositeResourceManager implements IResourceManager {
     @Override
     public synchronized void push(ResourceSource source) {
         if (source == null) return;
-        sourceList.add(0, source);
+        sourceList.addFirst(source);
     }
 
     @Override

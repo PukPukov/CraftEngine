@@ -1,6 +1,6 @@
 package ru.mrbedrockpy.craftengine.client.gui.screen;
 
-import ru.mrbedrockpy.craftengine.client.event.client.input.MouseScrollEvent;
+import ru.mrbedrockpy.craftengine.client.event.client.MouseScrollEvent;
 import ru.mrbedrockpy.craftengine.client.gui.screen.layout.Layout;
 import ru.mrbedrockpy.craftengine.client.gui.screen.layout.VerticalCenterStackLayout;
 import ru.mrbedrockpy.craftengine.client.gui.screen.widget.BindingWidget;

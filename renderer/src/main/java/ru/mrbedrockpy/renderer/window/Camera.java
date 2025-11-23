@@ -1,4 +1,4 @@
-package ru.mrbedrockpy.craftengine.client.window;
+package ru.mrbedrockpy.renderer.window;
 
 import lombok.Getter;
 import org.joml.Matrix4f;

@@ -6,7 +6,7 @@ import org.joml.Vector3f;
 import org.joml.Vector3i;
 import ru.mrbedrockpy.craftengine.client.CraftEngineClient;
 import ru.mrbedrockpy.craftengine.client.keybind.KeyBindings;
-import ru.mrbedrockpy.craftengine.client.window.Camera;
+import ru.mrbedrockpy.renderer.window.Camera;
 import ru.mrbedrockpy.craftengine.core.world.World;
 import ru.mrbedrockpy.craftengine.core.world.block.Blocks;
 import ru.mrbedrockpy.craftengine.core.world.entity.PlayerEntity;

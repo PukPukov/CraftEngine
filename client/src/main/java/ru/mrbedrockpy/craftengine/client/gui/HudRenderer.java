@@ -6,19 +6,19 @@ import ru.mrbedrockpy.craftengine.client.gui.screen.widget.SlotWidget;
 import ru.mrbedrockpy.craftengine.core.util.id.RL;
 import ru.mrbedrockpy.craftengine.core.world.entity.PlayerEntity;
 import ru.mrbedrockpy.craftengine.core.world.inventory.PlayerInventory;
-import ru.mrbedrockpy.craftengine.server.network.packet.custom.ChatMessagePacketS2C;
 import ru.mrbedrockpy.craftengine.server.util.chat.ChatManager;
 import ru.mrbedrockpy.renderer.gui.DrawContext;
 
 import java.text.DecimalFormat;
 
-public class HudRenderer{
+public class HudRenderer {
     
     private final DecimalFormat decimalFormat = new DecimalFormat();
     
     public int width;
     public int height;
     public SlotWidget[] hotbarSlots = new SlotWidget[9];
+    private boolean isRenderDebug = false;
     
     public HudRenderer(int width, int height) {
         this.decimalFormat.setMaximumFractionDigits(3);
@@ -40,11 +40,10 @@ public class HudRenderer{
         }
     }
 
-
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         context.drawTextureCentred(width / 2, height / 2, 10, 10, RL.of("gui/cursor.png"));
         PlayerEntity player = CraftEngineClient.INSTANCE.getPlayer();
-//        renderDebug(context, player);
+        if (isRenderDebug) renderDebug(context, player);
         renderHotbar(context, player, mouseX, mouseY, delta);
         renderChat(context, player);
     }
@@ -61,15 +60,13 @@ public class HudRenderer{
 
     public void renderHotbar(DrawContext context, PlayerEntity player, int mouseX, int mouseY, float delta) {
         context.drawTexture(width / 2 - 92, height - 36, 184, 32, 0, 144, RL.of("gui/inventory"));
-        for (SlotWidget slot : hotbarSlots) {
-            slot.render(context, mouseX, mouseY, delta);
-        }
+        for (SlotWidget slot : hotbarSlots) slot.render(context, mouseX, mouseY, delta);
         SlotWidget w = hotbarSlots[player.getInventory().getSelectedHotbarSlot()];
         context.drawTexture(w.getX() - 2, w.getY() - 2, 22, 22, RL.of("gui/selected_slot.png"));
     }
 
     public void renderDebug(DrawContext context, PlayerEntity player) {
-        context.drawText(String.valueOf(CraftEngineClient.INSTANCE.getFpsCounter().getFps()), 5, 5);
+        context.drawText(String.valueOf(1/CraftEngineClient.INSTANCE.getDelta()), 5, 5);
         context.drawText(positionToString(CraftEngineClient.INSTANCE.getPlayer().getPosition()), 5, 10);
         context.drawText(CraftEngineClient.INSTANCE.getPlayer().getCamera().getAngle().toString(), 5, 15);
         double dx = player.getPosition().x - player.previousTickPosition.x;
@@ -81,5 +78,9 @@ public class HudRenderer{
     
     public String positionToString(Vector3f position) {
         return this.decimalFormat.format(position.x) + ", " + this.decimalFormat.format(position.y) + ", " + this.decimalFormat.format(position.z);
+    }
+
+    public void toggleDebug() {
+        isRenderDebug = !isRenderDebug;
     }
 }

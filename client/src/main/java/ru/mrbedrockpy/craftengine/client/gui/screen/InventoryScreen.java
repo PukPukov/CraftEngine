@@ -142,8 +142,7 @@ public class InventoryScreen extends Screen {
 
         // фон инвентаря с альфой
         ctx.setShaderColor(1f, 1f, 1f, alpha);
-        ctx.drawTexture((int)(cx - 90), (int)(cy - 70), 180, 140,
-                RL.of("gui/inventory.png"));
+        ctx.drawTexture((int)(cx - 90), (int)(cy - 70), 180, 140, RL.of("gui/inventory.png"));
         ctx.setShaderColor(1f, 1f, 1f, 1f);
 
         super.render(ctx, mouseX, mouseY, delta);

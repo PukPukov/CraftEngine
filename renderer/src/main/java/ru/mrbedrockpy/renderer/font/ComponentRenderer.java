@@ -5,6 +5,7 @@ import org.lwjgl.stb.STBTTAlignedQuad;
 import org.lwjgl.system.MemoryStack;
 import ru.mrbedrockpy.craftengine.core.util.id.RL;
 import ru.mrbedrockpy.craftengine.core.util.lang.Component;
+import ru.mrbedrockpy.craftengine.core.util.lang.Style;
 import ru.mrbedrockpy.craftengine.core.util.lang.TextColor;
 import ru.mrbedrockpy.renderer.RenderInit;
 import ru.mrbedrockpy.renderer.graphics.tex.TextureRegion;
@@ -20,7 +21,8 @@ import java.util.regex.Pattern;
 
 import static org.lwjgl.stb.STBTruetype.stbtt_GetPackedQuad;
 
-public final class ComponentRenderer{
+public final class ComponentRenderer {
+
     private final GlyphAtlas glyphs;
     private final StickerRegistry stickers;
 
@@ -28,7 +30,6 @@ public final class ComponentRenderer{
         this.glyphs = glyphs;
         this.stickers = stickers != null ? stickers : new StickerRegistry();
     }
-
 
     public float draw(QuadBatch batch, Component root, float x, float y, int baseRGBA, Random rng) {
         if (root == null) return x;
@@ -55,7 +56,6 @@ public final class ComponentRenderer{
         return glyphs.ascentPx();
     }
 
-
     private static final class State {
         int rgba;
         boolean bold, italic, underline, strike, obfuscated;
@@ -64,19 +64,18 @@ public final class ComponentRenderer{
     }
 
     private float drawComponent(QuadBatch b, Component c, float x, float y, State st) {
-        Component.Style s = c.style();
+        Style s = c.getStyle();
         int savedRGBA = st.rgba;
         boolean sb = st.bold, si = st.italic, su = st.underline, ss = st.strike, so = st.obfuscated;
         if (s != null && !s.isEmpty()) {
-            if (s.color() != null) st.rgba = (0xFF << 24) | rgbFromTextColor(s.color());
-            if (Boolean.TRUE.equals(s.bold())) st.bold = true;
-            if (Boolean.TRUE.equals(s.italic())) st.italic = true;
-            if (Boolean.TRUE.equals(s.underlined())) st.underline = true;
-            if (Boolean.TRUE.equals(s.strikethrough())) st.strike = true;
-            if (Boolean.TRUE.equals(s.obfuscated())) st.obfuscated = true;
+            if (s.getColor() != null) st.rgba = (0xFF << 24) | rgbFromTextColor(s.getColor());
+            if (Boolean.TRUE.equals(s.getBold())) st.bold = true;
+            if (Boolean.TRUE.equals(s.getItalic())) st.italic = true;
+            if (Boolean.TRUE.equals(s.getUnderlined())) st.underline = true;
+            if (Boolean.TRUE.equals(s.getStrikethrough())) st.strike = true;
+            if (Boolean.TRUE.equals(s.getObfuscated())) st.obfuscated = true;
         }
 
-        // контент
         Object text = c.toJson().get("text");
         Object translate = c.toJson().get("translate");
         Object keybind = c.toJson().get("keybind");
@@ -89,8 +88,7 @@ public final class ComponentRenderer{
             x = drawLiteral(b, "[" + kb + "]", x, y, st);
         }
 
-        for (Component child : c.children()) x = drawComponent(b, child, x, y, st);
-
+        for (Component child : c.getChildren()) x = drawComponent(b, child, x, y, st);
 
         st.rgba = savedRGBA; st.bold = sb; st.italic = si; st.underline = su; st.strike = ss; st.obfuscated = so;
         return x;
@@ -118,9 +116,9 @@ public final class ComponentRenderer{
     }
 
     private String lookupKey(String key) {
-        // заглушка: вернём сам ключ
         return key;
     }
+
     private static List<String> splitFormat(String s) {
         List<String> out = new ArrayList<>();
         int i = 0;
@@ -134,6 +132,7 @@ public final class ComponentRenderer{
         if (out.isEmpty()) out.add("");
         return out;
     }
+
     private static Component fromJson(Map<?,?> json) {
         if (json.containsKey("text")) return Component.literal(String.valueOf(json.get("text")));
         if (json.containsKey("translate")) return Component.translatable(String.valueOf(json.get("translate")));
@@ -161,7 +160,6 @@ public final class ComponentRenderer{
         }
         return x;
     }
-
 
     private float drawTextRun(QuadBatch b, String s, float baseX, float yTop, State st) {
         if (s.isEmpty()) return baseX;
@@ -261,10 +259,12 @@ public final class ComponentRenderer{
     }
 
     private enum TokenKind { TEXT, STICKER }
+
     private static final class Token {
         final TokenKind kind; final String text;
         Token(TokenKind k, String t){ kind=k; text=t; }
     }
+
     private static final Pattern STICKER = Pattern.compile(":([a-z0-9_\\-]{1,32}):");
 
     private List<Token> tokenize(String s) {
@@ -295,7 +295,7 @@ public final class ComponentRenderer{
         } else if (c.toJson().get("keybind") instanceof String kb) {
             w += measureRun("[" + kb + "]");
         }
-        for (Component ch : c.children()) w += measure0(ch);
+        for (Component ch : c.getChildren()) w += measure0(ch);
         return w;
     }
 

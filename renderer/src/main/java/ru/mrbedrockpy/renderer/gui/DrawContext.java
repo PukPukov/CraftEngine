@@ -37,7 +37,6 @@ public class DrawContext{
 
     public DrawContext(Shader shader) {
         this.shader = shader;
-
         vaoId = glGenVertexArrays();
         vboId = glGenBuffers();
         glBindVertexArray(vaoId);
@@ -48,15 +47,12 @@ public class DrawContext{
         glVertexAttribPointer(1, 2, GL_FLOAT, false, 4 * Float.BYTES, 2 * Float.BYTES);
         glEnableVertexAttribArray(1);
         glBindVertexArray(0);
-
         for (var e : RenderInit.RESOURCE_MANAGER.getTextureLoader().getAll()) {
             RL key = e.getKey();
             if (!key.path().startsWith("gui/") && !key.path().startsWith("sticker/")) continue;
             atlas.addTexture(key, TextureUtil.toBufferedImage(e.getValue()));
         }
-
         StickerRegistry.registerAllStickers(atlas);
-
         GlyphAtlas glyphAtlas = new GlyphAtlas(atlas, RL.of("ui_font_main"));
         try {
             glyphAtlas.init(RL.of("minecraft.ttf"));
@@ -64,7 +60,6 @@ public class DrawContext{
             throw new RuntimeException(e);
         }
         fontRenderer = new ComponentRenderer(glyphAtlas, StickerRegistry.INSTANCE);
-
         GlTexture guiTex = new GlTexture(atlas.getTextureId(), atlas.getWidthPx(), atlas.getHeightPx());
         Atlas ui = new Atlas(RL.of("gui"), guiTex, atlas);
         GUI_ATLAS = RenderInit.ATLAS_MANAGER.register(ui);
@@ -100,9 +95,7 @@ public class DrawContext{
         drawTexture(x, y, w, h, u, v, 0, 0, texturePath);
     }
 
-    public void drawTexture(int x, int y, int dstW, int dstH,
-                            int u, int v, int srcW, int srcH,
-                            RL texture) {
+    public void drawTexture(int x, int y, int dstW, int dstH, int u, int v, int srcW, int srcH, RL texture) {
         TextureRegion r = RenderInit.ATLAS_MANAGER.findRegion(texture);
         if (r == null || dstW <= 0 || dstH <= 0) return;
 

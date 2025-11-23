@@ -26,11 +26,11 @@ public class Serializers {
                 getBooleanSerializer(),
                 getCharacterSerializer(),
                 getStringSerializer(),
-                getWindowsSettingsSerilizer()
+                getWindowsSettingsSerializer()
         ));
     }
 
-    private static Serializer<WindowSettings> getWindowsSettingsSerilizer() {
+    private static Serializer<WindowSettings> getWindowsSettingsSerializer() {
         return new Serializer<>(WindowSettings.class, Object::toString, WindowSettings::fromString);
     }
 

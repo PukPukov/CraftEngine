@@ -1,7 +1,7 @@
 package ru.mrbedrockpy.craftengine.client.gui.screen.layout;
 
 import ru.mrbedrockpy.craftengine.client.CraftEngineClient;
-import ru.mrbedrockpy.craftengine.client.event.client.input.CharTypeEvent;
+import ru.mrbedrockpy.craftengine.client.event.client.CharTypeEvent;
 import ru.mrbedrockpy.craftengine.client.gui.screen.widget.AbstractWidget;
 import ru.mrbedrockpy.renderer.gui.DrawContext;
 
@@ -9,7 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Layout{
+public class Layout {
     protected final Map<String, AbstractWidget> widgets = new LinkedHashMap<>();
 
     protected int offsetX = 0;
