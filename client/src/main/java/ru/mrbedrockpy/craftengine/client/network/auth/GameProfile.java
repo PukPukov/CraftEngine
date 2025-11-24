@@ -1,7 +1,12 @@
 package ru.mrbedrockpy.craftengine.client.network.auth;
 
-public record GameProfile(String name) {
-    public static GameProfile debug() {
-        return new GameProfile("Dev1");
-    }
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
+public class GameProfile {
+
+    private final String name;
+
 }

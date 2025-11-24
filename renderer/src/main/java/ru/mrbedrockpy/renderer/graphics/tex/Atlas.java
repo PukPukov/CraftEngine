@@ -27,12 +27,9 @@ public final class Atlas {
         int atlasW = texture.width();
         int atlasH = texture.height();
 
-        // Пиксельные размеры ИМЕННО этого региона в атласе
         int regionW = Math.max(1, Math.round((u1 - u0) * atlasW));
         int regionH = Math.max(1, Math.round((v1 - v0) * atlasH));
 
-        // Если твой TextureRegion хранит (texW, texH) — передавай сюда regionW/regionH,
-        // а НЕ размеры всего атласа.
         return new TextureRegion(atlasIndex, u0, v0, u1, v1, regionW, regionH);
     }
 }

@@ -4,46 +4,42 @@ import lombok.Getter;
 import lombok.Setter;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
-import org.lwjgl.glfw.GLFW;
-import ru.mrbedrockpy.craftengine.client.event.client.input.CharTypeEvent;
-import ru.mrbedrockpy.craftengine.client.event.client.input.KeyPressEvent;
-import ru.mrbedrockpy.craftengine.client.event.client.input.MouseScrollEvent;
-import ru.mrbedrockpy.craftengine.client.gui.screen.ChatScreen;
-import ru.mrbedrockpy.craftengine.client.keybind.KeyBindings;
-import ru.mrbedrockpy.craftengine.client.network.ClientPacketHandler;
-import ru.mrbedrockpy.craftengine.client.network.auth.GameProfile;
-import ru.mrbedrockpy.craftengine.client.serial.CompoundTag;
-import ru.mrbedrockpy.craftengine.client.serial.WorldIO;
-import ru.mrbedrockpy.craftengine.client.world.entity.ClientPlayerEntity;
 import ru.mrbedrockpy.craftengine.client.event.EventManager;
-import ru.mrbedrockpy.craftengine.client.event.client.input.MouseClickEvent;
-import ru.mrbedrockpy.craftengine.client.gui.screen.InventoryScreen;
-import ru.mrbedrockpy.craftengine.client.network.GameClient;
-import ru.mrbedrockpy.craftengine.core.util.config.ConfigManager;
-import ru.mrbedrockpy.craftengine.core.util.config.CraftEngineConfig;
-import ru.mrbedrockpy.craftengine.core.world.block.Blocks;
-import ru.mrbedrockpy.craftengine.server.network.packet.PacketRegistry;
-import ru.mrbedrockpy.craftengine.server.network.packet.Packets;
-import ru.mrbedrockpy.craftengine.server.network.packet.custom.BlockUpdatePacketS2C;
-import ru.mrbedrockpy.craftengine.core.world.item.ItemStack;
-import ru.mrbedrockpy.craftengine.server.network.packet.custom.ChatMessagePacketS2C;
-import ru.mrbedrockpy.craftengine.server.util.chat.ChatManager;
-import ru.mrbedrockpy.renderer.resource.CompositeResourceManager;
-import ru.mrbedrockpy.craftengine.core.world.item.Items;
-import ru.mrbedrockpy.renderer.RenderInit;
-import ru.mrbedrockpy.renderer.gui.DrawContext;
+import ru.mrbedrockpy.craftengine.client.event.client.CharTypeEvent;
+import ru.mrbedrockpy.craftengine.client.event.client.KeyPressEvent;
+import ru.mrbedrockpy.craftengine.client.event.client.MouseClickEvent;
+import ru.mrbedrockpy.craftengine.client.event.client.MouseScrollEvent;
 import ru.mrbedrockpy.craftengine.client.gui.HudRenderer;
 import ru.mrbedrockpy.craftengine.client.gui.screen.MainMenuScreen;
 import ru.mrbedrockpy.craftengine.client.gui.screen.Screen;
-import ru.mrbedrockpy.craftengine.core.registry.Registries;
-import ru.mrbedrockpy.craftengine.client.window.*;
+import ru.mrbedrockpy.craftengine.client.keybind.KeyBindings;
+import ru.mrbedrockpy.craftengine.client.network.ClientPacketHandler;
+import ru.mrbedrockpy.craftengine.client.network.GameClient;
+import ru.mrbedrockpy.craftengine.client.network.auth.GameProfile;
+import ru.mrbedrockpy.craftengine.client.serial.CompoundTag;
+import ru.mrbedrockpy.craftengine.client.serial.WorldIO;
+import ru.mrbedrockpy.craftengine.client.world.ClientPlayerController;
 import ru.mrbedrockpy.craftengine.client.world.ClientWorld;
+import ru.mrbedrockpy.craftengine.client.world.entity.ClientPlayerEntity;
+import ru.mrbedrockpy.craftengine.core.registry.Registries;
+import ru.mrbedrockpy.craftengine.core.util.config.ConfigManager;
+import ru.mrbedrockpy.craftengine.core.util.config.CraftEngineConfig;
+import ru.mrbedrockpy.craftengine.core.world.block.Blocks;
+import ru.mrbedrockpy.craftengine.core.world.item.ItemStack;
+import ru.mrbedrockpy.craftengine.core.world.item.Items;
+import ru.mrbedrockpy.craftengine.server.network.packet.PacketRegistry;
+import ru.mrbedrockpy.craftengine.server.network.packet.Packets;
+import ru.mrbedrockpy.craftengine.server.network.packet.custom.BlockUpdatePacketS2C;
+import ru.mrbedrockpy.craftengine.server.network.packet.custom.ChatMessagePacketS2C;
+import ru.mrbedrockpy.craftengine.server.util.chat.ChatManager;
 import ru.mrbedrockpy.craftengine.server.world.TickSystem;
+import ru.mrbedrockpy.renderer.RenderInit;
+import ru.mrbedrockpy.renderer.gui.DrawContext;
+import ru.mrbedrockpy.renderer.resource.CompositeResourceManager;
 import ru.mrbedrockpy.renderer.resource.UrlResourceSource;
 import ru.mrbedrockpy.renderer.util.graphics.ShaderUtil;
 import ru.mrbedrockpy.renderer.window.Input;
 import ru.mrbedrockpy.renderer.window.Window;
-import ru.mrbedrockpy.craftengine.core.data.WindowSettings;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,35 +47,24 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
-import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
-import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_RIGHT;
-
-public class CraftEngineClient{
+public class CraftEngineClient {
 
     public static final CraftEngineClient INSTANCE = new CraftEngineClient();
 
-    public final EventManager eventManager = new EventManager();
-    public HudRenderer hudRenderer;
-    public final CompositeResourceManager resourceManager = new CompositeResourceManager();
+    @Getter public final EventManager eventManager = new EventManager();
+    @Getter private HudRenderer hudRenderer;
+    @Getter private final CompositeResourceManager resourceManager = new CompositeResourceManager();
     private final DrawContext context;
-    @Getter
-    private final FPSCounter fpsCounter = new FPSCounter();
-    @Getter
-    public final ChatManager chatManager = new ChatManager();
-    @Getter
-    @Setter
-    private ClientWorld clientWorld;
-    @Getter
-    @Setter
-    private ClientPlayerEntity player;
-    @Getter
-    private Screen currentScreen = null;
-    @Getter
-    private final TickSystem tickSystem = new TickSystem(20);
+    @Getter public final ChatManager chatManager = new ChatManager();
+    @Getter @Setter private ClientWorld clientWorld;
+    @Getter @Setter private ClientPlayerEntity player;
+    @Getter @Setter private ClientPlayerController playerController;
+    @Getter private Screen currentScreen = null;
+    @Getter private final TickSystem tickSystem = new TickSystem(20);
     private final ClientPacketHandler packetHandler = new ClientPacketHandler(PacketRegistry.INSTANCE);
     public final GameClient gameClient = new GameClient(PacketRegistry.INSTANCE, packetHandler);
-    @Getter
-    private final ConfigManager configManager;
+    @Getter private final ConfigManager configManager;
+    @Getter private double delta;
 
     private CraftEngineClient() {
         Packets.register();
@@ -125,12 +110,12 @@ public class CraftEngineClient{
         while (!Window.isShouldClose()) {
             Input.pullEvents();
             long now = System.currentTimeMillis();
-            double deltaSeconds = (now - lastTime) / 1000.0;
+            delta = (now - lastTime) / 1000.0;
             lastTime = now;
-            this.update(deltaSeconds);
+            this.update();
             Window.clear();
             this.render();
-            this.renderUI(deltaSeconds);
+            this.renderUI();
             Window.swapBuffers();
         }
         this.configManager.saveConfigs();
@@ -138,68 +123,9 @@ public class CraftEngineClient{
         Window.terminate();
     }
 
-    private void update(double deltaTime) {
-        fpsCounter.update();
-        tickSystem.update(deltaTime);
-
-        if (Input.wasPressed(Input.Layer.UI, GLFW.GLFW_KEY_ESCAPE)) {
-            setScreen(null);
-        } else if (Input.wasPressed(Input.Layer.GAME, GLFW.GLFW_KEY_ESCAPE)) {
-            stop();
-            setScreen(new MainMenuScreen());
-        }
-        if (currentScreen == null && clientWorld == null) {
-            setScreen(new MainMenuScreen());
-        }
-
-        if (Input.wasPressed(GLFW.GLFW_KEY_F11)) {
-            Window.toggleFullscreen();
-        }
-
-        if(Input.wasPressed(GLFW.GLFW_KEY_F2)) Window.takeScreenshot();
-
-        if (KeyBindings.OPEN_INVENTORY.wasPressed()) {
-            if (player != null) setScreen(new InventoryScreen(player.getInventory()));
-        }
-        if (KeyBindings.CHAT.wasPressed()) setScreen(new ChatScreen());
-
-        if (Input.wasClicked(GLFW_MOUSE_BUTTON_LEFT)) {
-            MouseClickEvent ev = new MouseClickEvent(Input.currentLayer(), GLFW_MOUSE_BUTTON_LEFT, Input.getX(), Input.getY());
-            eventManager.callEvent(ev);
-        }
-        if (Input.wasClicked(GLFW_MOUSE_BUTTON_RIGHT)) {
-            MouseClickEvent ev = new MouseClickEvent(Input.currentLayer(), GLFW_MOUSE_BUTTON_RIGHT, Input.getX(), Input.getY());
-            eventManager.callEvent(ev);
-        }
-        if (KeyBindings.S1.wasPressed()) {
-            player.getInventory().setSelectedHotbarSlot(0);
-        }
-        if (KeyBindings.S2.wasPressed()) {
-            player.getInventory().setSelectedHotbarSlot(1);
-        }
-        if (KeyBindings.S3.wasPressed()) {
-            player.getInventory().setSelectedHotbarSlot(2);
-        }
-        if (KeyBindings.S4.wasPressed()) {
-            player.getInventory().setSelectedHotbarSlot(3);
-        }
-        if (KeyBindings.S5.wasPressed()) {
-            player.getInventory().setSelectedHotbarSlot(4);
-        }
-        if (KeyBindings.S6.wasPressed()) {
-            player.getInventory().setSelectedHotbarSlot(5);
-        }
-        if (KeyBindings.S7.wasPressed()) {
-            player.getInventory().setSelectedHotbarSlot(6);
-        }
-        if (KeyBindings.S8.wasPressed()) {
-            player.getInventory().setSelectedHotbarSlot(7);
-        }
-        if (KeyBindings.S9.wasPressed()) {
-            player.getInventory().setSelectedHotbarSlot(8);
-        }
-
-        if (player != null) player.update(deltaTime, tickSystem.partialTick());
+    private void update() {
+        tickSystem.update(delta);
+        if (playerController != null) playerController.update(delta, tickSystem.partialTick());
     }
 
     private void tick() {
@@ -214,14 +140,10 @@ public class CraftEngineClient{
         }
     }
 
-    private void renderUI(double deltaTime) {
+    private void renderUI() {
         context.enableGL();
-        if (clientWorld != null && player != null) {
-            hudRenderer.render(context, scale(Input.getX()), scale(Input.getY()), (float) deltaTime);
-        }
-        if (currentScreen != null) {
-            currentScreen.render(context, scale(Input.getX()), scale(Input.getY()), (float) deltaTime);
-        }
+        if (clientWorld != null && player != null) hudRenderer.render(context, scale(Input.getX()), scale(Input.getY()), (float) delta);
+        if (currentScreen != null) currentScreen.render(context, scale(Input.getX()), scale(Input.getY()), (float) delta);
         context.disableGL();
     }
 
@@ -241,6 +163,7 @@ public class CraftEngineClient{
             screen.init();
         }
     }
+
     // TODO: вынести вход и выход из мира
     public void play() {
         player = new ClientPlayerEntity(new Vector3f(0, 0, 0), null);
@@ -301,12 +224,12 @@ public class CraftEngineClient{
     private void onMouseScroll(MouseScrollEvent event) {
         if (currentScreen != null && Input.currentLayer() == Input.Layer.UI) {
            currentScreen.onMouseScrolled(event);
+        } else {
+            int nextSlot = (player.getInventory().getSelectedHotbarSlot() - (int) ((event.getScrollY() / Math.abs(event.getScrollY())))) % 9;
+            player.getInventory().setSelectedHotbarSlot(nextSlot < 0 ? 8 : nextSlot);
         }
-        int nextSlot = (player.getInventory().getSelectedHotbarSlot() - (int) ((event.getScrollY() / Math.abs(event.getScrollY())))) % 9;
-        player.getInventory().setSelectedHotbarSlot(nextSlot < 0 ? 8 : nextSlot);
     }
 
-    // Необъяснимая магия
     private int scale(double value) {
         return (int) (value / (float) Window.getWidth() * Window.scaledWidth());
     }

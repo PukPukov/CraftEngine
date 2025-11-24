@@ -3,11 +3,12 @@ package ru.mrbedrockpy.craftengine.client.gui.screen;
 import lombok.RequiredArgsConstructor;
 import org.lwjgl.glfw.GLFW;
 import ru.mrbedrockpy.craftengine.client.CraftEngineClient;
-import ru.mrbedrockpy.craftengine.client.event.client.input.KeyPressEvent;
+import ru.mrbedrockpy.craftengine.client.event.client.KeyPressEvent;
 import ru.mrbedrockpy.craftengine.client.gui.screen.layout.Layout;
 import ru.mrbedrockpy.craftengine.client.gui.screen.widget.TextField;
 import ru.mrbedrockpy.craftengine.client.network.GameClient;
 import ru.mrbedrockpy.craftengine.core.util.config.CraftEngineConfig;
+import ru.mrbedrockpy.renderer.gui.DrawContext;
 
 @RequiredArgsConstructor
 public class MultiplayerScreen extends Screen {
@@ -32,5 +33,12 @@ public class MultiplayerScreen extends Screen {
             CraftEngineClient.INSTANCE.getConfigManager().saveConfigs();
             CraftEngineClient.INSTANCE.play();
         }
+    }
+
+
+    @Override
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        renderBackground(context, mouseX, mouseY, delta);
+        super.render(context, mouseX, mouseY, delta);
     }
 }

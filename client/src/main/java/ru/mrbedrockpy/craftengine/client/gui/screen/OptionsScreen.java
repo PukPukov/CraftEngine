@@ -1,11 +1,12 @@
 package ru.mrbedrockpy.craftengine.client.gui.screen;
 
-import ru.mrbedrockpy.craftengine.client.event.client.input.MouseScrollEvent;
+import ru.mrbedrockpy.craftengine.client.event.client.MouseScrollEvent;
 import ru.mrbedrockpy.craftengine.client.gui.screen.layout.Layout;
 import ru.mrbedrockpy.craftengine.client.gui.screen.layout.VerticalCenterStackLayout;
 import ru.mrbedrockpy.craftengine.client.gui.screen.widget.BindingWidget;
 import ru.mrbedrockpy.craftengine.client.keybind.KeyBind;
 import ru.mrbedrockpy.craftengine.client.keybind.KeyBindingsHelper;
+import ru.mrbedrockpy.renderer.gui.DrawContext;
 import ru.mrbedrockpy.renderer.window.Window;
 
 public class OptionsScreen extends Screen {
@@ -32,5 +33,11 @@ public class OptionsScreen extends Screen {
         scroll += event.getScrollY() * 5;
         scroll = Math.min(0, scroll);
         layout.setOffset(Window.scaledWidth() / 2, (int) ((double) Window.scaledHeight() / 4 + scroll));
+    }
+
+    @Override
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        renderBackground(context, mouseX, mouseY, delta);
+        super.render(context, mouseX, mouseY, delta);
     }
 }

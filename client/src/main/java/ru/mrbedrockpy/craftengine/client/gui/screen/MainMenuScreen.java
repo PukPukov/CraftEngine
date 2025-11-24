@@ -4,6 +4,7 @@ import ru.mrbedrockpy.craftengine.client.CraftEngineClient;
 import ru.mrbedrockpy.craftengine.client.gui.screen.layout.VerticalCenterStackLayout;
 import ru.mrbedrockpy.craftengine.client.gui.screen.layout.Layout;
 import ru.mrbedrockpy.craftengine.client.gui.screen.widget.ButtonWidget;
+import ru.mrbedrockpy.renderer.gui.DrawContext;
 import ru.mrbedrockpy.renderer.window.Window;
 
 
@@ -20,5 +21,11 @@ public class MainMenuScreen extends Screen {
 
         addLayout(layout);
         layout.setOffset(Window.scaledWidth() / 2 - 7, Window.scaledHeight() / 4);
+    }
+
+    @Override
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        renderBackground(context, mouseX, mouseY, delta);
+        super.render(context, mouseX, mouseY, delta);
     }
 }

@@ -9,7 +9,7 @@ import ru.mrbedrockpy.craftengine.core.world.entity.PlayerEntity;
 import ru.mrbedrockpy.craftengine.core.world.inventory.PlayerInventory;
 import ru.mrbedrockpy.craftengine.core.world.raycast.BlockRaycastResult;
 
-public class BlockItem extends Item{
+public class BlockItem extends Item {
 
     @Getter
     private final Block block;

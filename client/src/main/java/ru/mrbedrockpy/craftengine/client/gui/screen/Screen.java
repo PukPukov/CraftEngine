@@ -1,9 +1,9 @@
 package ru.mrbedrockpy.craftengine.client.gui.screen;
 
-import ru.mrbedrockpy.craftengine.client.event.client.input.CharTypeEvent;
-import ru.mrbedrockpy.craftengine.client.event.client.input.KeyPressEvent;
-import ru.mrbedrockpy.craftengine.client.event.client.input.MouseClickEvent;
-import ru.mrbedrockpy.craftengine.client.event.client.input.MouseScrollEvent;
+import ru.mrbedrockpy.craftengine.client.event.client.CharTypeEvent;
+import ru.mrbedrockpy.craftengine.client.event.client.KeyPressEvent;
+import ru.mrbedrockpy.craftengine.client.event.client.MouseClickEvent;
+import ru.mrbedrockpy.craftengine.client.event.client.MouseScrollEvent;
 import ru.mrbedrockpy.craftengine.client.gui.screen.layout.Layout;
 import ru.mrbedrockpy.craftengine.core.util.id.RL;
 import ru.mrbedrockpy.renderer.gui.DrawContext;
@@ -58,7 +58,6 @@ public class Screen{
     }
 
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackground(context, mouseX, mouseY, delta);
         for (Layout layout : layouts) {
             layout.render(context, mouseX, mouseY, delta);
         }

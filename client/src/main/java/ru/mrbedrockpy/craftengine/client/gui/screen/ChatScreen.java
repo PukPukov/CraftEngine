@@ -2,7 +2,7 @@ package ru.mrbedrockpy.craftengine.client.gui.screen;
 
 import org.lwjgl.glfw.GLFW;
 import ru.mrbedrockpy.craftengine.client.CraftEngineClient;
-import ru.mrbedrockpy.craftengine.client.event.client.input.KeyPressEvent;
+import ru.mrbedrockpy.craftengine.client.event.client.KeyPressEvent;
 import ru.mrbedrockpy.craftengine.client.gui.screen.layout.Layout;
 import ru.mrbedrockpy.craftengine.client.gui.screen.widget.TextField;
 import ru.mrbedrockpy.craftengine.server.network.packet.custom.ChatMessagePacketC2S;
