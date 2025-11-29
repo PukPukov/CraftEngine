@@ -102,8 +102,8 @@ public class DrawContext{
         int regionW = r.texW;
         int regionH = r.texH;
 
-        if (srcW <= 0) srcW = regionW - u;
-        if (srcH <= 0) srcH = regionH - v;
+        if (srcW <= 0) srcW = regionW;
+        if (srcH <= 0) srcH = regionH;
 
         float du = r.u1 - r.u0;
         float dv = r.v1 - r.v0;
@@ -111,11 +111,8 @@ public class DrawContext{
         float su0 = r.u0 + (u          / (float) regionW) * du;
         float su1 = r.u0 + ((u + srcW) / (float) regionW) * du;
 
-        float yBottom = regionH - (v + srcH);
-        float yTop    = regionH - v;
-
-        float sv0 = r.v0 + (yBottom / (float) regionH) * dv;
-        float sv1 = r.v0 + (yTop    / (float) regionH) * dv;
+        float sv0 = r.v0 + (v / (float) regionH) * dv;;;
+        float sv1 = r.v0 + (v + srcH    / (float) regionH) * dv;;
 
         float[] verts = {
                 x,           y,           su0, sv0,

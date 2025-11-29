@@ -20,6 +20,6 @@ public interface Component {
         return new TranslatableComponent(key, args);
     }
     static Component keybind(String key) {
-        return new KeybindComponent(key);
+        return new LiteralComponent(key);
     }
 }

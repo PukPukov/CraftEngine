@@ -10,14 +10,12 @@ abstract class BaseComponent implements Component {
     protected Style style = Style.empty();
     protected final List<Component> children = new ArrayList<>();
 
-    @Override public Style style() { return style; }
-    @Override public List<Component> children() { return children; }
+    @Override public Style getStyle() { return style; }
+    @Override public List<Component> getChildren() { return children; }
 
     @Override
-    public Component withStyle(Consumer<Style.Builder> mut) {
-        Style.Builder b = style.toBuilder();
-        mut.accept(b);
-        this.style = b.build();
+    public Component withStyle(Consumer<Style> mut) {
+        mut.accept(this.style);
         return this;
     }
 

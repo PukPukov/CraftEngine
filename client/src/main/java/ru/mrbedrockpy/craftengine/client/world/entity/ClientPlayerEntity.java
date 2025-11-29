@@ -12,7 +12,7 @@ import ru.mrbedrockpy.craftengine.core.world.block.Blocks;
 import ru.mrbedrockpy.craftengine.core.world.entity.PlayerEntity;
 import ru.mrbedrockpy.craftengine.core.world.item.ItemStack;
 import ru.mrbedrockpy.craftengine.server.network.packet.custom.BlockBreakPacketC2S;
-import ru.mrbedrockpy.craftengine.server.util.Util;
+import ru.mrbedrockpy.craftengine.core.util.Util;
 import ru.mrbedrockpy.craftengine.core.world.raycast.BlockRaycastResult;
 import ru.mrbedrockpy.renderer.window.Input;
 

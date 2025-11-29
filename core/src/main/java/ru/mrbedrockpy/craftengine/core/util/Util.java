@@ -1,4 +1,4 @@
-package ru.mrbedrockpy.craftengine.server.util;
+package ru.mrbedrockpy.craftengine.core.util;
 
 import java.util.function.Consumer;
 import java.util.function.DoublePredicate;
