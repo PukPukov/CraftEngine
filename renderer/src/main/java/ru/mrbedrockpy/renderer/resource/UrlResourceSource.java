@@ -45,9 +45,14 @@ public final class UrlResourceSource implements ResourceSource {
     public List<String> list(String directory) {
         try {
             String dir = full(directory);
+            System.out.println("dir: "+dir);
             if (!dir.endsWith("/")) dir += "/";
             URL url = cl.getResource(dir);
+            System.out.println("1");
+            System.out.println("url: "+url); // баг: url по какой-то причине при загрузке с джарника, а не со среды разработки null
             if (url == null) return List.of();
+            
+            System.out.println("protocol = "+url.getProtocol());
 
             if ("file".equals(url.getProtocol())) {
                 // dev-режим: ресурсы лежат как обычные файлы
@@ -82,7 +87,9 @@ public final class UrlResourceSource implements ResourceSource {
                     return direct.stream().sorted().toList();
                 }
             }
-        } catch (Exception ignored) {}
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
         return List.of();
     }
 

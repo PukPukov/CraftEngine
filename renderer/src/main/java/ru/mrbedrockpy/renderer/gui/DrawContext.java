@@ -47,6 +47,7 @@ public class DrawContext{
         glVertexAttribPointer(1, 2, GL_FLOAT, false, 4 * Float.BYTES, 2 * Float.BYTES);
         glEnableVertexAttribArray(1);
         glBindVertexArray(0);
+        System.out.println("all textures: "+RenderInit.RESOURCE_MANAGER.getTextureLoader().getAll().size());
         for (var e : RenderInit.RESOURCE_MANAGER.getTextureLoader().getAll()) {
             RL key = e.getKey();
             if (!key.path().startsWith("gui/") && !key.path().startsWith("sticker/")) continue;
