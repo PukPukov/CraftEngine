@@ -44,14 +44,6 @@ public class ClientPlayerController {
 
         if (player != null && KeyBindings.OPEN_INVENTORY.wasPressed()) client.setScreen(new InventoryScreen(player.getInventory()));
         if (KeyBindings.CHAT.wasPressed()) client.setScreen(new ChatScreen());
-        if (Input.wasClicked(GLFW_MOUSE_BUTTON_LEFT)) {
-            MouseClickEvent ev = new MouseClickEvent(Input.currentLayer(), GLFW_MOUSE_BUTTON_LEFT, Input.getX(), Input.getY());
-            eventManager.callEvent(ev);
-        }
-        if (Input.wasClicked(GLFW_MOUSE_BUTTON_RIGHT)) {
-            MouseClickEvent ev = new MouseClickEvent(Input.currentLayer(), GLFW_MOUSE_BUTTON_RIGHT, Input.getX(), Input.getY());
-            eventManager.callEvent(ev);
-        }
         if (KeyBindings.S1.wasPressed()) player.getInventory().setSelectedHotbarSlot(0);
         if (KeyBindings.S2.wasPressed()) player.getInventory().setSelectedHotbarSlot(1);
         if (KeyBindings.S3.wasPressed()) player.getInventory().setSelectedHotbarSlot(2);

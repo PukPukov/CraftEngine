@@ -47,6 +47,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
+import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
+import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_RIGHT;
+
 public class CraftEngineClient {
 
     public static final CraftEngineClient INSTANCE = new CraftEngineClient();
@@ -125,6 +128,14 @@ public class CraftEngineClient {
 
     private void update() {
         tickSystem.update(delta);
+        if (Input.wasClicked(GLFW_MOUSE_BUTTON_LEFT)) {
+            MouseClickEvent ev = new MouseClickEvent(Input.currentLayer(), GLFW_MOUSE_BUTTON_LEFT, Input.getX(), Input.getY());
+            eventManager.callEvent(ev);
+        }
+        if (Input.wasClicked(GLFW_MOUSE_BUTTON_RIGHT)) {
+            MouseClickEvent ev = new MouseClickEvent(Input.currentLayer(), GLFW_MOUSE_BUTTON_RIGHT, Input.getX(), Input.getY());
+            eventManager.callEvent(ev);
+        }
         if (playerController != null) playerController.update(delta, tickSystem.partialTick());
     }
 
@@ -167,6 +178,7 @@ public class CraftEngineClient {
     // TODO: вынести вход и выход из мира
     public void play() {
         player = new ClientPlayerEntity(new Vector3f(0, 0, 0), null);
+        playerController = new ClientPlayerController(player);
         try {
             clientWorld = new ClientWorld(WorldIO.deserialize(CompoundTag.fromBytes(Files.readAllBytes(Paths.get("world.msgpack")))), player);
         } catch (Exception e) {
@@ -201,6 +213,7 @@ public class CraftEngineClient {
         player = null;
         clientWorld = null;
         hudRenderer = null;
+        playerController = null;
     }
 
     private void onMouseClick(MouseClickEvent event) {
