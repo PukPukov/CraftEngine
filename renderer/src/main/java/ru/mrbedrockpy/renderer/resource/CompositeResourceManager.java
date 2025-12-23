@@ -72,9 +72,7 @@ public class CompositeResourceManager implements IResourceManager {
         ArrayList<ResourceHandle> out = new ArrayList<>();
         HashSet<String> visitedDirs = new HashSet<>();          // защитимся от повторов директорий
         
-        System.out.println("sourceList size: "+sourceList.size());
         for (ResourceSource s : sourceList) {
-            System.out.println("using resource source "+s.id()+" "+s.getClass());
             try {
                 recurseList(s, root, nameFilter, dedup, out, visitedDirs);
             } catch (Exception ignored) {}
@@ -95,15 +93,12 @@ public class CompositeResourceManager implements IResourceManager {
 
         List<String> names;
         try {
-            System.out.println("calling resource source list with "+normDir);
             names = s.list(normDir);
-            System.out.println("result is "+names);
         } catch (Exception e) {
             e.printStackTrace();
             return;
         }
         if (names == null) return;
-        System.out.println("names size: "+names.size());
         if (names.isEmpty()) return;
         
         for (String name : names) {
@@ -132,14 +127,11 @@ public class CompositeResourceManager implements IResourceManager {
     }
 
     public void load() {
-        long t0 = System.nanoTime();
-        int[] counters = new int[2];
         List<String> errors = new ArrayList<>();
 
         modelLoader.loadAll("assets/models/");
-        textureLoader.loadAll(RL.of("assets/textures/"));
+        textureLoader.loadAll(RL.of("assets/craftengine/textures/"));
 
-        long ms = (System.nanoTime() - t0) / 1_000_000L;
         if (!errors.isEmpty()) {
             for (String err : errors) System.err.println("[CompositeResourceManager] " + err);
         }

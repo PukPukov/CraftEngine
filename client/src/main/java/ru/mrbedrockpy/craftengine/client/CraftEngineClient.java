@@ -93,7 +93,7 @@ public class CraftEngineClient {
         Items.register();
         Registries.freeze();
 
-        resourceManager.push(new UrlResourceSource(this.getClass().getClassLoader(), "."));
+        resourceManager.push(new UrlResourceSource(this.getClass().getClassLoader(), ""));
         resourceManager.load();
 
         RenderInit.RESOURCE_MANAGER = resourceManager;

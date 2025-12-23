@@ -118,7 +118,7 @@ public class FreeTextureAtlas implements UvProvider {
     public float[] getNormalizedUvs(RL name) {
         Rectangle r = uvMap.get(name);
         if (r == null) {
-            System.err.println("Texture not found: " + name + "; uvMap size: "+uvMap.size());
+//            System.err.println("Texture not found: " + name + "; uvMap size: "+uvMap.size());
             return new float[8];
         }
 
