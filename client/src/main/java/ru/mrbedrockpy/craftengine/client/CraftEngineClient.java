@@ -69,7 +69,7 @@ public class CraftEngineClient {
     private @Getter @Setter ClientWorld              clientWorld;
     private @Getter @Setter ClientPlayerEntity       player;
     private @Getter @Setter ClientPlayerController   playerController;
-    private @Getter         Screen                   currentScreen     = null;
+    private @Getter         Screen                   currentScreen;
     private @Getter         double                   delta;
 
     private CraftEngineClient() {
