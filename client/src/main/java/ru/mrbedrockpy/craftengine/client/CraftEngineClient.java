@@ -54,20 +54,23 @@ public class CraftEngineClient {
 
     public static final CraftEngineClient INSTANCE = new CraftEngineClient();
 
-    @Getter public final EventManager eventManager = new EventManager();
-    @Getter private HudRenderer hudRenderer;
-    @Getter private final CompositeResourceManager resourceManager = new CompositeResourceManager();
-    private final DrawContext context;
-    @Getter public final ChatManager chatManager = new ChatManager();
-    @Getter @Setter private ClientWorld clientWorld;
-    @Getter @Setter private ClientPlayerEntity player;
-    @Getter @Setter private ClientPlayerController playerController;
-    @Getter private Screen currentScreen = null;
-    @Getter private final TickSystem tickSystem = new TickSystem(20);
-    private final ClientPacketHandler packetHandler = new ClientPacketHandler(PacketRegistry.INSTANCE);
-    public final GameClient gameClient = new GameClient(PacketRegistry.INSTANCE, packetHandler);
-    @Getter private final ConfigManager configManager;
-    @Getter private double delta;
+    // модули
+    private @Getter final   EventManager             eventManager      = new EventManager();
+    private @Getter         HudRenderer              hudRenderer;
+    private @Getter final   CompositeResourceManager resourceManager   = new CompositeResourceManager();
+    private         final   DrawContext              context;
+    private @Getter final   ChatManager              chatManager       = new ChatManager();
+    private @Getter final   TickSystem               tickSystem        = new TickSystem(20);
+    private         final   ClientPacketHandler      packetHandler     = new ClientPacketHandler(PacketRegistry.INSTANCE);
+    private @Getter final   GameClient               gameClient        = new GameClient(PacketRegistry.INSTANCE, packetHandler);
+    private @Getter final   ConfigManager            configManager;
+    
+    // данные
+    private @Getter @Setter ClientWorld              clientWorld;
+    private @Getter @Setter ClientPlayerEntity       player;
+    private @Getter @Setter ClientPlayerController   playerController;
+    private @Getter         Screen                   currentScreen     = null;
+    private @Getter         double                   delta;
 
     private CraftEngineClient() {
         Packets.register();
