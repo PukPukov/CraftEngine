@@ -74,7 +74,7 @@ public class ClientPlayerEntity extends PlayerEntity {
             BlockRaycastResult hit = world.raycast(new Vector3f(camera.getPosition()), camera.getFront(), 4.5f);
             if (hit != null){
                 world.setBlock(hit.x, hit.y, hit.z, Blocks.AIR);
-                CraftEngineClient.INSTANCE.gameClient.send(new BlockBreakPacketC2S(new Vector3i(hit.x, hit.y, hit.z)));
+                CraftEngineClient.INSTANCE.getGameClient().send(new BlockBreakPacketC2S(new Vector3i(hit.x, hit.y, hit.z)));
             }
         } else if (KeyBindings.BUILD.wasPressed()) {
             ItemStack selected = inventory.getSelectedStack();

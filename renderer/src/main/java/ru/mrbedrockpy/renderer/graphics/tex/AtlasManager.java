@@ -37,22 +37,26 @@ public final class AtlasManager implements AutoCloseable {
 
     public void uploadToShader(int program, String uniformArrayBaseName) {
         if (bindless) {
-            int baseLoc = glGetUniformLocation(program, uniformArrayBaseName + "[0]");
             for (int i = 0; i < atlases.size(); i++) {
-                long h = atlases.get(i).texture().handle();
-                glProgramUniformHandleui64ARB(program, baseLoc + i, h);
+                int loc = glGetUniformLocation(program, uniformArrayBaseName + "[" + i + "]");
+                if (loc < 0) continue; // или throw, если хочешь жёстко
+                long h = atlases.get(i).texture().handle(); // см. пункт 2 про resident
+                glProgramUniformHandleui64ARB(program, loc, h);
             }
         } else {
             if (legacyUnits == null || legacyUnits.length < atlases.size()) {
                 legacyUnits = new int[atlases.size()];
                 for (int i = 0; i < legacyUnits.length; i++) legacyUnits[i] = i;
             }
+
             for (int i = 0; i < atlases.size(); i++) {
                 glActiveTexture(GL_TEXTURE0 + i);
-                glBindTexture(GL_TEXTURE_2D, atlases.get(i).texture().id());
+                glBindTexture(GL_TEXTURE_2D, atlases.get(i).texture().getId());
             }
+
             for (int i = 0; i < atlases.size(); i++) {
                 int loc = glGetUniformLocation(program, uniformArrayBaseName + "[" + i + "]");
+                if (loc < 0) continue;
                 glProgramUniform1i(program, loc, i);
             }
             glActiveTexture(GL_TEXTURE0);

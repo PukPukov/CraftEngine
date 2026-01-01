@@ -18,12 +18,12 @@ import java.util.*;
 
 import static org.lwjgl.opengl.GL46C.*;
 
-public class WorldRenderer {
+public class WorldRenderer implements AutoCloseable {
     @Getter
-    private final Shader shader;
-    private final TextureAtlas atlas;
-    private final Texture texture;
-    private final SkyboxRenderer skyboxRenderer;
+    private Shader shader;
+    private TextureAtlas atlas;
+    private Texture texture;
+    private SkyboxRenderer skyboxRenderer;
 
     private final Map<Chunk, Mesh> posMeshes = new HashMap<>();
     private final Map<Vector2i, Chunk> chunksByPos = new HashMap<>();
@@ -48,25 +48,12 @@ public class WorldRenderer {
 
     public WorldRenderer() {
         shader = ShaderUtil.load("vertex.glsl", "fragment.glsl");
-        this.atlas = new TextureAtlas(Chunk.SIZE);
-        try {
-            loadTextures();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.atlas = RenderInit.blocksAtlasBuilder();
         texture = atlas.buildAtlas();
-        GlTexture blocksGl = new GlTexture(texture.getId(), texture.getWidth(), texture.getHeight());
-        Atlas blocks = new Atlas(RL.of("blocks"), blocksGl, atlas);
-        BLOCKS_ATLAS = RenderInit.ATLAS_MANAGER.register(blocks);
+        BLOCKS_ATLAS = RenderInit.blocksAtlasIndex();
         skyboxRenderer = new SkyboxRenderer("skybox.png");
     }
 
-    private void loadTextures() throws IOException {
-        for (Map.Entry<RL, Texture> texture : RenderInit.RESOURCE_MANAGER.getTextureLoader().getAll()) {
-            if (!texture.getKey().path().startsWith("block/")) continue;
-            atlas.addTile(texture.getKey(), TextureUtil.toBufferedImage(texture.getValue()));
-        }
-    }
 
     private final FrustumCuller culler = new FrustumCuller();
 
@@ -85,7 +72,6 @@ public class WorldRenderer {
         Matrix4f projView = new Matrix4f(proj).mul(view);
         culler.update(projView);
 
-        // 3) Рендер чанков
         for (Chunk chunk : posMeshes.keySet()) {
             if (distanceByAxis(playerPos, chunk.getPosition()) > CraftEngineConfig.RENDER_DISTANCE
                     || !culler.isBoxVisible(chunk.getAABB())) continue;
@@ -120,5 +106,30 @@ public class WorldRenderer {
 
     private int distanceByAxis(Vector2i pos1, Vector2i pos2) {
         return Math.max(Math.abs(pos1.x - pos2.x), Math.abs(pos1.y - pos2.y));
+    }
+    @Override
+    public void close() {
+        for (Mesh m : posMeshes.values()) {
+            try { m.close(); } catch (Exception ignored) {}
+        }
+        posMeshes.clear();
+        chunksByPos.clear();
+
+        if (skyboxRenderer != null) {
+            try { skyboxRenderer.close(); } catch (Exception ignored) {}
+            skyboxRenderer = null;
+        }
+
+        if (texture != null) {
+            try { texture.close(); } catch (Exception ignored) {}
+            texture = null;
+        }
+
+        if (shader != null) {
+            try { shader.close(); } catch (Exception ignored) {}
+            shader = null;
+        }
+
+        atlas = null;
     }
 }

@@ -1,44 +1,50 @@
 package ru.mrbedrockpy.renderer.graphics.tex;
 
+import lombok.Getter;
+
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.opengl.GL46C.*;
 import static org.lwjgl.opengl.ARBBindlessTexture.*;
 
-public class GlTexture implements AutoCloseable {
+@Getter
+public final class GlTexture implements AutoCloseable {
     private final int id;
-    private final long handle;
+    private long handle;
     private boolean resident;
-
     private final int width;
     private final int height;
 
-    public GlTexture(int existingTexId, int width, int height) {
-        this.id = existingTexId;
-        this.width = width;
-        this.height = height;
+    public GlTexture(int id, int w, int h) {
+        this.id = id;
+        this.width = w;
+        this.height = h;
 
-        long h = 0L;
         if (org.lwjgl.opengl.GL.getCapabilities().GL_ARB_bindless_texture) {
-            h = glGetTextureHandleARB(id);
-            glMakeTextureHandleResidentARB(h);
-            resident = true;
+            this.handle = glGetTextureHandleARB(id);
+            glMakeTextureHandleResidentARB(this.handle);
+            this.resident = true;
         }
-        this.handle = h;
     }
 
-    public int id() { return id; }
-    public long handle() { return handle; }
-    public boolean isBindless() { return handle != 0L; }
-    public int width() { return width; }
-    public int height() { return height; }
+    public long handle() {
+        if (org.lwjgl.opengl.GL.getCapabilities().GL_ARB_bindless_texture) {
+            if (handle == 0L) handle = glGetTextureHandleARB(id);
+            if (!resident) {
+                glMakeTextureHandleResidentARB(handle);
+                resident = true;
+            }
+        }
+        return handle;
+    }
 
     @Override
     public void close() {
-        if (resident) {
-            glMakeTextureHandleNonResidentARB(handle);
-            resident = false;
+        if (org.lwjgl.opengl.GL.getCapabilities().GL_ARB_bindless_texture) {
+            if (resident && handle != 0L) {
+                glMakeTextureHandleNonResidentARB(handle);
+            }
         }
+        glDeleteTextures(id);
     }
 }
-

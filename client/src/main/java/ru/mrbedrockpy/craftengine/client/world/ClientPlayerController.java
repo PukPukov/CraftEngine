@@ -33,7 +33,7 @@ public class ClientPlayerController {
         EventManager eventManager = client.getEventManager();
         if (Input.wasPressed(Input.Layer.UI, GLFW.GLFW_KEY_ESCAPE)) client.setScreen(null);
         else if (Input.wasPressed(Input.Layer.GAME, GLFW.GLFW_KEY_ESCAPE)) {
-            quitFromWorld();
+            client.stop();
             client.setScreen(new MainMenuScreen());
         }
         if (client.getCurrentScreen() == null && client.getClientWorld() == null) client.setScreen(new MainMenuScreen());
@@ -55,7 +55,4 @@ public class ClientPlayerController {
         if (KeyBindings.S9.wasPressed()) player.getInventory().setSelectedHotbarSlot(8);
     }
 
-    public void quitFromWorld() {
-
-    }
 }

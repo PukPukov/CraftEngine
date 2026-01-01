@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-public class TextureAtlas implements UvProvider {
+public class TextureAtlas implements UvProvider, AutoCloseable {
     private final int tileSize = 32;
     @Getter(AccessLevel.PUBLIC)
     private final int atlasSize;
@@ -79,4 +79,8 @@ public class TextureAtlas implements UvProvider {
         return new float[]{u0,v0, u1,v0, u1,v1, u0,v1};
     }
 
+    @Override
+    public void close() throws Exception {
+        uvMap.clear();
+    }
 }

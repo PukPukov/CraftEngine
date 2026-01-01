@@ -15,7 +15,7 @@ public class MainMenuScreen extends Screen {
         Layout layout = new VerticalCenterStackLayout();
 
         layout.addWidget("play", new ButtonWidget("Play", 0, 0 ,40,20, b -> CraftEngineClient.INSTANCE.play()));
-        layout.addWidget("multiplayer", new ButtonWidget("Multipl", 0, 0, 40, 20, b -> CraftEngineClient.INSTANCE.setScreen(new MultiplayerScreen(CraftEngineClient.INSTANCE.gameClient))));
+        layout.addWidget("multiplayer", new ButtonWidget("Multipl", 0, 0, 40, 20, b -> CraftEngineClient.INSTANCE.setScreen(new MultiplayerScreen(CraftEngineClient.INSTANCE.getGameClient()))));
         layout.addWidget("options", new ButtonWidget("Options", 0, 0, 40, 20, b -> CraftEngineClient.INSTANCE.setScreen(new OptionsScreen())));
         layout.addWidget("exit", new ButtonWidget("Exit", 0, 0, 40, 20, b -> Window.setShouldClose(true)));
 

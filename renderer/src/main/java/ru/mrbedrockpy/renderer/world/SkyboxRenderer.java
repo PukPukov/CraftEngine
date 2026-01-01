@@ -16,7 +16,7 @@ import java.nio.FloatBuffer;
 import static org.lwjgl.opengl.ARBVertexArrayObject.glGenVertexArrays;
 import static org.lwjgl.opengl.GL46C.*;
 
-public class SkyboxRenderer {
+public class SkyboxRenderer implements AutoCloseable {
 
     private final Shader shader;
     private final int cubemapId;
@@ -72,5 +72,18 @@ public class SkyboxRenderer {
         if (cull) glEnable(GL_CULL_FACE);
         glDepthMask(true);
         glDepthFunc(GL_LESS);
+    }
+
+    @Override
+    public void close() throws Exception {
+        // VAO
+        glBindVertexArray(0);
+        glDeleteVertexArrays(vao);
+
+        // Cubemap
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+        glDeleteTextures(cubemapId);
+
+        shader.close();
     }
 }

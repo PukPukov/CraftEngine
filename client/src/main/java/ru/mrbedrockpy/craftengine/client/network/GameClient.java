@@ -39,7 +39,7 @@ public final class GameClient {
             network.start();
             Channel ch = network.connectSync();
             connection = new PlayerConnection(PacketDirection.C2S, ch, registry);
-            CraftEngineClient.INSTANCE.eventManager.callEvent(new ClientConnectEvent(connection, host, port));
+            CraftEngineClient.INSTANCE.getEventManager().callEvent(new ClientConnectEvent(connection, host, port));
             connection.send(new ClientLoginPacketC2S(profile.getName()));
         } catch (Exception e) {
             e.printStackTrace();

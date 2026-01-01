@@ -31,7 +31,7 @@ public class ChatScreen extends Screen {
         super.onKeyPressed(event);
         TextField tf = findWidget("input", TextField.class);
         if(event.getKeyCode() == GLFW.GLFW_KEY_ENTER || event.getKeyCode() == GLFW.GLFW_KEY_KP_ENTER) {
-            CraftEngineClient.INSTANCE.gameClient.send(new ChatMessagePacketC2S(tf.getText()));
+            CraftEngineClient.INSTANCE.getGameClient().send(new ChatMessagePacketC2S(tf.getText()));
             tf.clear();
         }
     }

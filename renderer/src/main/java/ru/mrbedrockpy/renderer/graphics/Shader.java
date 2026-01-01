@@ -12,7 +12,7 @@ import static org.lwjgl.opengl.GL46C.*;
 
 @Getter
 @AllArgsConstructor
-public class Shader {
+public class Shader implements AutoCloseable {
 
     private final int id;
 
@@ -62,7 +62,8 @@ public class Shader {
             System.err.println("Uniform not found: " + name);
     }
 
-    public void dispose() {
+    @Override
+    public void close() throws Exception {
         glDeleteProgram(id);
     }
 }

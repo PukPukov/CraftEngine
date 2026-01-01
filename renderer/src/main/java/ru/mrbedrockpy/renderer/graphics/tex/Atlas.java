@@ -24,8 +24,8 @@ public final class Atlas {
         float u0 = a[0], v0 = a[1];
         float u1 = a[4], v1 = a[5];
 
-        int atlasW = texture.width();
-        int atlasH = texture.height();
+        int atlasW = texture.getWidth();
+        int atlasH = texture.getHeight();
 
         int regionW = Math.max(1, Math.round((u1 - u0) * atlasW));
         int regionH = Math.max(1, Math.round((v1 - v0) * atlasH));
