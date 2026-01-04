@@ -44,22 +44,22 @@ public class ClientWorld extends World {
         boolean success = super.setBlock(x, y, z, block);
 
         int cx = Math.floorDiv(x, CHUNK_SIZE);
-        int cy = Math.floorDiv(y, CHUNK_SIZE);
+        int cz = Math.floorDiv(z, CHUNK_SIZE);
         int lx = Math.floorMod(x, CHUNK_SIZE);
-        int ly = Math.floorMod(y, CHUNK_SIZE);
+        int lz = Math.floorMod(z, CHUNK_SIZE);
 
-        createRenderChunk(new Vector2i(cx, cy));
+        createRenderChunk(new Vector2i(cx, cz));
 
-        if (lx == 0) createRenderChunk(new Vector2i(cx - 1, cy));
-        if (lx == CHUNK_SIZE - 1) createRenderChunk(new Vector2i(cx + 1, cy));
+        if (lx == 0) createRenderChunk(new Vector2i(cx - 1, cz));
+        if (lx == CHUNK_SIZE - 1) createRenderChunk(new Vector2i(cx + 1, cz));
 
-        if (ly == 0) createRenderChunk(new Vector2i(cx, cy - 1));
-        if (ly == CHUNK_SIZE - 1) createRenderChunk(new Vector2i(cx, cy + 1));
+        if (lz == 0) createRenderChunk(new Vector2i(cx, cz - 1));
+        if (lz == CHUNK_SIZE - 1) createRenderChunk(new Vector2i(cx, cz + 1));
 
-        if (lx == 0 && ly == 0) createRenderChunk(new Vector2i(cx - 1, cy - 1));
-        if (lx == 0 && ly == CHUNK_SIZE - 1) createRenderChunk(new Vector2i(cx - 1, cy + 1));
-        if (lx == CHUNK_SIZE - 1 && ly == 0) createRenderChunk(new Vector2i(cx + 1, cy - 1));
-        if (lx == CHUNK_SIZE - 1 && ly == CHUNK_SIZE - 1) createRenderChunk(new Vector2i(cx + 1, cy + 1));
+        if (lx == 0 && lz == 0) createRenderChunk(new Vector2i(cx - 1, cz - 1));
+        if (lx == 0 && lz == CHUNK_SIZE - 1) createRenderChunk(new Vector2i(cx - 1, cz + 1));
+        if (lx == CHUNK_SIZE - 1 && lz == 0) createRenderChunk(new Vector2i(cx + 1, cz - 1));
+        if (lx == CHUNK_SIZE - 1 && lz == CHUNK_SIZE - 1) createRenderChunk(new Vector2i(cx + 1, cz + 1));
 
         return success;
     }

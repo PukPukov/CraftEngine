@@ -60,8 +60,8 @@ public abstract class Entity {
             double initialProbe = -0.25;
             double xProbe = initialProbe, zProbe = initialProbe;
             for (AABB aabb : aabbs) {
-                xProbe = aabb.clipZCollide(xProbeBox, xProbe);
-                zProbe = aabb.clipZCollide(zProbeBox, zProbe);
+                xProbe = aabb.clipYCollide(xProbeBox, xProbe);
+                zProbe = aabb.clipYCollide(zProbeBox, zProbe);
             }
             if (xProbe == initialProbe) this.moveCloseToBounds(
                 movement.x, (x) -> movement.x = x,

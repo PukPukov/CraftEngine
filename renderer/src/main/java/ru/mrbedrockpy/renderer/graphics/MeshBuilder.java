@@ -98,7 +98,7 @@ public class MeshBuilder {
             for (int k = 0; k < 3; k++) {
                 int c = tri[t][k];
                 float[] p = corners[c];
-                float[] pos = new float[]{ p[0] + bx + chunk.getWorldPosition().x, p[2] + bz, p[1] + by + chunk.getWorldPosition().y };
+                float[] pos = new float[]{ p[0] + bx + chunk.getWorldPosition().x, p[2] + by, p[1] + bz + chunk.getWorldPosition().y };
                 v(pos, uvByCorner[c]);
             }
         }

@@ -23,7 +23,7 @@ import java.util.List;
 
 public class World {
 
-    protected final ChunkLoadManager chunkLoadManager = new ChunkLoadManager(Chunk.SIZE, CraftEngineConfig.RENDER_DISTANCE, 0);;
+    protected final ChunkLoadManager chunkLoadManager = new ChunkLoadManager(Chunk.SIZE, CraftEngineConfig.RENDER_DISTANCE, 0);
     
     @Getter
     private final Chunk[][] chunks;
@@ -276,7 +276,7 @@ public class World {
                     blockPos.z += stepZ;
                     distance = sideDistZ;
                     sideDistZ += deltaDistZ;
-                    lastFace = stepZ > 0 ? Block.Direction.SOUTH : Block.Direction.NORTH;
+                    lastFace = stepZ > 0 ? Block.Direction.NORTH : Block.Direction.SOUTH;
                 }
             } else {
                 if (sideDistY < sideDistZ) {
@@ -288,7 +288,7 @@ public class World {
                     blockPos.z += stepZ;
                     distance = sideDistZ;
                     sideDistZ += deltaDistZ;
-                    lastFace = stepZ > 0 ? Block.Direction.NORTH : Block.Direction.SOUTH;
+                    lastFace = stepZ > 0 ? Block.Direction.SOUTH : Block.Direction.NORTH;
                 }
             }
             if (distance > (double) maxDistanceF) {
