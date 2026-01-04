@@ -73,12 +73,12 @@ public class World {
         return getChunk(Math.floorDiv(x, Chunk.SIZE), Math.floorDiv(y, Chunk.SIZE));
     }
     
-    public Block block(Vector3i position) {
-        return block(position.x, position.y, position.z);
+    public Block getBlock(Vector3i position) {
+        return getBlock(position.x, position.y, position.z);
     }
     
-    public Block block(int x, int y, int z) {
-        if (z < 0 || z >= Chunk.SIZE) {
+    public Block getBlock(int x, int y, int z) {
+        if (y < 0 || y >= Chunk.SIZE) {
             return Blocks.AIR;
         }
         Chunk chunk = chunkByBlockPosition(x, y);
@@ -87,8 +87,8 @@ public class World {
         }
         return chunk.getBlock(
             Math.floorMod(x, Chunk.SIZE),
-            Math.floorMod(y, Chunk.SIZE),
-            z
+            y,
+            Math.floorMod(z, Chunk.SIZE)
         );
     }
     
@@ -97,7 +97,7 @@ public class World {
     }
     
     public boolean setBlock(int x, int y, int z, Block block) {
-        if (z < 0 || z >= Chunk.SIZE) {
+        if (y < 0 || y >= Chunk.SIZE) {
             return false;
         }
         Chunk chunk = chunkByBlockPosition(x, y);
@@ -105,8 +105,8 @@ public class World {
         
         boolean success = chunk.setBlock(
             Math.floorMod(x, Chunk.SIZE),
-            Math.floorMod(y, Chunk.SIZE),
-            z,
+            y,
+            Math.floorMod(z, Chunk.SIZE),
             block
         );
         
@@ -149,14 +149,14 @@ public class World {
         minZ = Math.max(0, minZ);
         
         maxX = Math.min(Chunk.SIZE * getSize(), maxX);
-        maxY = Math.min(Chunk.SIZE * getSize(), maxY);
-        maxZ = Math.min(Chunk.SIZE, maxZ);
-        
+        maxY = Math.min(Chunk.SIZE, maxY);
+        maxZ = Math.min(Chunk.SIZE * getSize(), maxZ);
+
         for (int x = minX; x < maxX; x++) {
             for (int y = minY; y < maxY; y++) {
                 for (int z = minZ; z < maxZ; z++) {
                     
-                    Block block = block(x, y, z);
+                    Block block = getBlock(x, y, z);
                     if (block != Blocks.AIR) {
                         
                         AABB aabb = block.getAABB(x, y, z);
@@ -212,10 +212,10 @@ public class World {
         }
     }
 
-    public int getTopZ(int x, int y){
-        for(int z = Chunk.SIZE; z >= 0; z--){
-            if(!this.block(x, y, z).isSolid()) continue;
-            return z;
+    public int getTopY(int x, int z) {
+        for(int y = Chunk.SIZE; y >= 0; y--){
+            if(!this.getBlock(x, y, z).isSolid()) continue;
+            return y;
         }
         return 0;
     }
@@ -260,7 +260,7 @@ public class World {
 
         Block.Direction lastFace = Block.Direction.NONE;
 
-        Block block = block(blockPos.x, blockPos.y, blockPos.z);
+        Block block = getBlock(blockPos.x, blockPos.y, blockPos.z);
         if (block != null && block.isSolid()) {
             return new BlockRaycastResult(blockPos.x, blockPos.y, blockPos.z, block, lastFace);
         }
@@ -295,7 +295,7 @@ public class World {
                 break;
             }
 
-            block = block(blockPos.x, blockPos.y, blockPos.z);
+            block = getBlock(blockPos.x, blockPos.y, blockPos.z);
             if (block != null && block.isSolid()) {
                 return new BlockRaycastResult(blockPos.x, blockPos.y, blockPos.z, block, lastFace);
             }

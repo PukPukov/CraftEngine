@@ -65,7 +65,7 @@ public class Inventory {
     /**
      * Находит первый слот с данным Item, или -1.
      */
-    public int slot(Item item) {
+    public int setStack(Item item) {
         for (int i = 0; i < size(); i++) {
             ItemStack s = stack(i);
             if (s != null && s.item().equals(item)) {
@@ -75,7 +75,7 @@ public class Inventory {
         return -1;
     }
 
-    public void slot(int slot, ItemStack stack){
+    public void setStack(int slot, ItemStack stack){
         slots.set(slot, stack);
     }
 }

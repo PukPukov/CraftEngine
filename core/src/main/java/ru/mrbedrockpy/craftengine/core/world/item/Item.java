@@ -16,7 +16,7 @@ public class Item{
 
     public void use(PlayerEntity player) {}
 
-    public ItemStack defStack(){
+    public ItemStack getDefStack(){
         return new ItemStack(this);
     }
 }

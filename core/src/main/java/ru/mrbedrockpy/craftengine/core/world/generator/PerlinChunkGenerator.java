@@ -48,12 +48,12 @@ public final class PerlinChunkGenerator implements ChunkGenerator {
                     int id = (z == h)
                         ? (h >= seaLevel ? 2 : 1)
                         : (z >= h - 3 ? 2 : 1);
-                    chunk.setBlock(lx, ly, z, Registries.BLOCKS.get(id));
+                    chunk.setBlock(lx, z, ly, Registries.BLOCKS.get(id));
                 }
 
                 if (h < seaLevel) {
                     for (int z = h + 1; z <= Math.min(seaLevel, CH - 1); z++) {
-                        chunk.setBlock(lx, ly, z, Blocks.AIR);
+                        chunk.setBlock(lx, z, ly, Blocks.AIR);
                     }
                 }
             }

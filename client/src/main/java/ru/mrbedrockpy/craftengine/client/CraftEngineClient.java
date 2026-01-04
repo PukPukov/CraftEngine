@@ -187,15 +187,15 @@ public class CraftEngineClient {
         } catch (Exception e) {
             clientWorld = new ClientWorld(10, player);
         }
-        player.setPosition(new Vector3f(0, 0, clientWorld.getTopZ(0, 0) + 1));
+        player.setPosition(new Vector3f(0, clientWorld.getTopY(0, 0) + 1, 0));
         setScreen(null);
-        player.getInventory().slot(0, new ItemStack(Items.STONE_BLOCK_ITEM));
-        player.getInventory().slot(1, new ItemStack(Items.DIRT_BLOCK_ITEM));
+        player.getInventory().setStack(0, new ItemStack(Items.STONE_BLOCK_ITEM));
+        player.getInventory().setStack(1, new ItemStack(Items.DIRT_BLOCK_ITEM));
         for (int i = 2; i < 37; i++) {
-            player.getInventory().slot(i, Items.GOLDEN_APPLE.defStack());
+            player.getInventory().setStack(i, Items.GOLDEN_APPLE.getDefStack());
         }
         for(int i = 0; i < 4; i++){
-            player.getInventory().setArmor(i, Items.GOLDEN_APPLE.defStack());
+            player.getInventory().setArmor(i, Items.GOLDEN_APPLE.getDefStack());
         }
         hudRenderer = new HudRenderer(Window.scaledWidth(), Window.scaledHeight());
     }

@@ -113,13 +113,13 @@ public class Camera {
         float yawRad = (float) Math.toRadians(angle.y);
         
         front.x = (float) (Math.cos(pitchRad) * Math.cos(yawRad));
-        front.y = (float) (Math.cos(pitchRad) * Math.sin(yawRad));
-        front.z = (float) Math.sin(pitchRad);
+        front.y = (float) Math.sin(pitchRad);
+        front.z = (float) (Math.cos(pitchRad) * Math.sin(yawRad));
         front.normalize();
         
         Vector3f eyePosition = new Vector3f(position);
         Vector3f center = new Vector3f(eyePosition).add(front);
-        Vector3f up = new Vector3f(0, 0, 1);
+        Vector3f up = new Vector3f(0, 1, 0);
         
         viewMatrix.identity();
         viewMatrix.lookAt(eyePosition, center, up);
@@ -131,9 +131,9 @@ public class Camera {
         
         Vector3f front = new Vector3f();
         front.x = (float) (Math.cos(pitch) * Math.cos(yaw));
-        front.y = (float) (Math.cos(pitch) * Math.sin(yaw));
         front.z = (float) Math.sin(pitch);
-        
+        front.y = (float) (Math.cos(pitch) * Math.sin(yaw));
+
         return front.normalize();
     }
     
@@ -142,9 +142,9 @@ public class Camera {
         
         Vector3f front = new Vector3f();
         front.x = (float) Math.cos(yaw);
-        front.y = (float) Math.sin(yaw);
-        front.z = 0;
-        
+        front.y = 0;
+        front.z = (float) Math.sin(yaw);
+
         return front.normalize();
     }
 }

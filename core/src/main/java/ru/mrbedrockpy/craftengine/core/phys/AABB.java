@@ -176,8 +176,8 @@ public class AABB {
     public Vector3f root() {
         return new Vector3f(
             (float) ((this.minX + this.maxX) / 2.0D),
-            (float) ((this.minY + this.maxY) / 2.0D),
-            (float) this.minZ
+            (float) this.minY,
+            (float) ((this.minZ + this.maxZ) / 2.0D)
         );
     }
     

@@ -32,7 +32,7 @@ public class ClientPlayerEntity extends PlayerEntity {
 
     public ClientPlayerEntity(Vector3f position, World world) {
         super(position, world);
-        this.camera.setPosition(new Vector3f(position).add(0, 0, (float) currentEyeOffset));
+        this.camera.setPosition(new Vector3f(position).add(0, (float) currentEyeOffset, 0));
     }
 
     @Override
@@ -58,14 +58,14 @@ public class ClientPlayerEntity extends PlayerEntity {
         } else {
             tmpPos.set(this.previousTickPosition).lerp(this.position, (float) partialTick);
         }
-        camera.setPosition(tmpPos.add(0, 0, (float) currentEyeOffset));
+        camera.setPosition(tmpPos.add(0, (float) currentEyeOffset,0));
     }
 
     private void handleMouseLook() {
         if (Input.currentLayer() != Input.Layer.GAME) return;
         camera.rotate(new Vector2f(
                 (float) -Input.getDeltaY() * MOUSE_SENS,
-                (float) -Input.getDeltaX() * MOUSE_SENS
+                (float) Input.getDeltaX() * MOUSE_SENS
         ));
     }
 
@@ -108,7 +108,7 @@ public class ClientPlayerEntity extends PlayerEntity {
         if (sneaking) accel *= 0.3f;
 
         Vector3f front = camera.getFlatFront();
-        Vector3f right = new Vector3f(front).cross(0, 0, 1).normalize();
+        Vector3f right = new Vector3f(front).cross(0, 1, 0).normalize();
 
         float len = (float) Math.sqrt(strafe * strafe + forward * forward);
         if (len > 1e-6f) {
@@ -117,7 +117,7 @@ public class ClientPlayerEntity extends PlayerEntity {
         }
 
         velocity.x += (front.x * forward + right.x * strafe) * accel;
-        velocity.y += (front.y * forward + right.y * strafe) * accel;
+        velocity.z += (front.z * forward + right.z * strafe) * accel;
     }
 
     @Override

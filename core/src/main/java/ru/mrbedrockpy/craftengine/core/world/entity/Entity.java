@@ -42,7 +42,7 @@ public abstract class Entity {
 
     public void tick() {
         previousTickPosition = new Vector3f(position);
-        velocity.z -= PhysConstants.GRAVITY;
+        velocity.y -= PhysConstants.GRAVITY;
     }
     
     // MOVE LIMITED
@@ -54,22 +54,22 @@ public abstract class Entity {
         if (protectFromFalling && this.onGround) {
             var xProbeBox = this.boundingBox.clone();
             xProbeBox.move(movement.x, 0f, 0f);
-            var yProbeBox = this.boundingBox.clone();
-            yProbeBox.move(0f, movement.y, 0f);
+            var zProbeBox = this.boundingBox.clone();
+            zProbeBox.move(0f, 0f, movement.z);
             
             double initialProbe = -0.25;
-            double xProbe = initialProbe, yProbe = initialProbe;
+            double xProbe = initialProbe, zProbe = initialProbe;
             for (AABB aabb : aabbs) {
                 xProbe = aabb.clipZCollide(xProbeBox, xProbe);
-                yProbe = aabb.clipZCollide(yProbeBox, yProbe);
+                zProbe = aabb.clipZCollide(zProbeBox, zProbe);
             }
             if (xProbe == initialProbe) this.moveCloseToBounds(
                 movement.x, (x) -> movement.x = x,
                 this.boundingBox.minX, this.boundingBox.maxX
             );
-            if (yProbe == initialProbe) this.moveCloseToBounds(
-                movement.y, (y) -> movement.y = y,
-                this.boundingBox.minY, this.boundingBox.maxY
+            if (zProbe == initialProbe) this.moveCloseToBounds(
+                movement.z, (z) -> movement.z = z,
+                this.boundingBox.minZ, this.boundingBox.maxZ
             );
         }
         
@@ -88,7 +88,7 @@ public abstract class Entity {
         }
         this.boundingBox.move(0.0F, 0.0F, movement.z);
         
-        this.onGround = originalMovement.z != movement.z && originalMovement.z < 0.0F;
+        this.onGround = originalMovement.y != movement.y && originalMovement.y < 0.0F;;
         
         if (originalMovement.x != movement.x) this.velocity.x = 0.0F;
         if (originalMovement.y != movement.y) this.velocity.y  = 0.0F;
@@ -111,20 +111,20 @@ public abstract class Entity {
     public void setPosition(Vector3f position) {
         this.position.set(position);
         this.boundingBox = new AABB(
-            position.x - size.x / 2, position.y - size.y / 2, position.z,
-            position.x + size.x / 2, position.y + size.y / 2, position.z + size.z
+            position.x - size.x / 2, position.y ,position.z - size.z / 2,
+            position.x + size.x / 2, position.y + size.y, position.z + size.z / 2
         );
     }
     
     
     public void jump() {
         if (onGround) {
-            velocity.z = jumpStrength;
+            velocity.y = jumpStrength;
             onGround = false;
         }
     }
 
     public Vector2i getChunkPosition() {
-        return new Vector2i((int) (position.x / Chunk.SIZE), (int) (position.y / Chunk.SIZE));
+        return new Vector2i((int) (position.x / Chunk.SIZE), (int) (position.z / Chunk.SIZE));
     }
 }

@@ -72,15 +72,13 @@ public class MeshBuilder {
 
         return new Mesh.Data(
                 toFloatArray(vertices),
-                toFloatArray(texCoords),
-                toFloatArray(aoValues)
+                toFloatArray(texCoords)
         );
     }
 
-    private void v(float[] pos, float[] uv, float ao) {
+    private void v(float[] pos, float[] uv) {
         vertices.add(pos[0]); vertices.add(pos[1]); vertices.add(pos[2]);
         texCoords.add(uv[0]); texCoords.add(uv[1]);
-        aoValues.add(ao);
     }
 
     private void emitFace(int bx, int by, int bz,
@@ -88,15 +86,7 @@ public class MeshBuilder {
                           float[][] corners,
                           float[] uv4,
                           Chunk chunk) {
-
-        float[] aoCorner = computeFaceAO(chunk, bx, by, bz, d);
-
-        float s02 = aoCorner[0] + aoCorner[2];
-        float s13 = aoCorner[1] + aoCorner[3];
-
-        final int[][] TRI_A = {{0,2,1},{0,3,2}};
-        final int[][] TRI_B = {{0,1,3},{3,1,2}};
-        int[][] tri = (s02 > s13) ? TRI_A : TRI_B;
+        final int[][] tri = {{0, 1, 2}, {0, 2, 3}};
         float[][] uvByCorner = {
                 {uv4[0], uv4[1]},
                 {uv4[2], uv4[3]},
@@ -108,54 +98,10 @@ public class MeshBuilder {
             for (int k = 0; k < 3; k++) {
                 int c = tri[t][k];
                 float[] p = corners[c];
-                float[] pos = new float[]{ p[0] + bx + chunk.getWorldPosition().x, p[1] + by + chunk.getWorldPosition().y, p[2] + bz };
-                v(pos, uvByCorner[c], aoCorner[c]);
+                float[] pos = new float[]{ p[0] + bx + chunk.getWorldPosition().x, p[2] + bz, p[1] + by + chunk.getWorldPosition().y };
+                v(pos, uvByCorner[c]);
             }
         }
-    }
-    static float[] toUv4Rect(Cuboid.UV r, float texW, float texH, boolean flipV) {
-        float u0 = r.getU() / texW, v0 = r.getV() / texH;
-        float u1 = (r.getU() + r.getW()) / texW, v1 = (r.getV() + r.getH()) / texH;
-        if (flipV) { float v0n = 1f - v0, v1n = 1f - v1; v0 = v1n; v1 = v0n; }
-        return new float[]{ u0,v0,  u1,v0,  u1,v1,  u0,v1 };
-    }
-
-    static Cuboid.UV findFaceUV(Model model, Block.Direction d) {
-        for (Bone b : model.getBones()) {
-            for (Cuboid c : b.getCuboids()) {
-                Cuboid.UV uv = c.getFaceUV(d);
-                if (uv != null) return uv;
-            }
-        }
-        return null;
-    }
-
-    static float[] uv4FromModelFace(Model model, Block.Direction d,
-                                    float atlasW, float atlasH, boolean flipV) {
-        Cuboid.UV r = findFaceUV(model, d);
-        if (r == null) return null;
-        return toUv4Rect(r, atlasW, atlasH, flipV);
-    }
-
-    static float[] composeUv4(float[] tileRect, float[] localUv4) {
-        float tu0 = tileRect[0], tv0 = tileRect[1], tu1 = tileRect[2], tv1 = tileRect[3];
-        float su = (tu1 - tu0), sv = (tv1 - tv0);
-
-        return new float[]{
-                tu0 + localUv4[0] * su, tv0 + localUv4[1] * sv,
-                tu0 + localUv4[2] * su, tv0 + localUv4[3] * sv,
-                tu0 + localUv4[4] * su, tv0 + localUv4[5] * sv,
-                tu0 + localUv4[6] * su, tv0 + localUv4[7] * sv
-        };
-    }
-    static float[] tileRectFromUv4(float[] uv4) {
-        float u0 = uv4[0], v0 = uv4[1]; // corner 0
-        float u1 = uv4[4], v1 = uv4[5]; // corner 2
-        return new float[]{ u0, v0, u1, v1 };
-    }
-
-    static float[] localRect01ToUv4(float u0, float v0, float u1, float v1) {
-        return new float[]{ u0,v0,  u1,v0,  u1,v1,  u0,v1 };
     }
 
 
@@ -165,32 +111,13 @@ public class MeshBuilder {
         return a;
     }
 
-    private float[] computeFaceAO(Chunk chunk, int x, int y, int z,
-                                  Block.Direction face) {
-        int dir = face.ordinal();
-        float[] out = new float[4];
-
-        for (int i = 0; i < 4; i++) {
-            int[] o1 = AO_OFFSETS[dir][i][0];
-            int[] o2 = AO_OFFSETS[dir][i][1];
-            int[] o3 = AO_OFFSETS[dir][i][2];
-
-            boolean side1 = isSolidWorld(chunk, x + o1[0], y + o1[1], z + o1[2]);
-            boolean side2 = isSolidWorld(chunk, x + o2[0], y + o2[1], z + o2[2]);
-            boolean diag  = isSolidWorld(chunk, x + o3[0], y + o3[1], z + o3[2]);
-
-            out[i] = aoValue(side1, side2, diag);
-        }
-        return out;
-    }
-
     private static final int[][] FACE_CORNERS_ZUP = new int[6][4];
     static {
         // DOWN=z0, UP=z1, NORTH=y-, SOUTH=y+, WEST=x-, EAST=x+
-        FACE_CORNERS_ZUP[Block.Direction.DOWN.ordinal()]  = new int[]{0, 1, 2, 3}; // z=z0
-        FACE_CORNERS_ZUP[Block.Direction.UP.ordinal()]    = new int[]{5, 4, 7, 6}; // z=z1
         FACE_CORNERS_ZUP[Block.Direction.NORTH.ordinal()] = new int[]{0, 4, 5, 1}; // y=y0
         FACE_CORNERS_ZUP[Block.Direction.SOUTH.ordinal()] = new int[]{3, 2, 6, 7}; // y=y1
+        FACE_CORNERS_ZUP[Block.Direction.DOWN.ordinal()]  = new int[]{0, 1, 2, 3}; // z=z0
+        FACE_CORNERS_ZUP[Block.Direction.UP.ordinal()]    = new int[]{5, 4, 7, 6}; // z=z1
         FACE_CORNERS_ZUP[Block.Direction.WEST.ordinal()]  = new int[]{4, 0, 3, 7}; // x=x0
         FACE_CORNERS_ZUP[Block.Direction.EAST.ordinal()]  = new int[]{1, 5, 6, 2}; // x=x1
     }
@@ -289,60 +216,4 @@ public class MeshBuilder {
         int wz = lz;
         return reader.isSolid(wx, wy, wz);
     }
-
-    private static float aoValue(boolean side1, boolean side2, boolean corner){
-        if (side1 && side2) return 0.5f;
-        int occ = (side1?1:0) + (side2?1:0) + (corner?1:0);
-        return switch (occ){
-            case 0 -> 1.0f;
-            case 1 -> 0.8f;
-            case 2 -> 0.65f;
-            default -> 0.5f;
-        };
-    }
-
-    private static final int[][][][] AO_OFFSETS = {
-            // UP (+Z)
-            {
-                    {{ 0,-1, 1}, {-1, 0, 1}, {-1,-1, 1}}, // corner 0
-                    {{ 0,-1, 1}, { 1, 0, 1}, { 1,-1, 1}}, // corner 1
-                    {{ 0, 1, 1}, { 1, 0, 1}, { 1, 1, 1}}, // corner 2
-                    {{ 0, 1, 1}, {-1, 0, 1}, {-1, 1, 1}}, // corner 3
-            },
-            // DOWN (-Z)
-            {
-                    {{ 0, 1,-1}, {-1, 0,-1}, {-1, 1,-1}}, // c0
-                    {{ 0, 1,-1}, { 1, 0,-1}, { 1, 1,-1}}, // c1
-                    {{ 0,-1,-1}, { 1, 0,-1}, { 1,-1,-1}}, // c2
-                    {{ 0,-1,-1}, {-1, 0,-1}, {-1,-1,-1}}, // c3
-            },
-            // NORTH (-Y)
-            {
-                    {{ 0,-1,-1}, {-1,-1, 0}, {-1,-1,-1}}, // c0
-                    {{ 0,-1,-1}, { 1,-1, 0}, { 1,-1,-1}}, // c1
-                    {{ 0,-1, 1}, { 1,-1, 0}, { 1,-1, 1}}, // c2
-                    {{ 0,-1, 1}, {-1,-1, 0}, {-1,-1, 1}}, // c3
-            },
-            // SOUTH (+Y)
-            {
-                    {{ 0, 1,-1}, { 1, 1, 0}, { 1, 1,-1}}, // c0
-                    {{ 0, 1,-1}, {-1, 1, 0}, {-1, 1,-1}}, // c1
-                    {{ 0, 1, 1}, {-1, 1, 0}, {-1, 1, 1}}, // c2
-                    {{ 0, 1, 1}, { 1, 1, 0}, { 1, 1, 1}}, // c3
-            },
-            // WEST (-X)
-            {
-                    {{-1, 1,-1}, {-1, 0, 0}, {-1, 1, 0}}, // c0
-                    {{-1,-1,-1}, {-1, 0, 0}, {-1,-1, 0}}, // c1
-                    {{-1,-1, 1}, {-1, 0, 0}, {-1,-1, 0}}, // c2
-                    {{-1, 1, 1}, {-1, 0, 0}, {-1, 1, 0}}, // c3
-            },
-            // EAST (+X)
-            {
-                    {{ 1,-1,-1}, { 1, 0, 0}, { 1,-1, 0}}, // c0
-                    {{ 1, 1,-1}, { 1, 0, 0}, { 1, 1, 0}}, // c1
-                    {{ 1, 1, 1}, { 1, 0, 0}, { 1, 1, 0}}, // c2
-                    {{ 1,-1, 1}, { 1, 0, 0}, { 1,-1, 0}}, // c3
-            }
-    };
 }

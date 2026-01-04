@@ -18,7 +18,7 @@ public class PlayerEntity extends Entity {
     protected final Vector3f tmpPos   = new Vector3f();
 
     public PlayerEntity(Vector3f position, World world) {
-        super(position, new Vector3f(0.6f, 0.6f, 1.8f), world);
+        super(position, new Vector3f(0.6f, 1.8f, 0.6f), world);
     }
 
     @Override
@@ -29,7 +29,7 @@ public class PlayerEntity extends Entity {
         float friction = onGround ? slipperiness * 0.91f : 0.91f;
 
         velocity.x *= friction;
-        velocity.y *= friction;
+        velocity.z *= friction;
 
         this.moveLimited(new Vector3d(velocity.x, velocity.y, velocity.z), this.sneaking);
     }

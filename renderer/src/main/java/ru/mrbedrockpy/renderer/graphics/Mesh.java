@@ -63,7 +63,7 @@ public class Mesh implements AutoCloseable {
     }
 
     public Mesh data(Data data){
-        return this.vertices(data.vertices).uvs(data.uvs).aos(data.aos);
+        return this.vertices(data.vertices).uvs(data.uvs);
     }
 
     public void render() {
@@ -101,5 +101,5 @@ public class Mesh implements AutoCloseable {
     }
 
 
-    public record Data(float[] vertices, float[] uvs, float[] aos){}
+    public record Data(float[] vertices, float[] uvs){}
 }
