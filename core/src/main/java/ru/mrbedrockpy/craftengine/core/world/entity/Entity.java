@@ -72,22 +72,14 @@ public abstract class Entity {
                 this.boundingBox.minZ, this.boundingBox.maxZ
             );
         }
-        
+
         for (AABB aabb : aabbs) {
             movement.x = aabb.clipXCollide(this.boundingBox, movement.x);
-        }
-        this.boundingBox.move(movement.x, 0.0F, 0.0F);
-        
-        for (AABB aabb : aabbs) {
             movement.y = aabb.clipYCollide(this.boundingBox, movement.y);
-        }
-        this.boundingBox.move(0.0F, movement.y, 0.0F);
-        
-        for (AABB aabb : aabbs) {
             movement.z = aabb.clipZCollide(this.boundingBox, movement.z);
         }
-        this.boundingBox.move(0.0F, 0.0F, movement.z);
-        
+        this.boundingBox.move(movement);
+
         this.onGround = originalMovement.y != movement.y && originalMovement.y < 0.0F;
         
         if (originalMovement.x != movement.x) this.velocity.x = 0.0F;
