@@ -70,7 +70,7 @@ public class HudRenderer {
         context.drawText(positionToString(CraftEngineClient.INSTANCE.getPlayer().getPosition()), 5, 10);
         context.drawText(CraftEngineClient.INSTANCE.getPlayer().getCamera().getAngle().toString(), 5, 15);
         double dx = player.getPosition().x - player.previousTickPosition.x;
-        double dz = player.getPosition().y - player.previousTickPosition.y;
+        double dz = player.getPosition().z - player.previousTickPosition.z;
         double speed = Math.sqrt(dx * dx + dz * dz) * 20;
         String speedText = String.format("Speed: %.2f b/s ", speed);
         context.drawText(speedText, 5, 20);

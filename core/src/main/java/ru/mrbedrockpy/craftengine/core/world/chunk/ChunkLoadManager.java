@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
+// TODO: избавится от вайбкода
 public final class ChunkLoadManager {
 
     private static final class Tracked {
@@ -17,8 +18,6 @@ public final class ChunkLoadManager {
         }
     }
 
-    // Конфиг
-    private final int chunkSize;
     private final int viewDistanceChunks;
     private final int unloadDelayTicks;
 
@@ -30,23 +29,16 @@ public final class ChunkLoadManager {
     private final List<Consumer<Vector2i>> onUnload= new CopyOnWriteArrayList<>();
 
     public void subscribeOnLoad(Consumer<Vector2i> l)   { onLoad.add(l); }
-    public void unsubscribeOnLoad(Consumer<Vector2i> l) { onLoad.remove(l); }
 
     public void subscribeOnUnload(Consumer<Vector2i> l) { onUnload.add(l); }
-    public void unsubscribeOnUnload(Consumer<Vector2i> l){ onUnload.remove(l); }
 
     public ChunkLoadManager(int chunkSize, int viewDistanceChunks, int unloadDelayTicks) {
         if (chunkSize <= 0) throw new IllegalArgumentException("chunkSize must be > 0");
         if (viewDistanceChunks < 0) throw new IllegalArgumentException("viewDistanceChunks must be >= 0");
         if (unloadDelayTicks < 0) throw new IllegalArgumentException("unloadDelayTicks must be >= 0");
-        this.chunkSize = chunkSize;
         this.viewDistanceChunks = viewDistanceChunks;
         this.unloadDelayTicks = unloadDelayTicks;
     }
-
-    public int chunkSize()          { return chunkSize; }
-    public int viewDistanceChunks() { return viewDistanceChunks; }
-    public int unloadDelayTicks()   { return unloadDelayTicks; }
 
     public void tick(Collection<Vector2i> playersPoses) {
         tickCounter++;
@@ -89,12 +81,6 @@ public final class ChunkLoadManager {
                 }
             }
         }
-    }
-
-    public Set<Vector2i> getLoadedChunksSnapshot() {
-        Set<Vector2i> out = new HashSet<>(loaded.size());
-        for (Tracked t : loaded.values()) out.add(new Vector2i(t.pos));
-        return out;
     }
 
     private void fireLoad(Vector2i pos)   { for (var l : onLoad)   safeCall(l, pos); }

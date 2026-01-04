@@ -74,7 +74,8 @@ public class WorldRenderer implements AutoCloseable {
 
         for (Chunk chunk : posMeshes.keySet()) {
             if (distanceByAxis(playerPos, chunk.getPosition()) > CraftEngineConfig.RENDER_DISTANCE
-                    || !culler.isBoxVisible(chunk.getAABB())) continue;
+                    || !culler.isBoxVisible(chunk.getAABB())
+            ) continue;
 
             Mesh mesh = posMeshes.get(chunk);
 

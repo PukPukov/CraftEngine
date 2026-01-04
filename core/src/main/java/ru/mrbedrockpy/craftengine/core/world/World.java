@@ -112,21 +112,21 @@ public class World {
         
         if (success) {
             int localX = Math.floorMod(x, Chunk.SIZE);
-            int localY = Math.floorMod(y, Chunk.SIZE);
+            int localZ = Math.floorMod(z, Chunk.SIZE);
             
             if (localX == 0) {
-                Chunk neighbor = chunkByBlockPosition(x - 1, y);
+                Chunk neighbor = chunkByBlockPosition(x - 1, z);
                 if (neighbor != null) neighbor.markDirty();
             } else if (localX == Chunk.SIZE - 1) {
-                Chunk neighbor = chunkByBlockPosition(x + 1, y);
+                Chunk neighbor = chunkByBlockPosition(x + 1, z);
                 if (neighbor != null) neighbor.markDirty();
             }
             
-            if (localY == 0) {
-                Chunk neighbor = chunkByBlockPosition(x, y - 1);
+            if (localZ == 0) {
+                Chunk neighbor = chunkByBlockPosition(x, z - 1);
                 if (neighbor != null) neighbor.markDirty();
-            } else if (localY == Chunk.SIZE - 1) {
-                Chunk neighbor = chunkByBlockPosition(x, y + 1);
+            } else if (localZ == Chunk.SIZE - 1) {
+                Chunk neighbor = chunkByBlockPosition(x, z + 1);
                 if (neighbor != null) neighbor.markDirty();
             }
         }
@@ -181,7 +181,8 @@ public class World {
     public boolean canPlaceBlockAt(Vector3i position) {
         return canPlaceBlockAt(position.x, position.y, position.z);
     }
-    
+
+    // TODO: использовать сущностей из текущего чанка
     public boolean canPlaceBlockAt(int x, int y, int z) {
         AABB blockAABB = new AABB(x, y, z, x + 1, y + 1, z + 1);
         
@@ -256,7 +257,6 @@ public class World {
         if (stepZ == 0) sideDistZ = Double.POSITIVE_INFINITY;
 
         double distance = 0.0;
-        double maxDistance = maxDistanceF;
 
         Block.Direction lastFace = Block.Direction.NONE;
 
@@ -265,7 +265,7 @@ public class World {
             return new BlockRaycastResult(blockPos.x, blockPos.y, blockPos.z, block, lastFace);
         }
 
-        while (distance <= maxDistance) {
+        while (distance <= (double) maxDistanceF) {
             if (sideDistX < sideDistY) {
                 if (sideDistX < sideDistZ) {
                     blockPos.x += stepX;
@@ -276,22 +276,22 @@ public class World {
                     blockPos.z += stepZ;
                     distance = sideDistZ;
                     sideDistZ += deltaDistZ;
-                    lastFace = stepZ > 0 ? Block.Direction.DOWN : Block.Direction.UP;
+                    lastFace = stepZ > 0 ? Block.Direction.SOUTH : Block.Direction.NORTH;
                 }
             } else {
                 if (sideDistY < sideDistZ) {
                     blockPos.y += stepY;
                     distance = sideDistY;
                     sideDistY += deltaDistY;
-                    lastFace = stepY > 0 ? Block.Direction.NORTH : Block.Direction.SOUTH;
+                    lastFace = stepY > 0 ? Block.Direction.DOWN : Block.Direction.UP;
                 } else {
                     blockPos.z += stepZ;
                     distance = sideDistZ;
                     sideDistZ += deltaDistZ;
-                    lastFace = stepZ > 0 ? Block.Direction.DOWN : Block.Direction.UP;
+                    lastFace = stepZ > 0 ? Block.Direction.NORTH : Block.Direction.SOUTH;
                 }
             }
-            if (distance > maxDistance) {
+            if (distance > (double) maxDistanceF) {
                 break;
             }
 

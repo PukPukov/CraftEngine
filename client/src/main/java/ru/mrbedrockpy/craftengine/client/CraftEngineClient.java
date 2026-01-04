@@ -132,11 +132,11 @@ public class CraftEngineClient {
     private void update() {
         tickSystem.update(delta);
         if (Input.wasClicked(GLFW_MOUSE_BUTTON_LEFT)) {
-            MouseClickEvent ev = new MouseClickEvent(Input.currentLayer(), GLFW_MOUSE_BUTTON_LEFT, Input.getX(), Input.getY());
+            MouseClickEvent ev = new MouseClickEvent(Input.getCurrentLayer(), GLFW_MOUSE_BUTTON_LEFT, Input.getX(), Input.getY());
             eventManager.callEvent(ev);
         }
         if (Input.wasClicked(GLFW_MOUSE_BUTTON_RIGHT)) {
-            MouseClickEvent ev = new MouseClickEvent(Input.currentLayer(), GLFW_MOUSE_BUTTON_RIGHT, Input.getX(), Input.getY());
+            MouseClickEvent ev = new MouseClickEvent(Input.getCurrentLayer(), GLFW_MOUSE_BUTTON_RIGHT, Input.getX(), Input.getY());
             eventManager.callEvent(ev);
         }
         if (playerController != null) playerController.update(delta, tickSystem.partialTick());
@@ -165,15 +165,13 @@ public class CraftEngineClient {
         if (currentScreen != null) {
             currentScreen.close();
             currentScreen = null;
-            if (Input.currentLayer() == Input.Layer.UI) {
-                Input.popLayer();
+            if (Input.getCurrentLayer() == Input.Layer.UI) {
+                Input.setLayer(null);
             }
         }
         this.currentScreen = screen;
         if (screen != null) {
-            if (Input.currentLayer() != Input.Layer.UI) {
-                Input.pushLayer(Input.Layer.UI);
-            }
+            Input.setLayer(Input.Layer.UI);
             screen.init();
         }
     }
@@ -220,25 +218,25 @@ public class CraftEngineClient {
     }
 
     private void onMouseClick(MouseClickEvent event) {
-        if (currentScreen != null && Input.currentLayer() == Input.Layer.UI) {
+        if (currentScreen != null && Input.getCurrentLayer() == Input.Layer.UI) {
             currentScreen.onMouseClick(event);
         }
     }
 
     private void onKeyPress(KeyPressEvent event) {
-        if (currentScreen != null && Input.currentLayer() == Input.Layer.UI) {
+        if (currentScreen != null && Input.getCurrentLayer() == Input.Layer.UI) {
             currentScreen.onKeyPressed(event);
         }
     }
 
     private void onCharTyped(CharTypeEvent event) {
-        if (currentScreen != null && Input.currentLayer() == Input.Layer.UI) {
+        if (currentScreen != null && Input.getCurrentLayer() == Input.Layer.UI) {
             currentScreen.charType(event);
         }
     }
 
     private void onMouseScroll(MouseScrollEvent event) {
-        if (currentScreen != null && Input.currentLayer() == Input.Layer.UI) {
+        if (currentScreen != null && Input.getCurrentLayer() == Input.Layer.UI) {
            currentScreen.onMouseScrolled(event);
         } else {
             int nextSlot = (player.getInventory().getSelectedHotbarSlot() - (int) ((event.getScrollY() / Math.abs(event.getScrollY())))) % 9;

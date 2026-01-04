@@ -62,7 +62,7 @@ public class ClientPlayerEntity extends PlayerEntity {
     }
 
     private void handleMouseLook() {
-        if (Input.currentLayer() != Input.Layer.GAME) return;
+        if (Input.getCurrentLayer() != Input.Layer.GAME) return;
         camera.rotate(new Vector2f(
                 (float) -Input.getDeltaY() * MOUSE_SENS,
                 (float) Input.getDeltaX() * MOUSE_SENS

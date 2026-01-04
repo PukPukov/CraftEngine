@@ -88,7 +88,7 @@ public abstract class Entity {
         }
         this.boundingBox.move(0.0F, 0.0F, movement.z);
         
-        this.onGround = originalMovement.y != movement.y && originalMovement.y < 0.0F;;
+        this.onGround = originalMovement.y != movement.y && originalMovement.y < 0.0F;
         
         if (originalMovement.x != movement.x) this.velocity.x = 0.0F;
         if (originalMovement.y != movement.y) this.velocity.y  = 0.0F;

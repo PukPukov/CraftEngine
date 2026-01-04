@@ -86,7 +86,7 @@ public class Chunk {
     }
 
     public AABB getAABB() {
-        Vector3i min = new Vector3i(position.x * SIZE, position.y * SIZE, 0);
+        Vector3i min = new Vector3i(position.x * SIZE, 0, position.y * SIZE);
         Vector3i max = new Vector3i(min.x + SIZE, min.y + SIZE, min.z + SIZE);
         return new AABB(min.x, min.y, min.z, max.x, max.y, max.z);
     }

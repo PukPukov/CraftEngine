@@ -6,12 +6,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11C.glViewport;
 
-public class Input {
+public class Input{
     public static final int KEYS = 1032;
     public static final int MOUSE_BUTTONS_OFFSET = 1024;
 
@@ -30,9 +29,7 @@ public class Input {
     @Getter
     private static double deltaY = 0f;
 
-    @Getter
     private static double x = 0f;
-    @Getter
     private static double y = 0f;
 
     private static boolean cursorStarted = false;
@@ -50,11 +47,19 @@ public class Input {
     }
 
     public static int getSX() {
-        return Window.scale().toLogicalX(Math.round((float) x));
+        return Window.scale().toLogicalX(Math.round((float) getX()));
     }
 
     public static int getSY() {
-        return Window.scale().toLogicalY(Math.round((float) y));
+        return Window.scale().toLogicalY(Math.round((float) getY()));
+    }
+
+    public static double getX() {
+        return getCurrentLayer().cursorLocked ? -1: x;
+    }
+
+    public static double getY() {
+        return getCurrentLayer().cursorLocked ? -1: y;
     }
 
     public record ScrollCallback(double xoffset, double yoffset) {
@@ -67,24 +72,23 @@ public class Input {
     }
 
     public enum Layer {
-        GAME(0, true, true, true),
-        UI(100, true, true, false);
+        GAME(true, true, true),
+        UI(true, true, false);
 
-        public final int priority;
         public final boolean captureKeyboard;
         public final boolean captureMouse;
-        public final boolean lockCursorByDefault;
+        public final boolean cursorLocked;
 
-        Layer(int priority, boolean captureKeyboard, boolean captureMouse, boolean lockCursorByDefault) {
-            this.priority = priority;
+        Layer(boolean captureKeyboard, boolean captureMouse, boolean lockCursorByDefault) {
             this.captureKeyboard = captureKeyboard;
             this.captureMouse = captureMouse;
-            this.lockCursorByDefault = lockCursorByDefault;
+            this.cursorLocked = lockCursorByDefault;
         }
     }
 
     // Активный стек слоёв: верхний = текущий
-    private static final Deque<Layer> layerStack = new ArrayDeque<>();
+    @Getter
+    private static Layer currentLayer = Layer.GAME;
 
     // Отдельные коллбэки по слоям
     private static final Map<Layer, Map<Integer, Runnable>> onPressByLayer = new ConcurrentHashMap<>();
@@ -107,20 +111,9 @@ public class Input {
         glfwPollEvents();
     }
 
-    public static void pushLayer(Layer layer) {
-        layerStack.push(layer);
+    public static void setLayer(@Nullable Layer layer) {
+        currentLayer = layer == null ? Layer.GAME : layer;
         applyCursorPolicy();
-    }
-
-    public static void popLayer() {
-        if (!layerStack.isEmpty()) {
-            layerStack.pop();
-            applyCursorPolicy();
-        }
-    }
-
-    public static @Nullable Layer currentLayer() {
-        return layerStack.peek();
     }
 
     public static String getKeyName(int key, int scanCode) {
@@ -128,13 +121,13 @@ public class Input {
     }
 
     private static void applyCursorPolicy() {
-        Layer top = currentLayer();
-        boolean lock = top != null ? top.lockCursorByDefault : true;
+        Layer top = getCurrentLayer();
+        boolean lock = top.cursorLocked;
         setCursorLocked(lock);
     }
 
     private static void keyCallback(long window, int key, int scancode, int inputAction, int mods) {
-        Layer top = currentLayer();
+        Layer top = getCurrentLayer();
         boolean deliverToGlobal = (top == null || !top.captureKeyboard);
 
         if (key < 0 || key >= KEYS) return; // защита от выхода за массив
@@ -169,7 +162,7 @@ public class Input {
     }
 
     private static void mouseButtonCallback(long window, int button, int action, int mode) {
-        Layer top = currentLayer();
+        Layer top = getCurrentLayer();
         boolean deliverToGlobal = (top == null || !top.captureMouse);
 
         int idx = MOUSE_BUTTONS_OFFSET + button;
@@ -199,7 +192,7 @@ public class Input {
     }
 
     private static void scrollCallback(long window, double xoffset, double yoffset) {
-        Layer top = currentLayer();
+        Layer top = getCurrentLayer();
         boolean deliverToGlobal = (top == null || !top.captureMouse);
 
         scrollX += xoffset;
@@ -249,7 +242,7 @@ public class Input {
         glfwSetScrollCallback(window, Input::scrollCallback);
         glfwSetCharModsCallback(window, Input::charCallback);
 
-        pushLayer(Layer.GAME);
+        setLayer(Layer.GAME);
     }
 
     public static void setCursorLocked(boolean flag) {
@@ -280,22 +273,22 @@ public class Input {
     }
 
     public static boolean isPressed(Layer layer, int key) {
-        if (currentLayer() != layer) return false;
+        if (getCurrentLayer() != layer) return false;
         return keys[key];
     }
 
     public static boolean wasPressed(Layer layer, int key) {
-        if (currentLayer() != layer) return false;
+        if (getCurrentLayer() != layer) return false;
         return keys[key] && frames[key] == current;
     }
 
     public static boolean isClicked(Layer layer, int button) {
-        if (currentLayer() != layer) return false;
+        if (getCurrentLayer() != layer) return false;
         return keys[MOUSE_BUTTONS_OFFSET + button];
     }
 
     public static boolean wasClicked(Layer layer, int button) {
-        if (currentLayer() != layer) return false;
+        if (getCurrentLayer() != layer) return false;
         return keys[MOUSE_BUTTONS_OFFSET + button] && frames[MOUSE_BUTTONS_OFFSET + button] == current;
     }
 }

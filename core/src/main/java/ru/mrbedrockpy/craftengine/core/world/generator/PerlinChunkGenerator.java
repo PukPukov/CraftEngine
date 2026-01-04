@@ -28,32 +28,35 @@ public final class PerlinChunkGenerator implements ChunkGenerator {
     public void generate(Chunk chunk) {
         final int CW = Chunk.SIZE;
         final int CH = Chunk.SIZE;
+        final int CD = Chunk.SIZE;
 
         int worldX0 = chunk.getPosition().x * CW;
-        int worldY0 = chunk.getPosition().y * CW;
+        int worldZ0 = chunk.getPosition().y * CD;
 
-        for (int x = 0; x < CW; x++) for (int y = 0; y < CW; y++) for (int z = 0; z < CH; z++)
-            chunk.setBlock(x, y, z, Blocks.AIR);
+        for (int x = 0; x < CW; x++)
+            for (int y = 0; y < CH; y++)
+                for (int z = 0; z < CD; z++)
+                    chunk.setBlock(x, y, z, Blocks.AIR);
 
         for (int lx = 0; lx < CW; lx++) {
-            for (int ly = 0; ly < CW; ly++) {
+            for (int lz = 0; lz < CD; lz++) {
                 int wx = worldX0 + lx;
-                int wy = worldY0 + ly;
+                int wz = worldZ0 + lz;
 
-                float n = heightNoise.fbm(wx, wy);
+                float n = heightNoise.fbm(wx, wz);
                 int h = baseHeight + Math.round((n * 0.5f + 0.5f) * heightVariance);
                 h = Math.max(0, Math.min(h, CH - 1));
 
-                for (int z = 0; z <= h; z++) {
-                    int id = (z == h)
-                        ? (h >= seaLevel ? 2 : 1)
-                        : (z >= h - 3 ? 2 : 1);
-                    chunk.setBlock(lx, z, ly, Registries.BLOCKS.get(id));
+                for (int y = 0; y <= h; y++) {
+                    int id = (y == h)
+                            ? (h >= seaLevel ? 2 : 1)
+                            : (y >= h - 3 ? 2 : 1);
+                    chunk.setBlock(lx, y, lz, Registries.BLOCKS.get(id));
                 }
 
                 if (h < seaLevel) {
-                    for (int z = h + 1; z <= Math.min(seaLevel, CH - 1); z++) {
-                        chunk.setBlock(lx, z, ly, Blocks.AIR);
+                    for (int y = h + 1; y <= Math.min(seaLevel, CH - 1); y++) {
+                        chunk.setBlock(lx, y, lz, Blocks.AIR);
                     }
                 }
             }
