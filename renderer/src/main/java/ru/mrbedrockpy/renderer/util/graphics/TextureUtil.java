@@ -17,7 +17,7 @@ import java.util.Map;
 
 import static org.lwjgl.opengl.GL46C.*;
 
-public class TextureUtil{
+public class TextureUtil {
     public static Texture fromBufferedImage(BufferedImage image) {
         ByteBuffer buf = ImageUtil.toByteBuffer(image);
         return new Texture(buf, image.getWidth(), image.getHeight());
@@ -39,7 +39,7 @@ public class TextureUtil{
             int a = buffer.get() & 0xFF;
             pixels[i] = ((a & 0xFF) << 24) |
                     ((r & 0xFF) << 16) |
-                    ((g & 0xFF) << 8)  |
+                    ((g & 0xFF) << 8) |
                     (b & 0xFF);
         }
 
@@ -111,35 +111,30 @@ public class TextureUtil{
         BufferedImage[] faces = new BufferedImage[6];
         faces[0] = tiles[5]; // +X right
         faces[1] = tiles[3]; // -X left
-        faces[2] = tiles[4]; // +Y front
-        faces[3] = tiles[2]; // -Y back
-        faces[4] = tiles[1]; // +Z top
-        faces[5] = tiles[0]; // -Z bottom
+        faces[2] = tiles[1]; // +Y top
+        faces[3] = tiles[0]; // -Y bottom
+        faces[4] = tiles[4]; // +Z front
+        faces[5] = tiles[2];
 
 
         // Поправки ориентации под Z-up (результат наших прошлых правок):
         for (int i = 0; i < 6; i++) {
             BufferedImage img = faces[i];
-            switch (i) {
-                case 0: // +X right — был перевёрнут → 180°
-                    img = flipHorizontal(rotateCW(img));
-                    break;
-                case 1: // -X left — ок
-                    img = flipHorizontal(rotate180(rotateCW(img)));
-                    break;
-                case 2: // +Y top — ок
-                    img = flipHorizontal(rotate180(img));
-                    break;
-                case 3: // -Y bottom — ок
-                    img = flipHorizontal(img);
-                    break;
-                case 4: // +Z front — нужно +90°
-                    img = flipHorizontal(rotate180(img));
-                    break;
-                case 5: // -Z back — нужно +90°
-                    img = flipHorizontal(img);
-                    break;
-            }
+            img = switch (i) {
+                case 0 -> // +X right — был перевёрнут → 180°
+                        rotateCCW(img);
+                case 1 -> // -X left — ок
+                        flipHorizontal(rotateCW(img));
+                case 2 -> // +Y top — ок
+                        rotateCCW(img);
+                case 3 -> // -Y bottom — ок
+                        flipHorizontal(rotateCW(img));
+                case 4 -> // +Z front — нужно +90°
+                        flipHorizontal(img);
+                case 5 -> // -Z back — нужно +90°
+                        rotate180(img);
+                default -> img;
+            };
             faces[i] = img;
         }
 

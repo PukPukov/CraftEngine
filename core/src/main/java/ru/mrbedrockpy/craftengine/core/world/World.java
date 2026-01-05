@@ -81,7 +81,7 @@ public class World {
         if (y < 0 || y >= Chunk.SIZE) {
             return Blocks.AIR;
         }
-        Chunk chunk = chunkByBlockPosition(x, y);
+        Chunk chunk = chunkByBlockPosition(x, z);
         if (chunk == null) {
             return Blocks.AIR;
         }
@@ -100,7 +100,7 @@ public class World {
         if (y < 0 || y >= Chunk.SIZE) {
             return false;
         }
-        Chunk chunk = chunkByBlockPosition(x, y);
+        Chunk chunk = chunkByBlockPosition(x, z);
         if (chunk == null) return false;
         
         boolean success = chunk.setBlock(
@@ -257,6 +257,7 @@ public class World {
         if (stepZ == 0) sideDistZ = Double.POSITIVE_INFINITY;
 
         double distance = 0.0;
+        double maxDistance = maxDistanceF;
 
         Block.Direction lastFace = Block.Direction.NONE;
 
@@ -265,7 +266,7 @@ public class World {
             return new BlockRaycastResult(blockPos.x, blockPos.y, blockPos.z, block, lastFace);
         }
 
-        while (distance <= (double) maxDistanceF) {
+        while (distance <= maxDistance) {
             if (sideDistX < sideDistY) {
                 if (sideDistX < sideDistZ) {
                     blockPos.x += stepX;
@@ -288,10 +289,10 @@ public class World {
                     blockPos.z += stepZ;
                     distance = sideDistZ;
                     sideDistZ += deltaDistZ;
-                    lastFace = stepZ > 0 ? Block.Direction.SOUTH : Block.Direction.NORTH;
+                    lastFace = stepZ > 0 ? Block.Direction.NORTH : Block.Direction.SOUTH;
                 }
             }
-            if (distance > (double) maxDistanceF) {
+            if (distance > maxDistance) {
                 break;
             }
 

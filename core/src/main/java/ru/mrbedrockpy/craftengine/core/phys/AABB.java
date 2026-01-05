@@ -180,5 +180,8 @@ public class AABB {
             (float) ((this.minZ + this.maxZ) / 2.0D)
         );
     }
-    
+
+    public void move(Vector3d movement) {
+        this.move(movement.x, movement.y, movement.z);
+    }
 }

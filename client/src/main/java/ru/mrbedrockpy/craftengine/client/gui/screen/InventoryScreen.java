@@ -9,7 +9,6 @@ import ru.mrbedrockpy.craftengine.core.util.id.RL;
 import ru.mrbedrockpy.craftengine.core.world.inventory.PlayerInventory;
 import ru.mrbedrockpy.craftengine.core.world.item.ItemStack;
 import ru.mrbedrockpy.renderer.gui.DrawContext;
-import ru.mrbedrockpy.renderer.window.Input;
 import ru.mrbedrockpy.renderer.window.Window;
 public class InventoryScreen extends Screen {
     private final PlayerInventory inventory;
@@ -76,7 +75,7 @@ public class InventoryScreen extends Screen {
 
         // 2) Если слот пуст и курсор не пуст — кладём из курсора в слот (по максимуму)
         if (slotStack.isEmpty() && !cursor.isEmpty()) {
-            int max = cursor.item().getMaxStackSize();
+            int max = cursor.getItem().getMaxStackSize();
             int toMove = Math.min(cursor.count(), max);
             ItemStack moved = cursor.copy();
             slot.stack(moved);
@@ -88,11 +87,11 @@ public class InventoryScreen extends Screen {
 
         // 3) Слот не пуст и курсор не пуст
         if (!slotStack.isEmpty() && !cursor.isEmpty()) {
-            boolean same = slotStack.item() == cursor.item() && slotStack.merge(cursor);
+            boolean same = slotStack.getItem() == cursor.getItem() && slotStack.merge(cursor);
 
             if (same) {
                 // MERGE: докинуть из курсора в слот до лимита
-                int max = slotStack.item().getMaxStackSize();
+                int max = slotStack.getItem().getMaxStackSize();
                 int space = Math.max(0, max - slotStack.count());
                 if (space > 0) {
                     int toMove = Math.min(cursor.count(), space);
@@ -154,7 +153,7 @@ public class InventoryScreen extends Screen {
             int sx = mouseX;
             int sy = mouseY;
             ctx.drawTexture(sx - 9, sy - 9, 17, 17,
-                    RL.of("gui/" + Registries.ITEMS.getRL(cursorStack.item()).path() + ".png"));
+                    RL.of("gui/" + Registries.ITEMS.getRL(cursorStack.getItem()).path() + ".png"));
         }
     }
 }

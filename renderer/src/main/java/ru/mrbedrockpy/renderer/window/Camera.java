@@ -131,8 +131,8 @@ public class Camera {
         
         Vector3f front = new Vector3f();
         front.x = (float) (Math.cos(pitch) * Math.cos(yaw));
-        front.z = (float) Math.sin(pitch);
-        front.y = (float) (Math.cos(pitch) * Math.sin(yaw));
+        front.y = (float) Math.sin(pitch);
+        front.z = (float) (Math.cos(pitch) * Math.sin(yaw));
 
         return front.normalize();
     }
