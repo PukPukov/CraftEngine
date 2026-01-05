@@ -78,7 +78,7 @@ public class ClientPlayerEntity extends PlayerEntity {
             }
         } else if (KeyBindings.BUILD.wasPressed()) {
             ItemStack selected = inventory.getSelectedStack();
-            if (selected != null) selected.item().use(this);
+            if (selected != null) selected.getItem().use(this);
         }
     }
 

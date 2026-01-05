@@ -81,7 +81,7 @@ public class World {
         if (y < 0 || y >= Chunk.SIZE) {
             return Blocks.AIR;
         }
-        Chunk chunk = chunkByBlockPosition(x, y);
+        Chunk chunk = chunkByBlockPosition(x, z);
         if (chunk == null) {
             return Blocks.AIR;
         }
@@ -100,7 +100,7 @@ public class World {
         if (y < 0 || y >= Chunk.SIZE) {
             return false;
         }
-        Chunk chunk = chunkByBlockPosition(x, y);
+        Chunk chunk = chunkByBlockPosition(x, z);
         if (chunk == null) return false;
         
         boolean success = chunk.setBlock(

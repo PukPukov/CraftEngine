@@ -33,14 +33,14 @@ public class WorldRenderer implements AutoCloseable {
         @Override
         public boolean isSolid(int wx, int wy, int wz) {
             int cx = Math.floorDiv(wx, Chunk.SIZE);
-            int cy = Math.floorDiv(wy, Chunk.SIZE);
-            Chunk ch = chunksByPos.get(new Vector2i(cx, cy));
+            int cz = Math.floorDiv(wz, Chunk.SIZE);
+            Chunk ch = chunksByPos.get(new Vector2i(cx, cz));
             if (ch == null) return false;
 
             int lx = Math.floorMod(wx, Chunk.SIZE);
-            int ly = Math.floorMod(wy, Chunk.SIZE);
-            int lz = wz;
-            if (lz < 0 || lz >= Chunk.SIZE) return true;
+            int ly = wy;
+            int lz = Math.floorMod(wz, Chunk.SIZE);
+            if (ly < 0 || ly >= Chunk.SIZE) return false;
 
             return ch.getBlocks()[lx][ly][lz] != 0;
         }

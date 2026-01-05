@@ -19,7 +19,7 @@ public class ItemStack {
         this.count = count;
     }
 
-    public Item item() { return item; }
+    public Item getItem() { return item; }
     public int count() { return count; }
     public void setCount(int count) {
         if (count < 0 || count > item.getMaxStackSize()) {

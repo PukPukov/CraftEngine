@@ -79,7 +79,7 @@ public class SlotWidget extends AbstractWidget {
 
         ItemStack s = stack();
         if (!s.isEmpty()) {
-            RL item = Registries.ITEMS.getRL(s.item());
+            RL item = Registries.ITEMS.getRL(s.getItem());
             RL path = RL.of(item.namespace(), "gui/" + item.path() + ".png");
             ctx.drawTexture(x + 1, y + 1, 16, 16, path);
         }

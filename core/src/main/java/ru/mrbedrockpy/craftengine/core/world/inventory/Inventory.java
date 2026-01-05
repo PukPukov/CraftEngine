@@ -37,7 +37,7 @@ public class Inventory {
     public boolean item(ItemStack stack) {
         for (int i = 0; i < size(); i++) {
             ItemStack existing = stack(i);
-            if (existing != null && existing.item().equals(stack.item())) {
+            if (existing != null && existing.getItem().equals(stack.getItem())) {
                 if (existing.merge(stack)) return true;
             }
         }
@@ -56,7 +56,7 @@ public class Inventory {
         ItemStack existing = stack(slot);
         if (existing == null) return null;
         int removed = Math.min(amount, existing.count());
-        ItemStack result = new ItemStack(existing.item(), removed);
+        ItemStack result = new ItemStack(existing.getItem(), removed);
         existing.setCount(existing.count() - removed);
         if (existing.isEmpty()) stack(slot, null);
         return result;
@@ -68,7 +68,7 @@ public class Inventory {
     public int setStack(Item item) {
         for (int i = 0; i < size(); i++) {
             ItemStack s = stack(i);
-            if (s != null && s.item().equals(item)) {
+            if (s != null && s.getItem().equals(item)) {
                 return i;
             }
         }
