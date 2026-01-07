@@ -40,7 +40,7 @@ public final class AtlasManager implements AutoCloseable {
             for (int i = 0; i < atlases.size(); i++) {
                 int loc = glGetUniformLocation(program, uniformArrayBaseName + "[" + i + "]");
                 if (loc < 0) continue; // или throw, если хочешь жёстко
-                long h = atlases.get(i).texture().handle(); // см. пункт 2 про resident
+                long h = atlases.get(i).texture().getHandle(); // см. пункт 2 про resident
                 glProgramUniformHandleui64ARB(program, loc, h);
             }
         } else {

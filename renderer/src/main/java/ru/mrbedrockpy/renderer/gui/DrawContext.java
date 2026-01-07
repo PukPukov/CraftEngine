@@ -11,7 +11,6 @@ import ru.mrbedrockpy.renderer.font.QuadBatch;
 import ru.mrbedrockpy.renderer.font.StickerRegistry;
 import ru.mrbedrockpy.renderer.graphics.*;
 import ru.mrbedrockpy.renderer.graphics.tex.Atlas;
-import ru.mrbedrockpy.renderer.graphics.tex.GlTexture;
 import ru.mrbedrockpy.renderer.graphics.tex.TextureRegion;
 import ru.mrbedrockpy.renderer.util.graphics.TextureUtil;
 import ru.mrbedrockpy.renderer.window.Window;
@@ -61,7 +60,7 @@ public class DrawContext{
             throw new RuntimeException(e);
         }
         fontRenderer = new ComponentRenderer(glyphAtlas, StickerRegistry.INSTANCE);
-        GlTexture guiTex = new GlTexture(atlas.getTextureId(), atlas.getWidthPx(), atlas.getHeightPx());
+        Texture guiTex = new Texture(atlas.getTextureId(), atlas.getWidthPx(), atlas.getHeightPx());
         Atlas ui = new Atlas(RL.of("gui"), guiTex, atlas);
         GUI_ATLAS = RenderInit.ATLAS_MANAGER.register(ui);
     }

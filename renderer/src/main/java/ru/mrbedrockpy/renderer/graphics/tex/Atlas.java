@@ -2,19 +2,20 @@ package ru.mrbedrockpy.renderer.graphics.tex;
 
 import lombok.Getter;
 import ru.mrbedrockpy.craftengine.core.util.id.RL;
+import ru.mrbedrockpy.renderer.graphics.Texture;
 
 public final class Atlas {
     private final RL name;
-    private final GlTexture texture;
+    private final Texture texture;
     private final UvProvider uv;
 
-    public Atlas(RL name, GlTexture texture, UvProvider uv) {
+    public Atlas(RL name, Texture texture, UvProvider uv) {
         this.name = name;
         this.texture = texture;
         this.uv = uv;
     }
     public RL name() { return name; }
-    public GlTexture texture() { return texture; }
+    public Texture texture() { return texture; }
 
     public TextureRegion region(int atlasIndex, RL key) {
         float[] a = uv.getNormalizedUvs(key);
