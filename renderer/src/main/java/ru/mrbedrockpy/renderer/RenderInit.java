@@ -38,11 +38,7 @@ public class RenderInit {
         }
 
         blocksAtlasTexture = blocksAtlasBuilder.buildAtlas();
-        Texture blocksGl = new Texture(blocksAtlasTexture.getId(),
-                                           blocksAtlasTexture.getWidth(),
-                                           blocksAtlasTexture.getHeight());
-        Atlas blocks = new Atlas(RL.of("blocks"), blocksGl, blocksAtlasBuilder);
-        BLOCKS_ATLAS_INDEX = ATLAS_MANAGER.register(blocks);
+        BLOCKS_ATLAS_INDEX = ATLAS_MANAGER.register(blocksAtlasBuilder);
     }
 
     public static int blocksAtlasIndex() {

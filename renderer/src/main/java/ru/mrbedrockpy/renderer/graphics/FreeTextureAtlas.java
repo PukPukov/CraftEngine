@@ -2,6 +2,7 @@ package ru.mrbedrockpy.renderer.graphics;
 
 import lombok.Getter;
 import ru.mrbedrockpy.craftengine.core.util.id.RL;
+import ru.mrbedrockpy.renderer.graphics.tex.Atlas;
 import ru.mrbedrockpy.renderer.graphics.tex.UvProvider;
 import ru.mrbedrockpy.renderer.util.ImageUtil;
 
@@ -17,19 +18,15 @@ import java.util.List;
 
 import static org.lwjgl.opengl.GL46C.*;
 
-public class FreeTextureAtlas implements UvProvider {
+public class FreeTextureAtlas extends Atlas {
     @Getter
     private int widthPx, heightPx;
     private BufferedImage atlasImage;
-    private final int glTexId;
     @Getter
     private final Map<RL, Rectangle> uvMap = new HashMap<>();
     private final List<Shelf> shelves = new ArrayList<>();
     private int usedHeight = 0;
 
-    public int getTextureId() {
-        return glTexId;
-    }
 
     private static class Shelf {
         int y;
@@ -40,13 +37,13 @@ public class FreeTextureAtlas implements UvProvider {
 
     public FreeTextureAtlas() { this(4096, 4096); }
     public FreeTextureAtlas(int widthPx, int heightPx) {
+        super(RL.of("gui"));
         this.widthPx  = Math.max(1, widthPx);
         this.heightPx = Math.max(1, heightPx);
 
         this.atlasImage = new BufferedImage(this.widthPx, this.heightPx, BufferedImage.TYPE_INT_ARGB);
-
-        glTexId = glGenTextures();
-        glBindTexture(GL_TEXTURE_2D, glTexId);
+        this.texture = new Texture(glGenTextures(), widthPx, heightPx);
+        texture.use();
         ByteBuffer empty = ImageUtil.toByteBuffer(atlasImage);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, this.widthPx, this.heightPx, 0, GL_RGBA, GL_UNSIGNED_BYTE, empty);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

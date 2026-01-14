@@ -86,6 +86,14 @@ public class Texture implements AutoCloseable {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
+    public void use() {
+        glBindTexture(GL_TEXTURE_2D, id);
+    }
+
+    public void unbind() {
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
     @Override
     public void close() {
         if (resident) {

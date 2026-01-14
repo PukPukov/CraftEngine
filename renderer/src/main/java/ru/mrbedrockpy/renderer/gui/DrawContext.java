@@ -60,9 +60,7 @@ public class DrawContext{
             throw new RuntimeException(e);
         }
         fontRenderer = new ComponentRenderer(glyphAtlas, StickerRegistry.INSTANCE);
-        Texture guiTex = new Texture(atlas.getTextureId(), atlas.getWidthPx(), atlas.getHeightPx());
-        Atlas ui = new Atlas(RL.of("gui"), guiTex, atlas);
-        GUI_ATLAS = RenderInit.ATLAS_MANAGER.register(ui);
+        GUI_ATLAS = RenderInit.ATLAS_MANAGER.register(atlas);
     }
 
     public void enableGL() {
