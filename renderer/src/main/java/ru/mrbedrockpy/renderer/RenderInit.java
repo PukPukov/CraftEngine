@@ -1,6 +1,5 @@
 package ru.mrbedrockpy.renderer;
 
-import lombok.Getter;
 import ru.mrbedrockpy.craftengine.core.registry.Registry;
 import ru.mrbedrockpy.craftengine.core.util.id.RL;
 import ru.mrbedrockpy.craftengine.core.world.block.Block;
@@ -9,10 +8,8 @@ import ru.mrbedrockpy.renderer.graphics.Texture;
 import ru.mrbedrockpy.renderer.graphics.TextureAtlas;
 import ru.mrbedrockpy.renderer.graphics.tex.Atlas;
 import ru.mrbedrockpy.renderer.graphics.tex.AtlasManager;
-import ru.mrbedrockpy.renderer.graphics.tex.GlTexture;
 import ru.mrbedrockpy.renderer.util.graphics.TextureUtil;
 
-import java.io.IOException;
 import java.util.Map;
 
 public class RenderInit {
@@ -41,11 +38,7 @@ public class RenderInit {
         }
 
         blocksAtlasTexture = blocksAtlasBuilder.buildAtlas();
-        GlTexture blocksGl = new GlTexture(blocksAtlasTexture.getId(),
-                                           blocksAtlasTexture.getWidth(),
-                                           blocksAtlasTexture.getHeight());
-        Atlas blocks = new Atlas(RL.of("blocks"), blocksGl, blocksAtlasBuilder);
-        BLOCKS_ATLAS_INDEX = ATLAS_MANAGER.register(blocks);
+        BLOCKS_ATLAS_INDEX = ATLAS_MANAGER.register(blocksAtlasBuilder);
     }
 
     public static int blocksAtlasIndex() {
