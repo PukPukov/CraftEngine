@@ -20,8 +20,8 @@ public class Chunk {
     private final Vector2i position;
     @Getter
     private final short[][][] blocks;
-    @Getter
-    private boolean dirty = true;
+//    @Getter
+//    private boolean dirty = true;
     private final List<Entity> entities = new ArrayList<>();
     public static final int SIZE = 16;
     
@@ -52,7 +52,7 @@ public class Chunk {
             short newId = (short) Registries.BLOCKS.getId(block);
             if (blocks[x][y][z] != newId) {
                 blocks[x][y][z] = newId;
-                markDirty();
+//                markDirty();
             }
             return true;
         } catch (IndexOutOfBoundsException e) {
@@ -63,9 +63,9 @@ public class Chunk {
     public void tick() {
     }
 
-    public void markDirty() {
-        dirty = true;
-    }
+//    public void markDirty() {
+//        dirty = true;
+//    }
     
     public void setEntities(List<Entity> entities) {
         this.entities.clear();

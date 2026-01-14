@@ -49,13 +49,13 @@ public class World {
         return this.getChunk(pos.x, pos.y);
     }
 
-    public @Nullable Chunk getChunk(int x, int y) {
+    public @Nullable Chunk getChunk(int x, int z) {
         try {
-            if(this.chunks[x][y] == null) {
-                this.chunks[x][y] = new Chunk(new Vector2i(x, y));
-                chunkGenerator.generate(this.chunks[x][y]);
+            if(this.chunks[x][z] == null) {
+                this.chunks[x][z] = new Chunk(new Vector2i(x, z));
+                chunkGenerator.generate(this.chunks[x][z]);
             }
-            return this.chunks[x][y];
+            return this.chunks[x][z];
         } catch (IndexOutOfBoundsException e) {
             return null;
         }
@@ -64,12 +64,12 @@ public class World {
     public void setChunk(Chunk chunk) {
         if (chunk == null) return;
         int x = chunk.getPosition().x;
-        int y = chunk.getPosition().y;
-        if (x < 0 || y < 0 || x >= chunks.length || y >= chunks[0].length) return;
-        this.chunks[x][y] = chunk;
+        int z = chunk.getPosition().y;
+        if (x < 0 || z < 0 || x >= chunks.length || z >= chunks[0].length) return;
+        this.chunks[x][z] = chunk;
     }
     
-    public @Nullable Chunk chunkByBlockPosition(int x, int y) {
+    public @Nullable Chunk getChunkByBlockPosition(int x, int y) {
         return getChunk(Math.floorDiv(x, Chunk.SIZE), Math.floorDiv(y, Chunk.SIZE));
     }
     
@@ -81,7 +81,7 @@ public class World {
         if (y < 0 || y >= Chunk.SIZE) {
             return Blocks.AIR;
         }
-        Chunk chunk = chunkByBlockPosition(x, z);
+        Chunk chunk = getChunkByBlockPosition(x, z);
         if (chunk == null) {
             return Blocks.AIR;
         }
@@ -97,41 +97,37 @@ public class World {
     }
     
     public boolean setBlock(int x, int y, int z, Block block) {
-        if (y < 0 || y >= Chunk.SIZE) {
-            return false;
-        }
-        Chunk chunk = chunkByBlockPosition(x, z);
+        if (y < 0 || y >= Chunk.SIZE) return false;
+        Chunk chunk = getChunkByBlockPosition(x, z);
         if (chunk == null) return false;
-        
-        boolean success = chunk.setBlock(
+        return chunk.setBlock(
             Math.floorMod(x, Chunk.SIZE),
             y,
             Math.floorMod(z, Chunk.SIZE),
             block
         );
-        
-        if (success) {
-            int localX = Math.floorMod(x, Chunk.SIZE);
-            int localZ = Math.floorMod(z, Chunk.SIZE);
-            
-            if (localX == 0) {
-                Chunk neighbor = chunkByBlockPosition(x - 1, z);
-                if (neighbor != null) neighbor.markDirty();
-            } else if (localX == Chunk.SIZE - 1) {
-                Chunk neighbor = chunkByBlockPosition(x + 1, z);
-                if (neighbor != null) neighbor.markDirty();
-            }
-            
-            if (localZ == 0) {
-                Chunk neighbor = chunkByBlockPosition(x, z - 1);
-                if (neighbor != null) neighbor.markDirty();
-            } else if (localZ == Chunk.SIZE - 1) {
-                Chunk neighbor = chunkByBlockPosition(x, z + 1);
-                if (neighbor != null) neighbor.markDirty();
-            }
-        }
-        
-        return success;
+//        if (success) {
+//            int localX = Math.floorMod(x, Chunk.SIZE);
+//            int localZ = Math.floorMod(z, Chunk.SIZE);
+//
+//            if (localX == 0) {
+//                Chunk neighbor = getChunkByBlockPosition(x - 1, z);
+//                if (neighbor != null) neighbor.markDirty();
+//            } else if (localX == Chunk.SIZE - 1) {
+//                Chunk neighbor = getChunkByBlockPosition(x + 1, z);
+//                if (neighbor != null) neighbor.markDirty();
+//            }
+//
+//            if (localZ == 0) {
+//                Chunk neighbor = getChunkByBlockPosition(x, z - 1);
+//                if (neighbor != null) neighbor.markDirty();
+//            } else if (localZ == Chunk.SIZE - 1) {
+//                Chunk neighbor = getChunkByBlockPosition(x, z + 1);
+//                if (neighbor != null) neighbor.markDirty();
+//            }
+//        }
+//
+//        return success;
     }
     
     public ArrayList<AABB> cubes(AABB boundingBox) {
@@ -208,7 +204,7 @@ public class World {
     
     public void removeEntity(Entity entity) {
         entities.remove(entity);
-        if(entity instanceof PlayerEntity player){
+        if(entity instanceof PlayerEntity player) {
             players.remove(player);
         }
     }
@@ -221,7 +217,7 @@ public class World {
         return 0;
     }
 
-    public BlockRaycastResult raycast(Vector3f originF, Vector3f directionF, float maxDistanceF) {
+    public BlockRaycastResult rayCast(Vector3f originF, Vector3f directionF, float maxDistance) {
 
         Vector3d origin = new Vector3d(originF.x, originF.y, originF.z);
         Vector3d direction = new Vector3d(directionF.x, directionF.y, directionF.z);
@@ -257,7 +253,6 @@ public class World {
         if (stepZ == 0) sideDistZ = Double.POSITIVE_INFINITY;
 
         double distance = 0.0;
-        double maxDistance = maxDistanceF;
 
         Block.Direction lastFace = Block.Direction.NONE;
 
@@ -292,14 +287,9 @@ public class World {
                     lastFace = stepZ > 0 ? Block.Direction.NORTH : Block.Direction.SOUTH;
                 }
             }
-            if (distance > maxDistance) {
-                break;
-            }
-
+            if (distance > maxDistance) break;
             block = getBlock(blockPos.x, blockPos.y, blockPos.z);
-            if (block != null && block.isSolid()) {
-                return new BlockRaycastResult(blockPos.x, blockPos.y, blockPos.z, block, lastFace);
-            }
+            if (block != null && block.isSolid()) return new BlockRaycastResult(blockPos.x, blockPos.y, blockPos.z, block, lastFace);
         }
 
         return null;

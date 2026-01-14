@@ -71,7 +71,7 @@ public class ClientPlayerEntity extends PlayerEntity {
 
     private void handleMouseActions(World world) {
         if (KeyBindings.ATTACK.wasPressed()) {
-            BlockRaycastResult hit = world.raycast(new Vector3f(camera.getPosition()), camera.getFront(), 4.5f);
+            BlockRaycastResult hit = world.rayCast(new Vector3f(camera.getPosition()), camera.getFront(), 4.5f);
             if (hit != null){
                 world.setBlock(hit.x, hit.y, hit.z, Blocks.AIR);
                 CraftEngineClient.INSTANCE.getGameClient().send(new BlockBreakPacketC2S(new Vector3i(hit.x, hit.y, hit.z)));
@@ -96,8 +96,7 @@ public class ClientPlayerEntity extends PlayerEntity {
         if (KeyBindings.JUMP.isPressed()) jump();
         setSneaking(KeyBindings.SHIFT.isPressed());
 
-        boolean backwardish = forward <= 0f;
-        setSprinting(KeyBindings.SPRINT.isPressed() && !backwardish);
+        setSprinting(KeyBindings.SPRINT.isPressed() && forward > 0f);
 
         float slipperiness = onGround ? 0.6f : 1.0f;
         float friction = onGround ? slipperiness * 0.91f : 0.91f;
@@ -109,7 +108,7 @@ public class ClientPlayerEntity extends PlayerEntity {
 
         Vector3f front = camera.getFlatFront();
         Vector3f right = new Vector3f(front).cross(0, 1, 0).normalize();
-
+        
         float len = (float) Math.sqrt(strafe * strafe + forward * forward);
         if (len > 1e-6f) {
             strafe /= len;
