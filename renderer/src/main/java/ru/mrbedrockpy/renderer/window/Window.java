@@ -2,14 +2,14 @@ package ru.mrbedrockpy.renderer.window;
 
 import lombok.Getter;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import ru.mrbedrockpy.craftengine.core.data.WindowSettings;
+import ru.mrbedrockpy.craftengine.core.util.Logger;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.io.File;
@@ -17,13 +17,17 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL46C.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.*;
 
-public class Window{
+public class Window {
+
+    private static final Logger LOGGER = Logger.getLogger(Window.class);
 
     @Getter private static long window;
     @Getter private static int width, height;
@@ -33,8 +37,13 @@ public class Window{
 
     private static int windowedX, windowedY, windowedW, windowedH;
 
-    private static final ScaleManager SCALE = new ScaleManager();
-    public static ScaleManager scale() { return SCALE; }
+    @Getter private static final ScaleManager scaleManager = new ScaleManager();
+
+    // Callbacks
+    private static GLFWErrorCallback errorCallback;
+    private static GLFWFramebufferSizeCallback framebufferSizeCallback;
+    private static GLFWWindowSizeCallback windowSizeCallback;
+    private static GLFWWindowPosCallback windowPosCallback;
 
     public static void initialize(WindowSettings settings) {
         Window.width  = settings.getWidth();
@@ -47,12 +56,12 @@ public class Window{
             glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
         }
         
-        GLFWErrorCallback errorCallback = GLFWErrorCallback.create((error, descriptionPtr) -> {
+        errorCallback = GLFWErrorCallback.create((error, descriptionPtr) -> {
             String description = MemoryUtil.memASCII(descriptionPtr);
             System.err.println("GLFW Error " + error + ": " + description);
         });
         errorCallback.set();
-        SCALE.setFramebufferSize(width, height);
+        scaleManager.setFramebufferSize(width, height);
         initialize0(settings);
     }
     
@@ -74,20 +83,19 @@ public class Window{
         glfwMakeContextCurrent(window);
         setVsync(vsync);
         GL.createCapabilities();
-        
-        glfwSetFramebufferSizeCallback(window, (win, w, h) -> {
+
+        framebufferSizeCallback = glfwSetFramebufferSizeCallback(window, (win, w, h) -> {
             if (w <= 0 || h <= 0) return;
             glViewport(0, 0, w, h);
         });
-        glfwSetWindowSizeCallback(window, (win, w, h) -> {
+        windowSizeCallback = glfwSetWindowSizeCallback(window, (win, w, h) -> {
             if (!fullscreen) { windowedW = w; windowedH = h; }
             Window.width = w;
             Window.height = h;
         });
-        glfwSetWindowPosCallback(window, (win, x, y) -> {
+        windowPosCallback = glfwSetWindowPosCallback(window, (win, x, y) -> {
             if (!fullscreen) { windowedX = x; windowedY = y; }
         });
-
         
         try (MemoryStack stack = stackPush()) {
             IntBuffer pw = stack.mallocInt(1);
@@ -110,12 +118,18 @@ public class Window{
         
         glfwShowWindow(window);
         
-        if (settings.isFullscreen()) {
-            setFullscreen(true);
-        }
+        if (settings.isFullscreen()) setFullscreen(true);
     }
 
-    public static void terminate() { glfwTerminate(); }
+    public static void terminate() {
+        Input.freeCallbacks();
+        if (framebufferSizeCallback != null) framebufferSizeCallback.free();
+        if (windowSizeCallback != null) windowSizeCallback.free();
+        if (windowPosCallback != null) windowPosCallback.free();
+        errorCallback.free();
+        glfwTerminate();
+    }
+
     public static boolean isShouldClose() { return glfwWindowShouldClose(window); }
     public static void setShouldClose(boolean flag) { glfwSetWindowShouldClose(window, flag); }
 
@@ -135,8 +149,8 @@ public class Window{
         glfwSwapInterval(flag ? 1 : 0);
     }
 
-    public static int scaledWidth()  { return SCALE.logicalWidth(); }
-    public static int scaledHeight() { return SCALE.logicalHeight(); }
+    public static int scaledWidth()  { return scaleManager.logicalWidth(); }
+    public static int scaledHeight() { return scaleManager.logicalHeight(); }
 
     public static void setFullscreen(boolean enable) {
         if (fullscreen == enable) return;
@@ -155,18 +169,19 @@ public class Window{
                 windowedH = ph.get(0);
             }
 
-            long monitor = pickBestMonitorForWindow();
-            if (monitor == NULL) monitor = glfwGetPrimaryMonitor();
+            long monitor = glfwGetPrimaryMonitor();
             GLFWVidMode mode = glfwGetVideoMode(monitor);
+            if (mode == null) {
+                Logger.getLogger(Window.class).error("Failed to get video mode");
+                return;
+            }
             glfwSetWindowMonitor(window, monitor, 0, 0, mode.width(), mode.height(), mode.refreshRate());
 
             width  = mode.width();
             height = mode.height();
             fullscreen = true;
         } else {
-            long monitor = pickBestMonitorFor(windowedX, windowedY, windowedW, windowedH);
-            if (monitor == NULL) monitor = glfwGetPrimaryMonitor();
-            glfwSetWindowMonitor(window, NULL, windowedX, windowedY, windowedW, windowedH, 0);
+            glfwSetWindowMonitor(window, glfwGetPrimaryMonitor(), windowedX, windowedY, windowedW, windowedH, 0);
 
             width  = windowedW;
             height = windowedH;
@@ -181,14 +196,13 @@ public class Window{
         }
     }
 
-    public static void toggleFullscreen() { setFullscreen(!fullscreen); }
-
-    public static Path takeScreenshot() {
-        String ts = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"));
-        return takeScreenshot(Paths.get("screenshots", "screenshot_" + ts + ".png"));
+    public static void toggleFullscreen() {
+        setFullscreen(!fullscreen);
     }
 
-    public static Path takeScreenshot(Path outPath) {
+    public static void takeScreenshot() {
+        Path ts = Paths.get("screenshots", "screenshot_" +
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")) + ".png");
         try (MemoryStack stack = stackPush()) {
             IntBuffer fbW = stack.mallocInt(1);
             IntBuffer fbH = stack.mallocInt(1);
@@ -220,22 +234,27 @@ public class Window{
                 }
             }
 
-            File out = outPath.toFile();
+            File out = ts.toFile();
             File parent = out.getParentFile();
-            if (parent != null) parent.mkdirs();
-            javax.imageio.ImageIO.write(img, "PNG", out);
-
-            return outPath;
+            if (parent != null) {
+                if (!parent.mkdirs()) {
+                    LOGGER.error("Failed to create parent directory");
+                    return;
+                }
+            }
+            ImageIO.write(img, "PNG", out);
         } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            throw new RuntimeException(e);
         }
     }
-
 
     private static void centerOnPrimaryMonitor() {
         long primary = glfwGetPrimaryMonitor();
         GLFWVidMode mode = glfwGetVideoMode(primary);
+        if (mode == null) {
+            Logger.getLogger(Window.class).error("Failed to get video mode");
+            return;
+        }
         try (MemoryStack stack = stackPush()) {
             IntBuffer pW = stack.mallocInt(1);
             IntBuffer pH = stack.mallocInt(1);
@@ -243,48 +262,6 @@ public class Window{
             int w = pW.get(0), h = pH.get(0);
             glfwSetWindowPos(window, (mode.width() - w) / 2, (mode.height() - h) / 2);
         }
-    }
-
-    private static long pickBestMonitorForWindow() {
-        try (MemoryStack stack = stackPush()) {
-            IntBuffer wx = stack.mallocInt(1);
-            IntBuffer wy = stack.mallocInt(1);
-            IntBuffer ww = stack.mallocInt(1);
-            IntBuffer wh = stack.mallocInt(1);
-            glfwGetWindowPos(window, wx, wy);
-            glfwGetWindowSize(window, ww, wh);
-            return pickBestMonitorFor(wx.get(0), wy.get(0), ww.get(0), wh.get(0));
-        }
-    }
-
-    private static long pickBestMonitorFor(int wx, int wy, int ww, int wh) {
-        PointerBuffer monitors = glfwGetMonitors();
-        if (monitors == null) return NULL;
-
-        long bestMonitor = NULL;
-        int bestArea = -1;
-
-        for (int i = 0; i < monitors.capacity(); i++) {
-            long m = monitors.get(i);
-            GLFWVidMode mode = glfwGetVideoMode(m);
-            try (MemoryStack stack = stackPush()) {
-                IntBuffer mx = stack.mallocInt(1);
-                IntBuffer my = stack.mallocInt(1);
-                glfwGetMonitorPos(m, mx, my);
-
-                int monX = mx.get(0);
-                int monY = my.get(0);
-                int monW = mode.width();
-                int monH = mode.height();
-
-                int overlap = rectOverlapArea(wx, wy, ww, wh, monX, monY, monW, monH);
-                if (overlap > bestArea) {
-                    bestArea = overlap;
-                    bestMonitor = m;
-                }
-            }
-        }
-        return bestMonitor;
     }
 
     private static int rectOverlapArea(int ax, int ay, int aw, int ah,

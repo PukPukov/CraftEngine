@@ -49,7 +49,7 @@ public final class ComponentRenderer {
 
     public Vector2f getTextSize(Component c) {
         Vector2f measure = measure(c);
-        return new Vector2f(measure.x * Window.scale().coofX(), measure.y * Window.scale().coofY());
+        return new Vector2f(measure.x * Window.getScaleManager().coofX(), measure.y * Window.getScaleManager().coofY());
     }
 
     public int lineHeightPx() {
@@ -141,8 +141,8 @@ public final class ComponentRenderer {
     }
 
     private float drawLiteral(QuadBatch b, String lit, float x, float y, State st) {
-        final float sx = Window.scale().coofX();
-        final float sy = Window.scale().coofY();
+        final float sx = Window.getScaleManager().coofX();
+        final float sy = Window.getScaleManager().coofY();
         for (Token tk : tokenize(lit)) {
             if (tk.kind == TokenKind.TEXT) {
                 x = drawTextRun(b, tk.text, x, y, st);
@@ -164,8 +164,8 @@ public final class ComponentRenderer {
     private float drawTextRun(QuadBatch b, String s, float baseX, float yTop, State st) {
         if (s.isEmpty()) return baseX;
 
-        final float sx = Window.scale().coofX();
-        final float sy = Window.scale().coofY();
+        final float sx = Window.getScaleManager().coofX();
+        final float sy = Window.getScaleManager().coofY();
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
             STBTTAlignedQuad q = STBTTAlignedQuad.malloc(stack);

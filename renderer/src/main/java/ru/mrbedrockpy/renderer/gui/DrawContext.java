@@ -72,7 +72,7 @@ public class DrawContext{
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glDisable(GL_CULL_FACE);
         shader.use();
-        shader.setUniformMatrix4f("projection", Window.scale().ortho());
+        shader.setUniformMatrix4f("projection", Window.getScaleManager().ortho());
         shader.setUniformMatrix4f("view", new Matrix4f());
         RenderInit.ATLAS_MANAGER.uploadToShader(shader.getId(), "atlases");
     }

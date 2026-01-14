@@ -2,6 +2,7 @@ package ru.mrbedrockpy.renderer.window;
 
 import lombok.Getter;
 import org.jetbrains.annotations.Nullable;
+import org.lwjgl.glfw.*;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -10,7 +11,7 @@ import java.util.function.Consumer;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11C.glViewport;
 
-public class Input{
+public class Input {
     public static final int KEYS = 1032;
     public static final int MOUSE_BUTTONS_OFFSET = 1024;
 
@@ -42,16 +43,23 @@ public class Input{
 
     private static final Map<Layer, List<Consumer<ScrollCallback>>> onScrollByLayer = new ConcurrentHashMap<>();
 
+    private static GLFWKeyCallback setKeyCallback;
+    private static GLFWMouseButtonCallback setMouseButtonCallback;
+    private static GLFWCursorPosCallback setCursorPosCallback;
+    private static GLFWWindowSizeCallback setWindowSizeCallback;
+    private static GLFWScrollCallback setScrollCallback;
+    private static GLFWCharModsCallback setCharModsCallback;
+
     public static void onScroll(Layer layer, Consumer<ScrollCallback> cb) {
         onScrollByLayer.computeIfAbsent(layer, l -> new ArrayList<>()).add(cb);
     }
 
     public static int getSX() {
-        return Window.scale().toLogicalX(Math.round((float) getX()));
+        return Window.getScaleManager().toLogicalX(Math.round((float) getX()));
     }
 
     public static int getSY() {
-        return Window.scale().toLogicalY(Math.round((float) getY()));
+        return Window.getScaleManager().toLogicalY(Math.round((float) getY()));
     }
 
     public static double getX() {
@@ -235,12 +243,12 @@ public class Input{
         Arrays.fill(keys, false);
         Arrays.fill(frames, 0);
 
-        glfwSetKeyCallback(window, Input::keyCallback);
-        glfwSetMouseButtonCallback(window, Input::mouseButtonCallback);
-        glfwSetCursorPosCallback(window, Input::cursorPosCallback);
-        glfwSetWindowSizeCallback(window, Input::windowSizeCallback);
-        glfwSetScrollCallback(window, Input::scrollCallback);
-        glfwSetCharModsCallback(window, Input::charCallback);
+        setKeyCallback = glfwSetKeyCallback(window, Input::keyCallback);
+        setMouseButtonCallback = glfwSetMouseButtonCallback(window, Input::mouseButtonCallback);
+        setCursorPosCallback = glfwSetCursorPosCallback(window, Input::cursorPosCallback);
+        setWindowSizeCallback = glfwSetWindowSizeCallback(window, Input::windowSizeCallback);
+        setScrollCallback = glfwSetScrollCallback(window, Input::scrollCallback);
+        setCharModsCallback = glfwSetCharModsCallback(window, Input::charCallback);
 
         setLayer(Layer.GAME);
     }
@@ -290,5 +298,14 @@ public class Input{
     public static boolean wasClicked(Layer layer, int button) {
         if (getCurrentLayer() != layer) return false;
         return keys[MOUSE_BUTTONS_OFFSET + button] && frames[MOUSE_BUTTONS_OFFSET + button] == current;
+    }
+
+    public static void freeCallbacks() {
+        if (setKeyCallback != null) setKeyCallback.free();
+        if (setMouseButtonCallback != null) setMouseButtonCallback.free();
+        if (setCursorPosCallback != null) setCursorPosCallback.free();
+        if (setWindowSizeCallback != null) setWindowSizeCallback.free();
+        if (setScrollCallback != null) setScrollCallback.free();
+        if (setCharModsCallback != null) setCharModsCallback.free();
     }
 }

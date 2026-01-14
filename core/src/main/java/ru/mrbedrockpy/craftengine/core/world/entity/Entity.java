@@ -78,7 +78,7 @@ public abstract class Entity {
             movement.y = aabb.clipYCollide(this.boundingBox, movement.y);
             movement.z = aabb.clipZCollide(this.boundingBox, movement.z);
         }
-        this.boundingBox.move(movement);
+        this.boundingBox.move(movement); // TODO: сделать три цикла и исправить баг с залезаниями в блоки через грани
 
         this.onGround = originalMovement.y != movement.y && originalMovement.y < 0.0F;
         
