@@ -3,6 +3,7 @@ package ru.mrbedrockpy.renderer.graphics;
 import lombok.AccessLevel;
 import lombok.Getter;
 import ru.mrbedrockpy.craftengine.core.util.id.RL;
+import ru.mrbedrockpy.renderer.graphics.tex.Atlas;
 import ru.mrbedrockpy.renderer.graphics.tex.UvProvider;
 import ru.mrbedrockpy.renderer.util.graphics.TextureUtil;
 
@@ -11,8 +12,9 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import static org.lwjgl.opengl.GL46C.*;
 
-public class TextureAtlas implements UvProvider, AutoCloseable {
+public class TextureAtlas extends Atlas implements AutoCloseable {
     private final int tileSize = 32;
     @Getter(AccessLevel.PUBLIC)
     private final int atlasSize;
@@ -23,13 +25,13 @@ public class TextureAtlas implements UvProvider, AutoCloseable {
     private final BufferedImage atlasImage;
 
     public TextureAtlas(int atlasSize) {
+        super(RL.of("blocks"));
         this.atlasSize = atlasSize;
         this.atlasImage = new BufferedImage(tileSize * atlasSize, tileSize * atlasSize, BufferedImage.TYPE_INT_ARGB);
-
+        this.texture = new Texture(glGenTextures(), tileSize * atlasSize, tileSize * atlasSize);
     }
 
     public void addTile(RL name, BufferedImage tile) {
-
         if (currentY >= atlasSize) throw new RuntimeException("TextureAtlas overflow");
 
         int w = tile.getWidth();
@@ -53,7 +55,9 @@ public class TextureAtlas implements UvProvider, AutoCloseable {
     }
 
     public Texture buildAtlas() {
-        return TextureUtil.fromBufferedImage(atlasImage);
+        this.texture.close();
+        this.texture = TextureUtil.fromBufferedImage(atlasImage);
+        return texture;
     }
 
     public Rectangle uv(RL name) {

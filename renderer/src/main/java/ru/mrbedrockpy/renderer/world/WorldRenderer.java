@@ -4,16 +4,11 @@ import lombok.Getter;
 import org.joml.Matrix4f;
 import org.joml.Vector2i;
 import ru.mrbedrockpy.craftengine.core.util.config.CraftEngineConfig;
-import ru.mrbedrockpy.craftengine.core.util.id.RL;
 import ru.mrbedrockpy.craftengine.core.world.chunk.Chunk;
 import ru.mrbedrockpy.renderer.RenderInit;
 import ru.mrbedrockpy.renderer.graphics.*;
-import ru.mrbedrockpy.renderer.graphics.tex.Atlas;
-import ru.mrbedrockpy.renderer.graphics.tex.GlTexture;
 import ru.mrbedrockpy.renderer.util.graphics.ShaderUtil;
-import ru.mrbedrockpy.renderer.util.graphics.TextureUtil;
 
-import java.io.IOException;
 import java.util.*;
 
 import static org.lwjgl.opengl.GL46C.*;
