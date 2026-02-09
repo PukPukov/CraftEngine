@@ -85,7 +85,7 @@ public class InventoryScreen extends Screen {
         // 2) Если слот пуст и курсор не пуст — кладём из курсора в слот (по максимуму)
         if (slotStack.isEmpty() && !cursor.isEmpty()) {
             int max = cursor.getItem().getMaxStackSize();
-            int toMove = Math.min(cursor.getCount(), max);
+            int toMove = Math.min(cursor.getAmount(), max);
             ItemStack moved = cursor.copy();
             slot.stack(moved);
 
@@ -101,9 +101,9 @@ public class InventoryScreen extends Screen {
             if (same) {
                 // MERGE: докинуть из курсора в слот до лимита
                 int max = slotStack.getItem().getMaxStackSize();
-                int space = Math.max(0, max - slotStack.getCount());
+                int space = Math.max(0, max - slotStack.getAmount());
                 if (space > 0) {
-                    int toMove = Math.min(cursor.getCount(), space);
+                    int toMove = Math.min(cursor.getAmount(), space);
                     slotStack.increment(toMove);
                     cursor.decrement(toMove);
                     slot.stack(slotStack);

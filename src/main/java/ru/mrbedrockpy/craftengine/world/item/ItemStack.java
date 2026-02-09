@@ -6,7 +6,7 @@ import lombok.Getter;
 public class ItemStack {
     public static final ItemStack EMPTY = new ItemStack(Items.AIR, 0);
     private final Item item;
-    private int count;
+    private int amount;
 
     public ItemStack(Item item){
         this(item, 1);
@@ -17,14 +17,14 @@ public class ItemStack {
             throw new IllegalArgumentException("Invalid stack size");
         }
         this.item = item;
-        this.count = count;
+        this.amount = count;
     }
 
-    public void setCount(int count) {
-        if (count < 0 || count > item.getMaxStackSize()) {
+    public void setAmount(int amount) {
+        if (amount < 0 || amount > item.getMaxStackSize()) {
             throw new IllegalArgumentException("Invalid stack size");
         }
-        this.count = count;
+        this.amount = amount;
     }
 
     public boolean isOf(Item item) {
@@ -33,17 +33,17 @@ public class ItemStack {
 
     public void increment(int amount) {
         if (amount < 0) throw new IllegalArgumentException("Amount must be non-negative");
-        this.count = Math.min(this.count + amount, item.getMaxStackSize());
+        this.amount = Math.min(this.amount + amount, item.getMaxStackSize());
     }
 
     /** Уменьшить количество на amount (и не уйти в минус) */
     public void decrement(int amount) {
         if (amount < 0) throw new IllegalArgumentException("Amount must be non-negative");
-        this.count = Math.max(this.count - amount, 0);
+        this.amount = Math.max(this.amount - amount, 0);
     }
 
     public boolean isEmpty() {
-        return this == EMPTY || count == 0;
+        return this == EMPTY || amount == 0;
     }
 
     /**
@@ -52,21 +52,21 @@ public class ItemStack {
      */
     public boolean merge(ItemStack other) {
         if (!this.item.equals(other.item)) return false;
-        int space = item.getMaxStackSize() - this.count;
-        int toTransfer = Math.min(space, other.count);
-        this.count += toTransfer;
-        other.count -= toTransfer;
-        return other.count == 0;
+        int space = item.getMaxStackSize() - this.amount;
+        int toTransfer = Math.min(space, other.amount);
+        this.amount += toTransfer;
+        other.amount -= toTransfer;
+        return other.amount == 0;
     }
 
     public ItemStack copy() {
-        return new ItemStack(this.item, this.count);
+        return new ItemStack(this.item, this.amount);
     }
 
     @Override
     public String toString() {
         return isEmpty()
                 ? "ItemStack.EMPTY"
-                : "ItemStack[" + item.getDisplayName() + " x" + count + "]";
+                : "ItemStack[" + item.getDisplayName() + " x" + amount + "]";
     }
 }

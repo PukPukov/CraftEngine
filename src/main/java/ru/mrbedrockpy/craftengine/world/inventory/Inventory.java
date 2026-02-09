@@ -55,9 +55,9 @@ public class Inventory {
     public ItemStack removeItem(int slot, int amount) {
         ItemStack existing = stack(slot);
         if (existing == null) return null;
-        int removed = Math.min(amount, existing.getCount());
+        int removed = Math.min(amount, existing.getAmount());
         ItemStack result = new ItemStack(existing.getItem(), removed);
-        existing.setCount(existing.getCount() - removed);
+        existing.setAmount(existing.getAmount() - removed);
         if (existing.isEmpty()) stack(slot, null);
         return result;
     }
