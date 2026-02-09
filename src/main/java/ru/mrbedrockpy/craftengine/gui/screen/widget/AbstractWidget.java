@@ -2,7 +2,7 @@ package ru.mrbedrockpy.craftengine.gui.screen.widget;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.mrbedrockpy.craftengine.renderer.gui.DrawContext;
+import ru.mrbedrockpy.craftengine.render.gui.DrawContext;
 
 @Getter
 public abstract class AbstractWidget{

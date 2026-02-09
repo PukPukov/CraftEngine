@@ -3,7 +3,7 @@ package ru.mrbedrockpy.craftengine.event.client;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import ru.mrbedrockpy.craftengine.event.Event;
-import ru.mrbedrockpy.craftengine.renderer.window.Input;
+import ru.mrbedrockpy.craftengine.render.window.Input;
 
 @AllArgsConstructor
 @Getter

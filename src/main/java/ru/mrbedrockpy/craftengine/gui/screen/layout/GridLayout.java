@@ -1,8 +1,8 @@
 package ru.mrbedrockpy.craftengine.gui.screen.layout;
 
 import ru.mrbedrockpy.craftengine.gui.screen.widget.AbstractWidget;
-import ru.mrbedrockpy.craftengine.renderer.gui.DrawContext;
-import ru.mrbedrockpy.craftengine.renderer.window.Window;
+import ru.mrbedrockpy.craftengine.render.gui.DrawContext;
+import ru.mrbedrockpy.craftengine.render.window.Window;
 
 import java.util.ArrayList;
 import java.util.List;

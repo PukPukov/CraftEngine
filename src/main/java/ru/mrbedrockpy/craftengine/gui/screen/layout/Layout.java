@@ -3,7 +3,7 @@ package ru.mrbedrockpy.craftengine.gui.screen.layout;
 import ru.mrbedrockpy.craftengine.CraftEngineClient;
 import ru.mrbedrockpy.craftengine.event.client.CharTypeEvent;
 import ru.mrbedrockpy.craftengine.gui.screen.widget.AbstractWidget;
-import ru.mrbedrockpy.craftengine.renderer.gui.DrawContext;
+import ru.mrbedrockpy.craftengine.render.gui.DrawContext;
 
 import java.util.LinkedHashMap;
 import java.util.List;

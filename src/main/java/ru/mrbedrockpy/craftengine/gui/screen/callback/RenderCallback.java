@@ -1,6 +1,6 @@
 package ru.mrbedrockpy.craftengine.gui.screen.callback;
 
-import ru.mrbedrockpy.craftengine.renderer.gui.DrawContext;
+import ru.mrbedrockpy.craftengine.render.gui.DrawContext;
 
 @FunctionalInterface
 public interface RenderCallback {

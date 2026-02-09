@@ -4,13 +4,13 @@ import lombok.Getter;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import ru.mrbedrockpy.craftengine.keybind.KeyBindings;
-import ru.mrbedrockpy.craftengine.renderer.window.Camera;
+import ru.mrbedrockpy.craftengine.render.window.Camera;
 import ru.mrbedrockpy.craftengine.world.World;
 import ru.mrbedrockpy.craftengine.world.block.Blocks;
 import ru.mrbedrockpy.craftengine.world.item.ItemStack;
 import ru.mrbedrockpy.craftengine.util.Util;
 import ru.mrbedrockpy.craftengine.world.raycast.BlockRaycastResult;
-import ru.mrbedrockpy.craftengine.renderer.window.Input;
+import ru.mrbedrockpy.craftengine.render.window.Input;
 
 public class ClientPlayerEntity extends PlayerEntity {
 

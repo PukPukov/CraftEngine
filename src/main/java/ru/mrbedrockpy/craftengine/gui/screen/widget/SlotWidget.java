@@ -3,7 +3,7 @@ package ru.mrbedrockpy.craftengine.gui.screen.widget;
 import ru.mrbedrockpy.craftengine.registry.Registries;
 import ru.mrbedrockpy.craftengine.util.id.RL;
 import ru.mrbedrockpy.craftengine.world.item.ItemStack;
-import ru.mrbedrockpy.craftengine.renderer.gui.DrawContext;
+import ru.mrbedrockpy.craftengine.render.gui.DrawContext;
 
 import java.awt.*;
 import java.util.function.Consumer;

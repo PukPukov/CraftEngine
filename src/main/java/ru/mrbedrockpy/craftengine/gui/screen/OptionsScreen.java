@@ -6,8 +6,8 @@ import ru.mrbedrockpy.craftengine.gui.screen.layout.VerticalCenterStackLayout;
 import ru.mrbedrockpy.craftengine.gui.screen.widget.BindingWidget;
 import ru.mrbedrockpy.craftengine.keybind.KeyBind;
 import ru.mrbedrockpy.craftengine.keybind.KeyBindingsHelper;
-import ru.mrbedrockpy.craftengine.renderer.gui.DrawContext;
-import ru.mrbedrockpy.craftengine.renderer.window.Window;
+import ru.mrbedrockpy.craftengine.render.gui.DrawContext;
+import ru.mrbedrockpy.craftengine.render.window.Window;
 
 public class OptionsScreen extends Screen {
     private Layout layout;

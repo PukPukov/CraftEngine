@@ -3,7 +3,7 @@ package ru.mrbedrockpy.craftengine.keybind;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import ru.mrbedrockpy.craftengine.renderer.window.Input;
+import ru.mrbedrockpy.craftengine.render.window.Input;
 
 @Getter
 @AllArgsConstructor

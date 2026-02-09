@@ -3,7 +3,7 @@ package ru.mrbedrockpy.craftengine.gui.screen.widget;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.mrbedrockpy.craftengine.keybind.KeyBind;
-import ru.mrbedrockpy.craftengine.renderer.gui.DrawContext;
+import ru.mrbedrockpy.craftengine.render.gui.DrawContext;
 
 import java.util.Objects;
 import java.util.function.Consumer;

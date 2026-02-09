@@ -4,8 +4,8 @@ import ru.mrbedrockpy.craftengine.CraftEngineClient;
 import ru.mrbedrockpy.craftengine.gui.screen.layout.VerticalCenterStackLayout;
 import ru.mrbedrockpy.craftengine.gui.screen.layout.Layout;
 import ru.mrbedrockpy.craftengine.gui.screen.widget.ButtonWidget;
-import ru.mrbedrockpy.craftengine.renderer.gui.DrawContext;
-import ru.mrbedrockpy.craftengine.renderer.window.Window;
+import ru.mrbedrockpy.craftengine.render.gui.DrawContext;
+import ru.mrbedrockpy.craftengine.render.window.Window;
 
 
 public class MainMenuScreen extends Screen {

@@ -4,8 +4,8 @@ import lombok.Getter;
 import org.lwjgl.glfw.GLFW;
 import ru.mrbedrockpy.craftengine.CraftEngineClient;
 import ru.mrbedrockpy.craftengine.util.lang.Component;
-import ru.mrbedrockpy.craftengine.renderer.font.ComponentRenderer;
-import ru.mrbedrockpy.craftengine.renderer.gui.DrawContext;
+import ru.mrbedrockpy.craftengine.render.font.ComponentRenderer;
+import ru.mrbedrockpy.craftengine.render.gui.DrawContext;
 
 import java.awt.*;
 

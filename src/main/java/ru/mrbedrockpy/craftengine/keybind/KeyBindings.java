@@ -1,7 +1,7 @@
 package ru.mrbedrockpy.craftengine.keybind;
 
 import org.lwjgl.glfw.GLFW;
-import ru.mrbedrockpy.craftengine.renderer.window.Input;
+import ru.mrbedrockpy.craftengine.render.window.Input;
 
 public class KeyBindings {
     public static final KeyBind MOVE_FORWARD = KeyBindingsHelper.register(new KeyBind(Input.Layer.GAME, "forward", "game", GLFW.GLFW_KEY_W));

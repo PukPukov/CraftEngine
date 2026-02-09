@@ -9,8 +9,8 @@ import ru.mrbedrockpy.craftengine.gui.screen.InventoryScreen;
 import ru.mrbedrockpy.craftengine.gui.screen.MainMenuScreen;
 import ru.mrbedrockpy.craftengine.keybind.KeyBindings;
 import ru.mrbedrockpy.craftengine.world.entity.ClientPlayerEntity;
-import ru.mrbedrockpy.craftengine.renderer.window.Input;
-import ru.mrbedrockpy.craftengine.renderer.window.Window;
+import ru.mrbedrockpy.craftengine.render.window.Input;
+import ru.mrbedrockpy.craftengine.render.window.Window;
 
 @Getter
 @AllArgsConstructor
