@@ -32,7 +32,7 @@ public class WorldRenderer implements AutoCloseable {
         skyboxRenderer = new SkyboxRenderer("skybox.png");
     }
 
-    public void render(long tick, Vector2i playerPos, Matrix4f proj, Matrix4f view) {
+    public void render(Vector2i playerPos, Matrix4f proj, Matrix4f view) {
         skyboxRenderer.render(proj, view);
 
         Shaders.BLOCK_SHADER.use();

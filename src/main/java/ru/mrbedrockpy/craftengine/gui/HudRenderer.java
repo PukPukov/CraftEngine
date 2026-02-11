@@ -26,7 +26,7 @@ public class HudRenderer {
         this.height = height;
         PlayerInventory inventory = CraftEngineClient.INSTANCE.getPlayer().getInventory();
         for (int i = 0; i < hotbarSlots.length; i++) {
-            int x = width / 2 + i * 18 - 182 / 2 + 6;
+            int x = width / 2 + i * 18 - 182 / 2 + 8;
             int y = height - 29;
             final int slotIndex = i;
             SlotWidget w = new SlotWidget(

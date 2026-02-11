@@ -34,7 +34,7 @@ public class ClientWorld extends World {
     }
 
     public void render() {
-        worldRenderer.render(CraftEngineClient.INSTANCE.getTickSystem().getCurrentTick(), player.getChunkPosition(), player.getCamera().getProjectionMatrix(), player.getCamera().getViewMatrix());
+        worldRenderer.render(player.getChunkPosition(), player.getCamera().getProjectionMatrix(), player.getCamera().getViewMatrix());
     }
 
     private static final int CHUNK_SIZE = 16;
